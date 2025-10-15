@@ -141,7 +141,8 @@ void ISOLuxDialog::on_spinDistance_valueChanged(int)
 
 void ISOLuxDialog::on_chkGrid_stateChanged(int value)
 {
-
+    m_isoWidget->m_bUseGrid = value;
+    updateIES();
 }
 void ISOLuxDialog::on_cmbPlane_currentIndexChanged(int plane)
 {

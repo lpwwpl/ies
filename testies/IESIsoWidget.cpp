@@ -25,7 +25,9 @@ void IESIsoWidget::Init()
     //setupColorSchemes();
     m_colorScale= new QCPColorScale(this);
     
-    
+
+    addLayer("gridLayer", nullptr, QCustomPlot::limAbove); // 先添加到默认图层上方
+    layer("gridLayer")->setMode(QCPLayer::lmBuffered); // 关键：设置为缓冲模式
 
     m_margin = new QCPMarginGroup(this);
     axisRect()->setMarginGroup(QCP::msBottom | QCP::msTop, m_margin);
@@ -201,6 +203,22 @@ void IESIsoWidget::updatePlot()
     if (m_bUseGrid)
     {
 
+
+        xAxis->grid()->setLayer("gridLayer");
+        yAxis->grid()->setLayer("gridLayer");
+
+        xAxis->grid()->setSubGridVisible(true); // 确保子网格线可见
+        yAxis->grid()->setSubGridVisible(true);
+        xAxis->grid()->setLayer("gridLayer");
+        yAxis->grid()->setLayer("gridLayer");
+
+        moveLayer(layer("gridLayer"), layer("main"));
+
+    }
+    else
+    {
+        moveLayer(layer("main"),layer("gridLayer"));
+        //removeLayer(layer("gridLayer"));
     }
     this->replot();
 }
