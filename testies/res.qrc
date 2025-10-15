@@ -1,0 +1,23 @@
+<RCC>
+    <qresource prefix="/">
+        <file>resources/shaders/ies_spotlight.frag</file>
+        <file>resources/shaders/ies_spotlight.vert</file>
+        <file>resources/textures/diffuse.png</file>
+        <file>resources/shaders/ies.frag</file>
+        <file>resources/shaders/ies.vert</file>
+        <file>resources/isoluxcurves.png</file>
+        <file>resources/polarcurves.png</file>
+        <file>resources/threeDcurves.png</file>
+        <file>resources/TypeA.png</file>
+        <file>resources/TypeB.png</file>
+        <file>resources/TypeC.png</file>
+        <file>resources/Hadd.png</file>
+        <file>resources/Hminus.png</file>
+        <file>resources/image.png</file>
+        <file>resources/new.png</file>
+        <file>resources/open.png</file>
+        <file>resources/save.png</file>
+        <file>resources/Vadd.png</file>
+        <file>resources/Vminus.png</file>
+    </qresource>
+</RCC>
