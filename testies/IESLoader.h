@@ -7,6 +7,7 @@
 #include <QOpenGLTexture>
 #include "tiny_ies.hpp"
 
+
 class IESLoader
 {
 public:
@@ -34,8 +35,8 @@ public:
     void get_coords();
     QVector3D polar_to_cartesian(double theta,double phi,double distance =1);
     double getCandelaValue(double vertical, double horizontal) ;
-    double interpolateCandela(double vertical, double horizontal);
-    double getCandelaValue(double vertical, double horizontal) const;
+    //double interpolateCandela(double vertical, double horizontal);
+    //double getCandelaValue(double vertical, double horizontal) const;
 private:
     // ½âÎöIESÎÄ¼þ
     bool parseIESFile(const QString& filename);
@@ -47,6 +48,9 @@ public:
     QVector<float> horizontalAngles;
 
     tiny_ies<double>::light light;
+
+    double m_thetas_size;
+    double m_phis_size ;
 
     //181*361
     std::vector<std::vector<double>> newValues_all;

@@ -8,6 +8,8 @@
 #include <qmath.h>
 IESLoader::IESLoader()
 {
+    m_thetas_size = 180;
+    m_phis_size = 360;
 }
 
 IESLoader::~IESLoader()
@@ -79,9 +81,8 @@ bool IESLoader::parseIESFile(const QString& filename)
 
 void IESLoader::getIntensityVectorized(int numThetas, int numPhis) {
 
-    newThetas_all = linspace(0, 180, numThetas);
-    //newThetas = linspace(0, 180, numThetas);
-    newPhis_all = linspace(0, 360, numPhis);
+    newThetas_all = linspace(0, m_thetas_size, numThetas);
+    newPhis_all = linspace(0, m_phis_size, numPhis);
     newValues_all.resize(newPhis_all.size());
 
 
@@ -197,83 +198,83 @@ void IESLoader::get_coords()
 
 }
 
-double IESLoader::getCandelaValue(double vertical, double horizontal) const {
-    int vIdx = 0, hIdx = 0;
-    double minVDiff = 360, minHDiff = 360;
-
-    for (int i = 0; i < verticalAngles.size(); ++i) {
-        double diff = fabs(verticalAngles[i] - vertical);
-        if (diff < minVDiff) {
-            minVDiff = diff;
-            vIdx = i;
-        }
-    }
-
-    for (int j = 0; j < horizontalAngles.size(); ++j) {
-        double diff = fabs(horizontalAngles[j] - horizontal);
-        if (diff < minHDiff) {
-            minHDiff = diff;
-            hIdx = j;
-        }
-    }
-
-    return light.candela_hv[vIdx][hIdx];
-}
-
-double IESLoader::interpolateCandela(double vertical, double horizontal) 
-{
-    // 角度归一化
-    while (horizontal < 0) horizontal += 360;
-    while (horizontal >= 360) horizontal -= 360;
-
-    vertical = std::max(0.0, std::min(180.0, vertical));
-
-    if (0/*interpolationMethod*/ == 0) {
-        // 双线性插值
-        int vIdx1 = -1, vIdx2 = -1;
-        int hIdx1 = -1, hIdx2 = -1;
-
-        // 找到垂直方向的插值区间
-        for (int i = 0; i < light.vertical_angles.size() - 1; ++i) {
-            if (vertical >= light.vertical_angles[i] && vertical <= light.vertical_angles[i + 1]) {
-                vIdx1 = i;
-                vIdx2 = i + 1;
-                break;
-            }
-        }
-
-        // 找到水平方向的插值区间
-        for (int j = 0; j < light.horizontal_angles.size() - 1; ++j) {
-            if (horizontal >= light.horizontal_angles[j] && horizontal <= light.horizontal_angles[j + 1]) {
-                hIdx1 = j;
-                hIdx2 = j + 1;
-                break;
-            }
-        }
-
-        if (vIdx1 == -1 || hIdx1 == -1) {
-            // 使用最近邻
-            return getCandelaValue(vertical, horizontal);
-        }
-
-        // 双线性插值
-        double vAlpha = (vertical - light.vertical_angles[vIdx1]) /
-            (light.vertical_angles[vIdx2] - light.vertical_angles[vIdx1]);
-        double hAlpha = (horizontal - light.horizontal_angles[hIdx1]) /
-            (light.horizontal_angles[hIdx2] - light.horizontal_angles[hIdx1]);
-
-        double val1 = light.candela_hv[hIdx1][vIdx1] * (1 - hAlpha) +
-            light.candela_hv[hIdx2][vIdx1] * hAlpha;
-        double val2 = light.candela_hv[hIdx1][vIdx2] * (1 - hAlpha) +
-            light.candela_hv[hIdx2][vIdx2] * hAlpha;
-
-        return val1 * (1 - vAlpha) + val2 * vAlpha;
-    }
-    else {
-        // 最近邻插值
-        return getCandelaValue(vertical, horizontal);
-    }
-}
+//double IESLoader::getCandelaValue(double vertical, double horizontal) const {
+//    int vIdx = 0, hIdx = 0;
+//    double minVDiff = m_phis_size, minHDiff = m_phis_size;
+//
+//    for (int i = 0; i < verticalAngles.size(); ++i) {
+//        double diff = fabs(verticalAngles[i] - vertical);
+//        if (diff < minVDiff) {
+//            minVDiff = diff;
+//            vIdx = i;
+//        }
+//    }
+//
+//    for (int j = 0; j < horizontalAngles.size(); ++j) {
+//        double diff = fabs(horizontalAngles[j] - horizontal);
+//        if (diff < minHDiff) {
+//            minHDiff = diff;
+//            hIdx = j;
+//        }
+//    }
+//
+//    return light.candela_hv[vIdx][hIdx];
+//}
+//
+//double IESLoader::interpolateCandela(double vertical, double horizontal) 
+//{
+//    // 角度归一化
+//    while (horizontal < 0) horizontal += 360;
+//    while (horizontal >= 360) horizontal -= 360;
+//
+//    vertical = std::max(0.0, std::min(180.0, vertical));
+//
+//    if (0/*interpolationMethod*/ == 0) {
+//        // 双线性插值
+//        int vIdx1 = -1, vIdx2 = -1;
+//        int hIdx1 = -1, hIdx2 = -1;
+//
+//        // 找到垂直方向的插值区间
+//        for (int i = 0; i < light.vertical_angles.size() - 1; ++i) {
+//            if (vertical >= light.vertical_angles[i] && vertical <= light.vertical_angles[i + 1]) {
+//                vIdx1 = i;
+//                vIdx2 = i + 1;
+//                break;
+//            }
+//        }
+//
+//        // 找到水平方向的插值区间
+//        for (int j = 0; j < light.horizontal_angles.size() - 1; ++j) {
+//            if (horizontal >= light.horizontal_angles[j] && horizontal <= light.horizontal_angles[j + 1]) {
+//                hIdx1 = j;
+//                hIdx2 = j + 1;
+//                break;
+//            }
+//        }
+//
+//        if (vIdx1 == -1 || hIdx1 == -1) {
+//            // 使用最近邻
+//            return getCandelaValue(vertical, horizontal);
+//        }
+//
+//        // 双线性插值
+//        double vAlpha = (vertical - light.vertical_angles[vIdx1]) /
+//            (light.vertical_angles[vIdx2] - light.vertical_angles[vIdx1]);
+//        double hAlpha = (horizontal - light.horizontal_angles[hIdx1]) /
+//            (light.horizontal_angles[hIdx2] - light.horizontal_angles[hIdx1]);
+//
+//        double val1 = light.candela_hv[hIdx1][vIdx1] * (1 - hAlpha) +
+//            light.candela_hv[hIdx2][vIdx1] * hAlpha;
+//        double val2 = light.candela_hv[hIdx1][vIdx2] * (1 - hAlpha) +
+//            light.candela_hv[hIdx2][vIdx2] * hAlpha;
+//
+//        return val1 * (1 - vAlpha) + val2 * vAlpha;
+//    }
+//    else {
+//        // 最近邻插值
+//        return getCandelaValue(vertical, horizontal);
+//    }
+//}
 
 
 double IESLoader::getCandelaValue(double vertical, double horizontal) 
@@ -309,7 +310,7 @@ double IESLoader::getCandelaValue(double vertical, double horizontal)
 }
 QVector3D IESLoader::polar_to_cartesian(double theta, double phi,double distance)
 {
-    double theta_rad = qDegreesToRadians(180 - theta);
+    double theta_rad = qDegreesToRadians(m_thetas_size - theta);
     double phi_rad = qDegreesToRadians(phi);
 
 
@@ -389,7 +390,7 @@ void IESLoader::loadIES(QString filename)
         newValues.insert(newValues.end(), vals3.begin(), vals3.end());
         newValues.insert(newValues.end(), vals4.begin(), vals4.end());
 
-        newThetas = linspace(0, 180, light.candela_hv[0].size());
+        newThetas = linspace(0, m_thetas_size, light.candela_hv[0].size());
     }
     break;
     case tiny_ies<double>::eC180:
@@ -414,7 +415,7 @@ void IESLoader::loadIES(QString filename)
         newValues.insert(newValues.end(), vals1.begin(), vals1.end());
         newValues.insert(newValues.end(), vals2.begin(), vals2.end());
 
-        newThetas = linspace(0, 180, light.candela_hv[0].size());
+        newThetas = linspace(0, m_thetas_size, light.candela_hv[0].size());
     }
     break;
     case tiny_ies<double>::eC360:

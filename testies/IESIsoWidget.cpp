@@ -134,7 +134,6 @@ void IESIsoWidget::updatePlot()
 
     // 为每个等值线创建IsoluxCurve
     std::vector<QColor> colors;
-    //std::vector<QColor> src_colors = colorSchemes[0].colors;
     double dist = maxIlluminance - minIlluminance;
  
     double step = dist/m_levelSize;
@@ -171,6 +170,7 @@ void IESIsoWidget::updatePlot()
     //    }
     //}
 
+
     MarchingSquares contourPlot(illuminanceGriddata, -halfRange, halfRange, -halfRange, halfRange);
 
     vector<MarchingSquares::levelPaths> contours = contourPlot.mkIsos(illuminanceLevels);
@@ -202,8 +202,6 @@ void IESIsoWidget::updatePlot()
     //显示网格线
     if (m_bUseGrid)
     {
-
-
         xAxis->grid()->setLayer("gridLayer");
         yAxis->grid()->setLayer("gridLayer");
 
@@ -213,7 +211,6 @@ void IESIsoWidget::updatePlot()
         yAxis->grid()->setLayer("gridLayer");
 
         moveLayer(layer("gridLayer"), layer("main"));
-
     }
     else
     {
