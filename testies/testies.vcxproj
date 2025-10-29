@@ -122,6 +122,7 @@
     <ClCompile Include="mainwindow.cpp" />
     <ClCompile Include="polardialog.cpp" />
     <ClCompile Include="QCustomPlot.cpp" />
+    <ClCompile Include="TableItemDelegate.cpp" />
     <ClCompile Include="threeDdialog.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -135,6 +136,7 @@
     <QtMoc Include="isoluxdialog.h" />
     <QtMoc Include="polardialog.h" />
     <QtMoc Include="threeDdialog.h" />
+    <QtMoc Include="TableItemDelegate.h" />
     <ClInclude Include="tiny_ies.hpp" />
   </ItemGroup>
   <ItemGroup>

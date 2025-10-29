@@ -18,6 +18,8 @@ namespace Ui
 }
 QT_END_NAMESPACE
 
+
+
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
@@ -44,6 +46,9 @@ public:
     {
         //ct::createDialog<T>(this, label, ui->cloudview, ui->cloudtree, ui->console);
     }
+
+    void populateTableFromIESData();
+    void setupHeaderEditing();
 public Q_SLOTS:
     void on_actionIsoLuxCurves_triggered();
     void on_actionPolarCurves_triggered();
@@ -55,16 +60,34 @@ public Q_SLOTS:
     void on_actionDark_triggered();
     void on_actionSave_As_triggered();
     void on_actionExit_triggered();
-
+    void addRow();
+    void deleteRow();
+    void addColumn();
+    void deleteColumn();
+    void slotDoubleValueChanged();
+    void slot_heditor();
+    void slot_veditor();
+ 
 protected:
     void moveEvent(QMoveEvent* event);
-
+    bool eventFilter(QObject* obj, QEvent* event) override;
 private:
     Ui::MainWindow* ui;
     QTranslator* translator;
 
+    QVector<QString> rowClipboard;
+    QVector<QString> columnClipboard;
+    QString horizontalHeaderClipboard;
+    QString verticalHeaderClipboard;
+
     ISOLuxDialog* m_isoDialog;
     PolarDialog* m_polarDialog;
     ThreeDDialog* m_3dDialog;
+
+    QLineEdit* m_heditor;
+    QLineEdit* m_veditor;
+    int logicalIndex;
+
+    QString m_filePath;
 };
 #endif // MAINWINDOW_H

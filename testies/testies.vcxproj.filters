@@ -59,6 +59,9 @@
     <ClCompile Include="IESglwidget.cpp">
       <Filter>widgets</Filter>
     </ClCompile>
+    <ClCompile Include="TableItemDelegate.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="tiny_ies.hpp">
@@ -95,6 +98,9 @@
     </QtMoc>
     <QtMoc Include="IESPolarWidget.h">
       <Filter>widgets</Filter>
+    </QtMoc>
+    <QtMoc Include="TableItemDelegate.h">
+      <Filter>Header Files</Filter>
     </QtMoc>
   </ItemGroup>
   <ItemGroup>

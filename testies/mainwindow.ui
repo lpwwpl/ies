@@ -18,7 +18,7 @@
     <item>
      <widget class="QTabWidget" name="tabWidget">
       <property name="currentIndex">
-       <number>2</number>
+       <number>0</number>
       </property>
       <widget class="QWidget" name="tabGeneral">
        <attribute name="title">
@@ -434,68 +434,78 @@ photometric planes.</string>
        <attribute name="title">
         <string>Data</string>
        </attribute>
-       <widget class="QTableWidget" name="tableWidget">
-        <property name="geometry">
-         <rect>
-          <x>10</x>
-          <y>60</y>
-          <width>851</width>
-          <height>511</height>
-         </rect>
+       <layout class="QGridLayout" name="gridLayout_11">
+        <property name="leftMargin">
+         <number>0</number>
         </property>
-       </widget>
-       <widget class="QPushButton" name="pbHplus">
-        <property name="geometry">
-         <rect>
-          <x>710</x>
-          <y>10</y>
-          <width>38</width>
-          <height>38</height>
-         </rect>
+        <property name="topMargin">
+         <number>0</number>
         </property>
-        <property name="text">
-         <string/>
+        <property name="rightMargin">
+         <number>0</number>
         </property>
-       </widget>
-       <widget class="QPushButton" name="pbHadd">
-        <property name="geometry">
-         <rect>
-          <x>760</x>
-          <y>10</y>
-          <width>38</width>
-          <height>38</height>
-         </rect>
+        <property name="bottomMargin">
+         <number>0</number>
         </property>
-        <property name="text">
-         <string/>
+        <property name="spacing">
+         <number>0</number>
         </property>
-       </widget>
-       <widget class="QPushButton" name="pbVadd">
-        <property name="geometry">
-         <rect>
-          <x>870</x>
-          <y>80</y>
-          <width>38</width>
-          <height>38</height>
-         </rect>
-        </property>
-        <property name="text">
-         <string/>
-        </property>
-       </widget>
-       <widget class="QPushButton" name="pbVplus">
-        <property name="geometry">
-         <rect>
-          <x>870</x>
-          <y>130</y>
-          <width>38</width>
-          <height>38</height>
-         </rect>
-        </property>
-        <property name="text">
-         <string/>
-        </property>
-       </widget>
+        <item row="0" column="2">
+         <widget class="QPushButton" name="pbHadd">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="text">
+           <string/>
+          </property>
+         </widget>
+        </item>
+        <item row="2" column="3">
+         <widget class="QPushButton" name="pbVplus">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="text">
+           <string/>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="0" rowspan="3" colspan="3">
+         <widget class="QTableWidget" name="tableWidget"/>
+        </item>
+        <item row="1" column="3">
+         <widget class="QPushButton" name="pbVadd">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="text">
+           <string/>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="1">
+         <widget class="QPushButton" name="pbHplus">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="text">
+           <string/>
+          </property>
+         </widget>
+        </item>
+       </layout>
       </widget>
      </widget>
     </item>
