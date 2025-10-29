@@ -43,9 +43,13 @@ MainWindow::MainWindow(QWidget* parent)
     ui->lblTypeC->setPixmap(typeCImage);
 
     ui->pbHadd->setIcon(QIcon(":/resources/Hadd.png"));
+    ui->pbHadd->setIconSize(QSize(32, 32));
     ui->pbHplus->setIcon(QIcon(":/resources/Hminus.png"));
+    ui->pbHplus->setIconSize(QSize(32, 32));
     ui->pbVadd->setIcon(QIcon(":/resources/Vadd.png"));
+    ui->pbVadd->setIconSize(QSize(32, 32));
     ui->pbVplus->setIcon(QIcon(":/resources/Vminus.png"));
+    ui->pbVplus->setIconSize(QSize(32, 32));
     // resize
     this->setBaseSize(1320, 845);
     QList<QDockWidget*> docks;
@@ -85,59 +89,6 @@ MainWindow::~MainWindow() { delete ui; }
 
 
 
-void MainWindow::changeTheme(int index)
-{
-    QFile qss;
-    switch (index)
-    {
-    case 0:
-        qss.setFileName(":/res/theme/origin.qss");
-        qss.open(QFile::ReadOnly);
-        qApp->setStyleSheet(qss.readAll());
-        qss.close();
-        //ui->statusBar->showMessage(tr("Origin Theme"), 2000);
-        break;
-    case 1:
-        qss.setFileName(":/res/theme/light.qss");
-        qss.open(QFile::ReadOnly);
-        qApp->setStyleSheet(qss.readAll());
-        qss.close();
-        //ui->statusBar->showMessage(tr("Light Theme"), 2000);
-        break;
-    case 2:
-        qss.setFileName(":/res/theme/dark.qss");
-        qss.open(QFile::ReadOnly);
-        qApp->setStyleSheet(qss.readAll());
-        qss.close();
-        //ui->statusBar->showMessage(tr("Dark Theme"), 2000);
-        break;
-    }
-}
-
-void MainWindow::changeLanguage(int index)
-
-{
-    switch (index)
-    {
-    case 0:
-        if (translator != nullptr)
-        {
-            qApp->removeTranslator(translator);
-            ui->retranslateUi(this);
-        }
-        break;
-    case 1:
-        if (translator == nullptr)
-        {
-            translator = new QTranslator;
-            translator->load(":/res/trans/zh_CN.qm");
-        }
-        qApp->installTranslator(translator);
-        ui->retranslateUi(this);
-        break;
-    }
-}
-
 
 void MainWindow::moveEvent(QMoveEvent* event)
 {
@@ -167,6 +118,23 @@ void MainWindow::on_action3DCurves_triggered()
 void MainWindow::on_actionNew_triggered()
 {
 
+}
+
+void MainWindow::on_actionLight_triggered()
+{
+    QFile qss;
+    qss.setFileName(":/resources/qss/dark_style_sheet/qdarkstyle/lightstyle.qss");
+    qss.open(QFile::ReadOnly);
+    qApp->setStyleSheet(qss.readAll());
+    qss.close();
+}
+void MainWindow::on_actionDark_triggered()
+{
+    QFile qss;
+    qss.setFileName(":/resources/qss/dark_style_sheet/qdarkstyle/style.qss");
+    qss.open(QFile::ReadOnly);
+    qApp->setStyleSheet(qss.readAll());
+    qss.close();
 }
 void MainWindow::on_actionOpen_triggered()
 {
@@ -208,5 +176,28 @@ void MainWindow::on_actionOpen_triggered()
 }
 void MainWindow::on_actionSave_triggered()
 {
+    tiny_ies<double>::light light =
+        IESLoader::instance().light;
+    // static bool write_ies(const std::string& filename, const light& ies, const uint32_t precision = std::numeric_limits<T>::max_digits10) 
+    std::string newFile = "D:/test.ies";
 
+
+    tiny_ies<double>::write_ies(newFile,light);
+}
+
+void MainWindow::on_actionSave_As_triggered()
+{
+    auto filepath = QFileDialog::getSaveFileName(
+        this, tr("Save IES"), "", tr("Ies File(*.ies);;All Files(*)"));
+    if (filepath.isEmpty()) {
+        return;
+    }
+    tiny_ies<double>::light light =
+        IESLoader::instance().light;
+    tiny_ies<double>::write_ies(filepath.toStdString(), light);
+}
+
+void MainWindow::on_actionExit_triggered()
+{
+    close();
 }

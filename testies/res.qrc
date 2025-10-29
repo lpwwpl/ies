@@ -19,5 +19,7 @@
         <file>resources/save.png</file>
         <file>resources/Vadd.png</file>
         <file>resources/Vminus.png</file>
+        <file>resources/qss/dark_style_sheet/qdarkstyle/style.qss</file>
+        <file>resources/qss/light_style_sheet/qlightstyle/lightstyle.qss</file>
     </qresource>
 </RCC>

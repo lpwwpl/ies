@@ -139,6 +139,8 @@
   </ItemGroup>
   <ItemGroup>
     <QtRcc Include="res.qrc" />
+    <QtRcc Include="resources\qss\dark_style_sheet\qdarkstyle\style.qrc" />
+    <QtRcc Include="resources\qss\light_style_sheet\qlightstyle\lightstyle.qrc" />
   </ItemGroup>
   <ItemGroup>
     <QtUic Include="isoluxdialog.ui" />

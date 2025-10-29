@@ -25,9 +25,6 @@ public:
     MainWindow(QWidget* parent = nullptr);
     ~MainWindow();
 
-    void changeTheme(int);
-    void changeLanguage(int);
-
     template <class T>
     void createLeftDock(const QString& label)
     {
@@ -54,6 +51,10 @@ public Q_SLOTS:
     void on_actionNew_triggered();
     void on_actionOpen_triggered();
     void on_actionSave_triggered();
+    void on_actionLight_triggered();
+    void on_actionDark_triggered();
+    void on_actionSave_As_triggered();
+    void on_actionExit_triggered();
 
 protected:
     void moveEvent(QMoveEvent* event);

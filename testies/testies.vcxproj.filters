@@ -101,6 +101,12 @@
     <QtRcc Include="res.qrc">
       <Filter>Resource Files</Filter>
     </QtRcc>
+    <QtRcc Include="resources\qss\dark_style_sheet\qdarkstyle\style.qrc">
+      <Filter>Resource Files</Filter>
+    </QtRcc>
+    <QtRcc Include="resources\qss\light_style_sheet\qlightstyle\lightstyle.qrc">
+      <Filter>Resource Files</Filter>
+    </QtRcc>
   </ItemGroup>
   <ItemGroup>
     <QtUic Include="mainwindow.ui">
