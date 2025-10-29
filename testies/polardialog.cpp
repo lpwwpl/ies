@@ -12,6 +12,16 @@ PolarDialog::PolarDialog(QWidget *parent)
      QHBoxLayout* hLayout = new QHBoxLayout();
      ui->widgetPolar->setLayout(hLayout);
      hLayout->addWidget(m_polarWidget);
+
+     Qt::WindowFlags flags = Qt::Dialog;
+
+     // 添加最大化和最小化按钮
+     flags |= Qt::WindowMinMaxButtonsHint;
+
+     // 添加关闭按钮
+     flags |= Qt::WindowCloseButtonHint;
+
+     setWindowFlags(flags);
 }
 
 PolarDialog::~PolarDialog()

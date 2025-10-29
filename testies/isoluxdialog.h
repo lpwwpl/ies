@@ -150,9 +150,12 @@ public Q_SLOTS:
     void on_cmbPlane_currentIndexChanged(int);
     void on_spinLevels_valueChanged(int);
     void on_chkGrid_stateChanged(int);
+    void on_rbUnit0_toggled();
+    void on_rbUnit1_toggled();
 private:
     Ui::ISOLuxDialog*ui;
 
+    double m_m2feet;
     IESIsoWidget* m_isoWidget;
     ISOLuxPlot* m_3dplot;
 };

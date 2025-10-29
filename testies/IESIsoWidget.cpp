@@ -353,7 +353,16 @@ void IESIsoWidget::updateColorMapData()
 
     m_colorMap = new QCPColorMap(xAxis, yAxis);
     m_colorMap->setColorScale(m_colorScale);
-    m_colorMap->setGradient(QCPColorGradient::gpJet);
+    //m_colorMap->setGradient(QCPColorGradient::gpJet);
+    QCPColorGradient gradient;
+    gradient.setColorStopAt(0, QColor(0, 0, 255));     // 蓝色
+    gradient.setColorStopAt(0.25, QColor(0, 255, 255)); // 青色
+    gradient.setColorStopAt(0.5, QColor(0, 255, 0));   // 绿色
+    gradient.setColorStopAt(0.75, QColor(255, 255, 0)); // 黄色
+    gradient.setColorStopAt(1, QColor(255, 0, 0));     // 红色
+
+    m_colorMap->setGradient(gradient);
+
     m_colorMap->setInterpolate(true);
 
 

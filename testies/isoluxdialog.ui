@@ -254,7 +254,7 @@
           </widget>
          </item>
          <item row="0" column="2">
-          <widget class="QLabel" name="label_2">
+          <widget class="QLabel" name="lbDistance">
            <property name="sizePolicy">
             <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
              <horstretch>0</horstretch>
@@ -302,7 +302,7 @@
           </widget>
          </item>
          <item row="1" column="2">
-          <widget class="QLabel" name="label_6">
+          <widget class="QLabel" name="lbHalfmap">
            <property name="sizePolicy">
             <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
              <horstretch>0</horstretch>

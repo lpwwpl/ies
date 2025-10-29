@@ -72,6 +72,7 @@ ISOLuxPlot::ISOLuxPlot()/*:vtx(nullptr),itx(nullptr)*/
     gridSpacing = 0.1;
     calculationWidth = 20;
     m_size = 25;
+    
 
     contourFilter = vtkSmartPointer<vtkContourFilter>::New();
     contourFilter->SetInputData(m_polyData);
@@ -233,6 +234,13 @@ ISOLuxDialog::ISOLuxDialog(QWidget *parent)
 
 
     ui->spinLevels->setFocusPolicy(Qt::NoFocus);
+    Qt::WindowFlags flags = Qt::Dialog;
+    // 添加最大化和最小化按钮
+    flags |= Qt::WindowMinMaxButtonsHint;
+    // 添加关闭按钮
+    flags |= Qt::WindowCloseButtonHint;
+    setWindowFlags(flags);
+    m_m2feet = 3.2808399;
 }
 
 void ISOLuxDialog::on_spinHalfMapWidth_valueChanged(int)
@@ -309,6 +317,59 @@ void ISOLuxDialog::on_cmbPlane_currentIndexChanged(int plane)
         break;
     }
     return;
+}
+void ISOLuxDialog::on_rbUnit0_toggled()
+{
+    bool isToggled = ui->rbUnit0->isChecked();
+    if (isToggled)
+    {
+
+    }
+}
+void ISOLuxDialog::on_rbUnit1_toggled()
+{
+    bool isToggled = ui->rbUnit1->isChecked();
+    double distance = ui->spinDistance->value();
+
+    double halfmap = ui->spinHalfMapWidth->value();
+    if (isToggled)
+    {
+        int feet_distance = floor(distance * m_m2feet);
+        int feet_halfmap = ceil(halfmap * m_m2feet);
+
+        ui->spinDistance->blockSignals(true);
+        ui->spinHalfMapWidth->blockSignals(true);
+
+        ui->spinDistance->setValue(feet_distance);
+        ui->spinHalfMapWidth->setValue(feet_halfmap);
+
+        ui->spinDistance->blockSignals(false);
+        ui->spinHalfMapWidth->blockSignals(false);
+
+        updateIES();
+
+        ui->lbDistance->setText("ft");
+        ui->lbHalfmap->setText("ft");
+    }
+    else
+    {
+        int feet_distance = ceil(distance / m_m2feet);
+        int feet_halfmap = floor(halfmap / m_m2feet);
+
+        ui->spinDistance->blockSignals(true);
+        ui->spinHalfMapWidth->blockSignals(true);
+
+        ui->spinDistance->setValue(feet_distance);
+        ui->spinHalfMapWidth->setValue(feet_halfmap);
+
+        ui->spinDistance->blockSignals(false);
+        ui->spinHalfMapWidth->blockSignals(false);
+
+        updateIES();
+
+        ui->lbDistance->setText("m");
+        ui->lbHalfmap->setText("m");
+    }
 }
 void ISOLuxDialog::on_rb2D_toggled()
 { 
