@@ -227,6 +227,8 @@ void IESIsoWidget::calculateXZPlaneIlluminance()
     maxIlluminance = 0;
     minIlluminance = 1e9;
 
+    gridSpacing = calculationWidth / m_numOfPoints;
+
     double halfRange = calculationWidth / 2.0;
     int gridSize = calculationWidth / gridSpacing;
 
@@ -259,6 +261,8 @@ void IESIsoWidget::calculateYZPlaneIlluminance()
     illuminanceGriddata.clear();
     maxIlluminance = 0;
     minIlluminance = 1e9;
+
+    gridSpacing = calculationWidth / m_numOfPoints;
 
     double halfRange = calculationWidth / 2.0;
     int gridSize = calculationWidth / gridSpacing;
@@ -320,6 +324,8 @@ void IESIsoWidget::calculateXYPlaneIlluminance()
     maxIlluminance = 0;
     minIlluminance = 1e9;
 
+    gridSpacing = calculationWidth / m_numOfPoints;
+
     double halfWidth = calculationWidth / 2.0;
     int gridSize = calculationWidth / gridSpacing;
 
@@ -362,9 +368,9 @@ void IESIsoWidget::updateColorMapData()
     gradient.setColorStopAt(1, QColor(255, 0, 0));     // ºìÉ«
 
     m_colorMap->setGradient(gradient);
-
     m_colorMap->setInterpolate(true);
 
+    gridSpacing = calculationWidth / m_numOfPoints;
 
     double halfRange = calculationWidth / 2.0;
     int gridSize = calculationWidth / gridSpacing;

@@ -191,7 +191,8 @@ struct tiny_ies {
             max_vertical_angle{},
             min_horizontal_angle{},
             max_horizontal_angle{},
-            max_candela{}, m_IESType{}
+            max_candela{}, m_IESType{},
+            header{}
         {
         }
 
@@ -237,6 +238,7 @@ struct tiny_ies {
         std::vector<T> candela;
         std::vector<std::vector<T>> candela_hv;
         T max_candela;
+        std::string header;
     };
 
     static bool load_ies(const std::string& file, std::string& err_out, std::string& warn_out, light& ies_out) {
@@ -258,9 +260,16 @@ struct tiny_ies {
                 warn_out = "First line did not start with IESNA " + file;
             }
         }
+    
         // read properties
         while (f.good() && std::getline(f, line)) {
-            if (read_property("TILT=", line, ies_out.tilt)) break;
+
+            if (read_property("TILT=", line, ies_out.tilt))
+            {        
+                break;
+            }
+            ies_out.header += line;
+            ies_out.header += "\n";
             read_property(line, ies_out.properties);
         }
         if (ies_out.tilt.empty()) {

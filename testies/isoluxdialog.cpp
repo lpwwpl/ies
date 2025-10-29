@@ -234,6 +234,7 @@ ISOLuxDialog::ISOLuxDialog(QWidget *parent)
 
 
     ui->spinLevels->setFocusPolicy(Qt::NoFocus);
+    ui->spinNbOfPoints->setFocusPolicy(Qt::NoFocus);
     Qt::WindowFlags flags = Qt::Dialog;
     // 添加最大化和最小化按钮
     flags |= Qt::WindowMinMaxButtonsHint;
@@ -255,7 +256,10 @@ void ISOLuxDialog::on_spinDistance_valueChanged(int)
 {
     updateIES();
 }
-
+void ISOLuxDialog::on_spinNbOfPoints_valueChanged(int)
+{
+    updateIES();
+}
 void ISOLuxDialog::on_chkGrid_stateChanged(int value)
 {
     m_isoWidget->m_bUseGrid = value;
@@ -274,10 +278,12 @@ void ISOLuxDialog::on_cmbPlane_currentIndexChanged(int plane)
         if (is2D)
         {
             m_isoWidget->m_levelSize = ui->spinLevels->value();
+            m_isoWidget->m_numOfPoints = ui->spinNbOfPoints->value();
             m_isoWidget->updateIESYZ(distance,halfMap);
         }
         else
         {
+            m_3dplot->m_numOfPoints = ui->spinNbOfPoints->value();
             m_3dplot->m_levelSize = ui->spinLevels->value();
             m_3dplot->updateIESYZ(distance,halfMap);
         }
@@ -289,11 +295,13 @@ void ISOLuxDialog::on_cmbPlane_currentIndexChanged(int plane)
         if (is2D)
         {
             m_isoWidget->m_levelSize = ui->spinLevels->value();
+            m_isoWidget->m_numOfPoints = ui->spinNbOfPoints->value();
             m_isoWidget->updateIESXZ(distance, halfMap);
         }
         else
         {
             m_3dplot->m_levelSize = ui->spinLevels->value();
+            m_isoWidget->m_numOfPoints = ui->spinNbOfPoints->value();
             m_3dplot->updateIESXZ(distance, halfMap);
         }
     }
@@ -304,11 +312,13 @@ void ISOLuxDialog::on_cmbPlane_currentIndexChanged(int plane)
         {
 
             m_isoWidget->m_levelSize = ui->spinLevels->value();
+            m_isoWidget->m_numOfPoints = ui->spinNbOfPoints->value();
             m_isoWidget->updateIESXY(distance, halfMap);
         }
         else
         {
             m_3dplot->m_levelSize = ui->spinLevels->value();
+            m_isoWidget->m_numOfPoints = ui->spinNbOfPoints->value();
             m_3dplot->updateIESXY(distance, halfMap);
         }
     }
@@ -404,6 +414,7 @@ void ISOLuxPlot::updateIESXY(double distance, double halfmap)
     maxIlluminance = 0;
     minIlluminance = 1e9;
     calculationWidth = halfmap * 2;
+    gridSpacing = calculationWidth / m_numOfPoints;
     double halfWidth = calculationWidth / 2.0;
     int gridSize = calculationWidth / gridSpacing;
 
@@ -514,6 +525,7 @@ void ISOLuxPlot::updateIESYZ(double distance, double halfmap)
     maxIlluminance = 0;
     minIlluminance = 1e9;
     calculationWidth = halfmap * 2;
+    gridSpacing = calculationWidth / m_numOfPoints;
     double halfWidth = calculationWidth / 2.0;
     int gridSize = calculationWidth / gridSpacing;
 
@@ -827,6 +839,7 @@ void ISOLuxPlot::updateIESXZ(double distance, double halfmap)
     double maxIntensity = IESLoader::instance().light.max_candela;
     maxIlluminance = 0;
     minIlluminance = 1e9;
+    gridSpacing = calculationWidth / m_numOfPoints;
     calculationWidth = halfmap * 2;
     double halfWidth = calculationWidth / 2.0;
     int gridSize = calculationWidth / gridSpacing;

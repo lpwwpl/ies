@@ -77,7 +77,7 @@ public:
     bool m_bUseGrid;
     double maxIlluminance;
     double minIlluminance;
-
+    int m_numOfPoints;
 
     void setAxisVisibility(bool visible);
     void setGridVisibility(bool visible);
@@ -152,6 +152,7 @@ public Q_SLOTS:
     void on_chkGrid_stateChanged(int);
     void on_rbUnit0_toggled();
     void on_rbUnit1_toggled();
+    void on_spinNbOfPoints_valueChanged(int);
 private:
     Ui::ISOLuxDialog*ui;
 

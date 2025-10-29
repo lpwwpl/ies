@@ -70,9 +70,6 @@
     <ClInclude Include="contours.h">
       <Filter>widgets</Filter>
     </ClInclude>
-    <ClInclude Include="IESPolarWidget.h">
-      <Filter>widgets</Filter>
-    </ClInclude>
     <ClInclude Include="IESIsoWidget.h">
       <Filter>widgets</Filter>
     </ClInclude>
@@ -94,6 +91,9 @@
       <Filter>Header Files</Filter>
     </QtMoc>
     <QtMoc Include="IESglwidget.h">
+      <Filter>widgets</Filter>
+    </QtMoc>
+    <QtMoc Include="IESPolarWidget.h">
       <Filter>widgets</Filter>
     </QtMoc>
   </ItemGroup>

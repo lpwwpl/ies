@@ -59,17 +59,26 @@ MainWindow::MainWindow(QWidget* parent)
     Q_INIT_RESOURCE(res);
 
   
-    //setCentralWidget(vtkView);
-   
+    ui->leNumberOf->setText(QString::number(1));
+    ui->leLumenPer->setText(QString::number(5000));
+    ui->leCandela->setText(QString::number(1));
+    ui->leWatts->setText(QString::number(1000));
+    ui->leBallast->setText(QString::number(1));
+    ui->leFutur->setText(QString::number(1));
 
+    ui->lblTypeA->setEnabled(false);
+    ui->lblTypeB->setEnabled(false);
 
-    //connect(ui->actionOpen, &QAction::triggered, ui->cloudtree, &ct::CloudTree::addIES);
-    //connect(ui->cloudtree, &ct::CloudTree::loadIES, vtkView, &ct::VtkView::VisualizeIES);
-    //connect(ui->cloudtree, &ct::CloudTree::loadIES, this, &MainWindow::VisualizeIES);
-    //connect(ui->cloudtree, &ct::CloudTree::loadIES, glWidget, &GLWidget::VisualizeIES);
-    ////connect(ui->cloudtree, &ct::CloudTree::loadIES, ui->cloudview, &ct::CloudView::VisualizeIES);
+    ui->leWidth->setText(QString::number(0));
+    ui->leLen->setText(QString::number(0));
+    ui->leHeight->setText(QString::number(0));
 
-  
+    ui->rb4->setChecked(true);
+    ui->rbV1->setChecked(true);
+    ui->rbFeet->setChecked(true);
+
+    ui->rbV0->setCheckable(false);
+    ui->rbV2->setCheckable(false);
 }
 
 MainWindow::~MainWindow() { delete ui; }
@@ -169,6 +178,33 @@ void MainWindow::on_actionOpen_triggered()
         return;
     IESLoader::instance().loadIES(filename);
 
+
+    ui->textEdit->setText(QString::fromStdString(IESLoader::instance().light.header));
+    ui->leNumberOf->setText(QString::number(IESLoader::instance().light.number_lights));
+    ui->leLumenPer->setText(QString::number(IESLoader::instance().light.lumens_per_lamp));
+    //ui->leCandela->setText(QString::number(IESLoader::instance().light.num));
+    ui->leWatts->setText(QString::number(IESLoader::instance().light.input_watts));
+    ui->leBallast->setText(QString::number(IESLoader::instance().light.ballast_factor));
+    ui->leFutur->setText(QString::number(IESLoader::instance().light.future_use));
+
+    ui->leWidth->setText(QString::number(IESLoader::instance().light.width));
+    ui->leLen->setText(QString::number(IESLoader::instance().light.length));
+    ui->leHeight->setText(QString::number(IESLoader::instance().light.height));
+
+    ui->lblTypeA->setEnabled(false);
+    ui->lblTypeB->setEnabled(false);
+
+    ui->rb1->setChecked(true);
+    ui->rbV1->setChecked(true);
+    ui->rbFeet->setChecked(true);
+
+    ui->rb0->setEnabled(false);
+    ui->rb2->setEnabled(false);
+    ui->rb3->setEnabled(false);
+    ui->rb4->setEnabled(false);
+
+    ui->rbV0->setCheckable(false);
+    ui->rbV2->setCheckable(false);
 }
 void MainWindow::on_actionSave_triggered()
 {

@@ -131,7 +131,7 @@
     <ClInclude Include="IESIsoWidget.h" />
     <QtMoc Include="mainwindow.h" />
     <ClInclude Include="IESLoader.h" />
-    <ClInclude Include="IESPolarWidget.h" />
+    <QtMoc Include="IESPolarWidget.h" />
     <QtMoc Include="isoluxdialog.h" />
     <QtMoc Include="polardialog.h" />
     <QtMoc Include="threeDdialog.h" />

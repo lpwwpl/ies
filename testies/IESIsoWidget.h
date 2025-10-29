@@ -68,6 +68,7 @@ public:
 	double fixtureZ;
 	int m_levelSize;
 	bool m_bUseGrid;
+	int m_numOfPoints;
 	// ÑÕÉ«·½°¸
 	std::vector<ColorScheme> colorSchemes;
 };

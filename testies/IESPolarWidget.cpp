@@ -35,26 +35,35 @@ void IESPolarWidget::Init()
     angularAxis->grid()->setVisible(true);
     angularAxis->setTicks(true);
    
-   
+    addLayer("background", nullptr, QCustomPlot::limBelow);
+    addLayer("foreground", nullptr, QCustomPlot::limAbove);
+
+
     radialAxis->setLabel(tr("径向轴 (r)"));
     radialAxis->setAngle(0);
 
     radialAxis->setSubTicks(false);
     radialAxis->setTickLabelFont(font);
     graph0_180 = new QCPPolarGraph(angularAxis, radialAxis);
+    graph0_180->setLayer("foreground");
 
     // 8. 设置图形样式 (可选)
     graph0_180->setLineStyle(QCPPolarGraph::lsLine); // 线型
     graph0_180->setScatterStyle(QCPScatterStyle::ssDot); // 散点样式
-    graph0_180->setPen(QPen(Qt::blue, 1)); // 线宽和颜色
-    graph0_180->setBrush(QBrush(QColor(0, 0, 250, 150)));
+    graph0_180->setPen(QPen(Qt::blue, 2)); // 线宽和颜色
+    //graph0_180->setBrush(QBrush(QColor(0, 0, 250, 150)));
 
     graph90_270 = new QCPPolarGraph(angularAxis, radialAxis);
+    graph90_270->setLayer("background");
     // 8. 设置图形样式 (可选)
     graph90_270->setLineStyle(QCPPolarGraph::lsLine); // 线型
     graph90_270->setScatterStyle(QCPScatterStyle::ssDot); // 散点样式
-    graph90_270->setPen(QPen(Qt::blue, 1)); // 线宽和颜色
-    graph90_270->setBrush(QBrush(QColor(0, 0, 250, 150)));
+    graph90_270->setPen(QPen(Qt::red, 2)); // 线宽和颜色
+    //graph90_270->setBrush(QBrush(QColor(255, 0, 0, 150)));
+
+
+
+    moveLayer(layer("foreground"), layer("background"));
 }
 
 
@@ -78,9 +87,9 @@ void IESPolarWidget::updateIES()
         angles0_180.append(point.x());
         values0_180.append(point.y());
     }
-    graph0_180->setBrush(Qt::NoBrush);
+    //graph0_180->setBrush(Qt::NoBrush);
     graph0_180->setData(angles0_180, values0_180);
-    graph0_180->setPen(QPen(Qt::red, 2));
+    //graph0_180->setPen(QPen(Qt::red, 2));
     graph0_180->setName("C0° - C180°");
 
     //// 创建90-270°曲线
@@ -89,9 +98,9 @@ void IESPolarWidget::updateIES()
         angles90_270.append(point.x());
         values90_270.append(point.y());
     }
-    graph90_270->setBrush(Qt::NoBrush);
+    //graph90_270->setBrush(Qt::NoBrush);
     graph90_270->setData(angles90_270, values90_270);
-    graph90_270->setPen(QPen(Qt::blue, 2));
+    //graph90_270->setPen(QPen(Qt::blue, 2));
     graph90_270->setName("C90° - C270°");
 
 
@@ -144,3 +153,90 @@ std::vector<QPointF> IESPolarWidget::generateC90C270Profile() {
 }
 
 
+void IESPolarWidget::on_chkFillBlue_stateChanged(int value)
+{
+   
+    if (value)
+    {
+        graph0_180->setBrush(QBrush(QColor(0, 0, 255, 80)));
+    }
+    else
+    {
+        graph0_180->setBrush(Qt::NoBrush);
+    }   
+    graph0_180->setPen(QPen(Qt::blue, 2)); // 线宽和颜色
+    replot();
+}
+void IESPolarWidget::on_chkFillRed_stateChanged(int value)
+{
+    
+    if (value)
+    {
+        graph90_270->setBrush(QBrush(QColor(255, 0, 0, 80)));
+    }
+    else
+    {
+        graph90_270->setBrush(Qt::NoBrush);
+    }
+    graph90_270->setPen(QPen(Qt::red, 2)); // 线宽和颜色
+    replot();
+}
+void IESPolarWidget::on_chkViewRed_stateChanged(int value)
+{
+    
+    if (value)
+    {
+        graph90_270->setVisible(true);
+    }
+    else
+    {
+        graph90_270->setVisible(false);
+    }
+
+    replot();
+}
+
+void IESPolarWidget::on_chkFillGreen_stateChanged(int value)
+{
+   
+    if (value)
+    {
+        graph0_180->setBrush(QBrush(QColor(0, 255, 0, 80)));
+    }
+    else
+    {
+        graph0_180->setBrush(Qt::NoBrush);
+    }
+    graph0_180->setPen(QPen(Qt::green, 2)); // 线宽和颜色
+    replot();
+}
+
+void IESPolarWidget::on_chkFillYellow_stateChanged(int value)
+{
+   
+    if (value)
+    {
+        graph90_270->setBrush(QBrush(QColor(190, 190, 71,80)));
+    }
+    else
+    {
+        graph90_270->setBrush(Qt::NoBrush);
+    }
+    graph90_270->setPen(QPen(QColor(190, 190, 71), 2)); // 线宽和颜色
+    replot();
+}
+
+void IESPolarWidget::on_chkViewYellow_stateChanged(int value)
+{
+    if (value)
+    {
+        graph90_270->setVisible(true);
+    }
+    else
+    {
+        graph90_270->setVisible(false);
+    }
+
+
+    replot();
+}
