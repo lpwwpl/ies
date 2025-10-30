@@ -128,19 +128,63 @@ MainWindow::MainWindow(QWidget* parent)
     // 当编辑器完成编辑时，更新表头并删除编辑器
     connect(m_heditor, &QLineEdit::editingFinished, this, &MainWindow::slot_heditor);
     connect(m_veditor, &QLineEdit::editingFinished, this, &MainWindow::slot_veditor);
+
+    sortAction = new QAction("Sort", this);
+    connect(sortAction, &QAction::triggered, this, &MainWindow::sortTable);
+
+    autoSortEnabled = (false);
+    autoSortAction = new QAction("Auto-Sort Enabled", this);
+    autoSortAction->setCheckable(true);
+    autoSortAction->setChecked(autoSortEnabled);
+    connect(autoSortAction, &QAction::toggled, this, &MainWindow::enableAutoSort);
+
+    ui->tableWidget->setContextMenuPolicy(Qt::CustomContextMenu);
+    connect(ui->tableWidget, &QTableWidget::customContextMenuRequested,
+        this, &MainWindow::showContextMenu);
+
+    m_editor_focusOut = false;
 }
 
 MainWindow::~MainWindow() { delete ui; }
 
 void MainWindow::slot_heditor()
 {    
-    ui->tableWidget->setHorizontalHeaderItem(logicalIndex, new QTableWidgetItem(m_heditor->text()));
-    //m_heditor->deleteLater();
+    if (m_editor_focusOut)return;
+
+    if (m_heditor->text().isEmpty())
+    {
+        ui->tableWidget->setHorizontalHeaderItem(logicalIndex, new QTableWidgetItem(m_editor_old_value));
+    }
+    else
+    {
+        ui->tableWidget->setHorizontalHeaderItem(logicalIndex, new QTableWidgetItem(m_heditor->text()));
+    }
+    m_heditor->clearFocus();
+    m_heditor->close();
+    if (autoSortEnabled) {
+        sortHorizontalAngles();
+    }
+    m_editor_focusOut = true;
 }
 void MainWindow::slot_veditor()
 {
-    ui->tableWidget->setVerticalHeaderItem(logicalIndex, new QTableWidgetItem(m_veditor->text()));
-    //m_veditor->deleteLater();
+    if (m_editor_focusOut)return;
+
+    if (m_heditor->text().isEmpty())
+    {
+        ui->tableWidget->setVerticalHeaderItem(logicalIndex, new QTableWidgetItem(m_editor_old_value));
+    }
+    else
+    {
+        ui->tableWidget->setVerticalHeaderItem(logicalIndex, new QTableWidgetItem(m_veditor->text()));
+    }
+    m_veditor->clearFocus();
+    m_veditor->close();
+    if (autoSortEnabled) {
+        //sortHorizontalAngles();
+        sortVerticalAngles();
+    }
+    m_editor_focusOut = true;
 }
 void MainWindow::setupHeaderEditing()
 {
@@ -158,7 +202,9 @@ bool MainWindow::eventFilter(QObject* obj, QEvent* event)
     {
         if (event->type() == QEvent::FocusOut) {
             // 失去焦点，直接关闭编辑器，不更新（视为取消）
-            m_heditor->close();
+            m_editor_focusOut = false;
+            slot_heditor();
+ 
             return true;
         }
     }
@@ -166,11 +212,13 @@ bool MainWindow::eventFilter(QObject* obj, QEvent* event)
     {
         if (event->type() == QEvent::FocusOut) {
             // 失去焦点，直接关闭编辑器，不更新（视为取消）
-            m_veditor->close();
+            m_editor_focusOut = false;
+            slot_veditor();  
+
             return true;
         }
     }
-    if (obj == ui->tableWidget->horizontalHeader()->viewport()) {
+    else if (obj == ui->tableWidget->horizontalHeader()->viewport()) {
         if (event->type() == QEvent::MouseButtonDblClick) {
             QMouseEvent* mouseEvent = static_cast<QMouseEvent*>(event);
             logicalIndex = ui->tableWidget->horizontalHeader()->logicalIndexAt(mouseEvent->pos());
@@ -178,6 +226,8 @@ bool MainWindow::eventFilter(QObject* obj, QEvent* event)
                 m_heditor->setGeometry(ui->tableWidget->horizontalHeader()->sectionViewportPosition(logicalIndex), 0,
                     ui->tableWidget->horizontalHeader()->sectionSize(logicalIndex), ui->tableWidget->horizontalHeader()->height());
                 m_heditor->setText(ui->tableWidget->horizontalHeaderItem(logicalIndex)->text());
+                m_editor_focusOut = false;
+                m_editor_old_value = ui->tableWidget->horizontalHeaderItem(logicalIndex)->text();
                 m_heditor->selectAll();
                 m_heditor->show();
                 m_heditor->setFocus();
@@ -195,6 +245,8 @@ bool MainWindow::eventFilter(QObject* obj, QEvent* event)
                 m_veditor->setGeometry( 0, ui->tableWidget->verticalHeader()->sectionViewportPosition(logicalIndex),
                     ui->tableWidget->verticalHeader()->width(), ui->tableWidget->verticalHeader()->sectionSize(logicalIndex));
                 m_veditor->setText(ui->tableWidget->verticalHeaderItem(logicalIndex)->text());
+                m_editor_focusOut = false;
+                m_editor_old_value = ui->tableWidget->verticalHeaderItem(logicalIndex)->text();
                 m_veditor->selectAll();
                 m_veditor->show();
                 m_veditor->setFocus();
@@ -257,6 +309,10 @@ void MainWindow::addRow()
         ui->tableWidget->setItem(currentRow, col, item);
     }
 
+    //if (autoSortEnabled) {
+    //    sortTableByHorizontalAngle();
+    //    sortTableByVerticalAngle();
+    //}
 }
 
 void MainWindow::deleteRow()
@@ -267,14 +323,14 @@ void MainWindow::deleteRow()
         return;
     }
 
-    QMessageBox::StandardButton reply = QMessageBox::question(
-        this, "Delete Row", "Are you sure you want to delete the selected row?",
-        QMessageBox::Yes | QMessageBox::No);
+    //QMessageBox::StandardButton reply = QMessageBox::question(
+    //    this, "Delete Row", "Are you sure you want to delete the selected row?",
+    //    QMessageBox::Yes | QMessageBox::No);
 
-    if (reply == QMessageBox::Yes) {
-        ui->tableWidget->removeRow(currentRow);
-    }
-
+    //if (reply == QMessageBox::Yes) {
+    //    ui->tableWidget->removeRow(currentRow);
+    //}
+    ui->tableWidget->removeRow(currentRow);
 }
 
 void MainWindow::addColumn()
@@ -325,13 +381,14 @@ void MainWindow::deleteColumn()
         return;
     }
 
-    QMessageBox::StandardButton reply = QMessageBox::question(
-        this, "Delete Column", "Are you sure you want to delete the selected column?",
-        QMessageBox::Yes | QMessageBox::No);
+    //QMessageBox::StandardButton reply = QMessageBox::question(
+    //    this, "Delete Column", "Are you sure you want to delete the selected column?",
+    //    QMessageBox::Yes | QMessageBox::No);
 
-    if (reply == QMessageBox::Yes) {
-        ui->tableWidget->removeColumn(currentColumn);
-    }
+    //if (reply == QMessageBox::Yes) {
+    //    ui->tableWidget->removeColumn(currentColumn);
+    //}
+    ui->tableWidget->removeColumn(currentColumn);
 }
 void MainWindow::populateTableFromIESData()
 {
@@ -473,8 +530,19 @@ void MainWindow::on_actionSave_triggered()
     tiny_ies<double>::light light =
         IESLoader::instance().light;
     // static bool write_ies(const std::string& filename, const light& ies, const uint32_t precision = std::numeric_limits<T>::max_digits10) 
-   
-
+    sortTable(true);
+    light.candela_hv = getIntensityData();
+    light.horizontal_angles = getHorizontalAngles();
+    light.vertical_angles = getVerticalAngles();
+    light.number_horizontal_angles = light.horizontal_angles.size();
+    light.number_vertical_angles = light.vertical_angles.size();
+    light.candela.clear();
+    for (uint32_t i = 0; i < light.number_horizontal_angles; i++) {
+        for (uint32_t j = 0; j < light.number_vertical_angles; j++)
+        {
+            light.candela.push_back(light.candela_hv[j][i] / light.multiplier);
+        }
+    }
     QFile file(m_filePath);
     if (file.exists())
     {
@@ -494,8 +562,21 @@ void MainWindow::on_actionSave_As_triggered()
     if (filepath.isEmpty()) {
         return;
     }
+    sortTable(true);
     tiny_ies<double>::light light =
         IESLoader::instance().light;
+    light.candela_hv = getIntensityData();
+    light.horizontal_angles = getHorizontalAngles();
+    light.vertical_angles = getVerticalAngles();
+    light.number_horizontal_angles = light.horizontal_angles.size();
+    light.number_vertical_angles = light.vertical_angles.size();
+    light.candela.clear();
+    for (uint32_t i = 0; i < light.number_horizontal_angles; i++) {  
+        for (uint32_t j = 0; j < light.number_vertical_angles; j++)
+        {
+            light.candela.push_back(light.candela_hv[j][i] / light.multiplier);
+        }
+    }
     tiny_ies<double>::write_ies(filepath.toStdString(), light);
 }
 
@@ -506,4 +587,217 @@ void MainWindow::on_actionExit_triggered()
 
 
 
+std::vector<double> MainWindow::getHorizontalAngles() const
+{
+    std::vector<double> angles;
+    for (int col = 0; col < ui->tableWidget->columnCount(); col++) {
+        QTableWidgetItem* header = ui->tableWidget->horizontalHeaderItem(col);
+        if (header) {
+            bool ok;
+            double angle = header->text().toDouble(&ok);
+            if (ok) angles.push_back(angle);
+        }
+    }
+    return angles;
+}
 
+std::vector<double> MainWindow::getVerticalAngles() const
+{
+    std::vector<double> angles;
+    for (int row = 0; row < ui->tableWidget->rowCount(); row++) {
+        QTableWidgetItem* header = ui->tableWidget->verticalHeaderItem(row);
+        if (header) {
+            bool ok;
+            double angle = header->text().toDouble(&ok);
+            if (ok) angles.push_back(angle);
+        }
+    }
+    return angles;
+}
+
+std::vector<std::vector<double>> MainWindow::getIntensityData() const
+{
+    std::vector<std::vector<double>> data;
+    for (int row = 0; row < ui->tableWidget->rowCount(); row++) {
+        std::vector<double> rowData;
+        for (int col = 0; col < ui->tableWidget->columnCount(); col++) {
+            QTableWidgetItem* item = ui->tableWidget->item(row, col);
+            if (item) {
+                bool ok;
+                double value = item->text().toDouble(&ok);
+                if (ok) rowData.push_back(value);
+                else rowData.push_back(0.0);
+            }
+            else {
+                rowData.push_back(0.0);
+            }
+        }
+        data.push_back(rowData);
+    }
+    return data;
+}
+
+void MainWindow::sortTable(bool)
+{
+    sortHorizontalAngles();
+    sortVerticalAngles();
+}
+void MainWindow::enableAutoSort(bool enable)
+{
+    autoSortEnabled = enable;
+    autoSortAction->setChecked(enable);
+    if (enable) {
+        // 启用时立即排序
+        sortHorizontalAngles();
+        sortVerticalAngles();
+    }
+}
+
+
+void MainWindow::sortHorizontalAngles()
+{
+    // 获取当前水平角度
+    std::vector<double> horizontalAngles = getHorizontalAngles();
+
+    // 创建索引-角度对
+    std::vector<QPair<double, int>> angleIndexPairs;
+    for (int i = 0; i < horizontalAngles.size(); i++) {
+        angleIndexPairs.push_back(qMakePair(horizontalAngles[i], i));
+    }
+
+    // 按角度升序排序
+    std::sort(angleIndexPairs.begin(), angleIndexPairs.end());
+
+    // 创建新的列顺序
+    std::vector<int> newColumnOrder;
+    for (const auto& pair : angleIndexPairs) {
+        newColumnOrder.push_back(pair.second);
+    }
+
+    // 重新排列表格数据
+    rearrangeTableDataAfterHorizontalSort(newColumnOrder);
+}
+
+void MainWindow::rearrangeTableDataAfterHorizontalSort(const std::vector<int>& newColumnOrder)
+{
+    // 保存当前数据
+    std::vector<double> horizontalAngles = getHorizontalAngles();
+    std::vector<double> verticalAngles = getVerticalAngles();
+    std::vector<std::vector<double>> intensityData = getIntensityData();
+
+    // 创建新的水平角度和强度数据
+    std::vector<double> newHorizontalAngles(horizontalAngles.size());
+    std::vector<std::vector<double>> newIntensityData(verticalAngles.size());
+
+    for (int i = 0; i < verticalAngles.size(); i++) {
+        newIntensityData[i].resize(horizontalAngles.size());
+    }
+
+    // 按照新的列顺序重新排列数据
+    for (int newCol = 0; newCol < newColumnOrder.size(); newCol++) {
+        int oldCol = newColumnOrder[newCol];
+        newHorizontalAngles[newCol] = horizontalAngles[oldCol];
+
+        for (int row = 0; row < verticalAngles.size(); row++) {
+            newIntensityData[row][newCol] = intensityData[row][oldCol];
+        }
+    }
+
+    // 更新表格
+    setTableData(newHorizontalAngles, verticalAngles, newIntensityData);
+}
+
+void MainWindow::setTableData(const std::vector<double>& horizontalAngles,
+    const std::vector<double>& verticalAngles,
+    const std::vector<std::vector<double>>& intensityData)
+{
+    // 设置表格尺寸
+    ui->tableWidget->setRowCount(verticalAngles.size());
+    ui->tableWidget->setColumnCount(horizontalAngles.size());
+
+    // 设置水平表头
+    for (int col = 0; col < horizontalAngles.size(); col++) {
+        ui->tableWidget->setHorizontalHeaderItem(col,
+            new QTableWidgetItem(QString::number(horizontalAngles[col], 'f', 2)));
+    }
+
+    // 设置垂直表头
+    for (int row = 0; row < verticalAngles.size(); row++) {
+        ui->tableWidget->setVerticalHeaderItem(row,
+            new QTableWidgetItem(QString::number(verticalAngles[row], 'f', 2)));
+    }
+
+    // 填充强度数据
+    for (int row = 0; row < verticalAngles.size(); row++) {
+        for (int col = 0; col < horizontalAngles.size(); col++) {
+            QTableWidgetItem* item = ui->tableWidget->item(row, col);
+            if (!item) {
+                item = new QTableWidgetItem;
+                ui->tableWidget->setItem(row, col, item);
+            }
+            item->setText(QString::number(intensityData[row][col], 'f', 2));
+        }
+    }
+}
+
+void MainWindow::sortVerticalAngles()
+{
+    // 获取当前垂直角度
+    std::vector<double> verticalAngles = getVerticalAngles();
+
+    // 创建索引-角度对
+    std::vector<QPair<double, int>> angleIndexPairs;
+    for (int i = 0; i < verticalAngles.size(); i++) {
+        angleIndexPairs.push_back(qMakePair(verticalAngles[i], i));
+    }
+
+    // 按角度升序排序
+    std::sort(angleIndexPairs.begin(), angleIndexPairs.end());
+
+    // 创建新的行顺序
+    std::vector<int> newRowOrder;
+    for (const auto& pair : angleIndexPairs) {
+        newRowOrder.push_back(pair.second);
+    }
+
+    // 重新排列表格数据
+    rearrangeTableDataAfterVerticalSort(newRowOrder);
+}
+
+void MainWindow::rearrangeTableDataAfterVerticalSort(const std::vector<int>& newRowOrder)
+{
+    // 保存当前数据
+    std::vector<double> horizontalAngles = getHorizontalAngles();
+    std::vector<double> verticalAngles = getVerticalAngles();
+    std::vector<std::vector<double>> intensityData = getIntensityData();
+
+    // 创建新的垂直角度和强度数据
+    std::vector<double> newVerticalAngles(verticalAngles.size());
+    std::vector<std::vector<double>> newIntensityData(verticalAngles.size());
+
+    for (int i = 0; i < verticalAngles.size(); i++) {
+        newIntensityData[i].resize(horizontalAngles.size());
+    }
+
+    // 按照新的行顺序重新排列数据
+    for (int newRow = 0; newRow < newRowOrder.size(); newRow++) {
+        int oldRow = newRowOrder[newRow];
+        newVerticalAngles[newRow] = verticalAngles[oldRow];
+
+        for (int col = 0; col < horizontalAngles.size(); col++) {
+            newIntensityData[newRow][col] = intensityData[oldRow][col];
+        }
+    }
+
+    // 更新表格
+    setTableData(horizontalAngles, newVerticalAngles, newIntensityData);
+}
+
+void MainWindow::showContextMenu(const QPoint& pos)
+{
+    QMenu contextMenu("Context Menu", this);
+
+    contextMenu.addAction(autoSortAction);  
+    contextMenu.addAction(sortAction);
+    contextMenu.exec(ui->tableWidget->viewport()->mapToGlobal(pos));
+}

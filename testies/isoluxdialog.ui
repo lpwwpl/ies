@@ -195,6 +195,21 @@
           <string>Map along: Z</string>
          </property>
         </item>
+        <item>
+         <property name="text">
+          <string>Map along: -X</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Map along: -Y</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Map along: -Z</string>
+         </property>
+        </item>
        </widget>
       </item>
       <item row="0" column="0">

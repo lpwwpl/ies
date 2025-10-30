@@ -220,6 +220,111 @@ void IESIsoWidget::updatePlot()
     this->replot();
 }
 
+void IESIsoWidget::calculateXZ_PlaneIlluminance()
+{
+    illuminanceGrid.clear();
+    illuminanceGriddata.clear();
+    maxIlluminance = 0;
+    minIlluminance = 1e9;
+
+    gridSpacing = calculationWidth / m_numOfPoints;
+
+    double halfRange = calculationWidth / 2.0;
+    int gridSize = calculationWidth / gridSpacing;
+
+    for (int i = 0; i <= gridSize; ++i) {
+        std::vector<double> oneLine;
+        double x = -halfRange + i * gridSpacing;
+        for (int j = 0; j <= gridSize; ++j) {
+            double z = -halfRange + j * gridSpacing;
+            double y = 0;  // XY平面的固定高度
+
+            double illuminance = calculateIlluminanceAtPoint_(x, 0, z);
+
+            IlluminancePoint point;
+            point.x = x;
+            point.y = y;
+            point.z = z;
+            point.illuminance = illuminance;
+
+            illuminanceGrid.push_back(point);
+            oneLine.push_back(illuminance);
+            if (illuminance > maxIlluminance) maxIlluminance = illuminance;
+            if (illuminance < minIlluminance && illuminance > 0) minIlluminance = illuminance;
+        }
+        illuminanceGriddata.push_back(oneLine);
+    }
+
+}
+void IESIsoWidget::calculateYZ_PlaneIlluminance()
+{
+    illuminanceGrid.clear();
+    illuminanceGriddata.clear();
+    maxIlluminance = 0;
+    minIlluminance = 1e9;
+
+    gridSpacing = calculationWidth / m_numOfPoints;
+
+    double halfRange = calculationWidth / 2.0;
+    int gridSize = calculationWidth / gridSpacing;
+
+    for (int i = 0; i <= gridSize; ++i) {
+        std::vector<double> oneLine;
+        double y = -halfRange + i * gridSpacing;
+        for (int j = 0; j <= gridSize; ++j) {
+            double z = -halfRange + j * gridSpacing;
+            double x = 0;  // YZ平面的固定X位置
+
+            double illuminance = calculateIlluminanceAtPoint_(0, y, z);
+
+            IlluminancePoint point;
+            point.x = x;
+            point.y = y;
+            point.z = z;
+            point.illuminance = illuminance;
+
+            illuminanceGrid.push_back(point);
+            oneLine.push_back(illuminance);
+            if (illuminance > maxIlluminance) maxIlluminance = illuminance;
+            if (illuminance < minIlluminance && illuminance > 0) minIlluminance = illuminance;
+        }
+        illuminanceGriddata.push_back(oneLine);
+    }
+}
+void IESIsoWidget::calculateXY_PlaneIlluminance()
+{
+    illuminanceGrid.clear();
+    illuminanceGriddata.clear();
+    maxIlluminance = 0;
+    minIlluminance = 1e9;
+
+    gridSpacing = calculationWidth / m_numOfPoints;
+
+    double halfWidth = calculationWidth / 2.0;
+    int gridSize = calculationWidth / gridSpacing;
+
+
+    for (int i = 0; i <= gridSize; ++i) {
+        std::vector<double> oneLine;
+        double x = -halfWidth + i * gridSpacing;
+        for (int j = 0; j <= gridSize; ++j) {
+            double y = -halfWidth + j * gridSpacing;
+
+            double illuminance = calculateIlluminanceAtPoint_(x, y, 0);
+
+            IlluminancePoint point;
+            point.x = x;
+            point.y = y;
+            point.illuminance = illuminance;
+
+            illuminanceGrid.push_back(point);
+            oneLine.push_back(illuminance);
+            if (illuminance > maxIlluminance) maxIlluminance = illuminance;
+            if (illuminance < minIlluminance && illuminance > 0) minIlluminance = illuminance;
+        }
+        illuminanceGriddata.push_back(oneLine);
+    }
+}
 void IESIsoWidget::calculateXZPlaneIlluminance()
 {
     illuminanceGrid.clear();
@@ -239,7 +344,7 @@ void IESIsoWidget::calculateXZPlaneIlluminance()
             double z = -halfRange + j * gridSpacing;
             double y = 0;  // XY平面的固定高度
 
-            double illuminance = calculateIlluminanceAtPoint(x,0,  z);
+            double illuminance = calculateIlluminanceAtPoint_(x,0,  z);
 
             IlluminancePoint point;
             point.x = x;
@@ -274,7 +379,7 @@ void IESIsoWidget::calculateYZPlaneIlluminance()
             double z = -halfRange + j * gridSpacing;
             double x = 0;  // YZ平面的固定X位置
 
-            double illuminance = calculateIlluminanceAtPoint(0,y, z);
+            double illuminance = calculateIlluminanceAtPoint_(0,y, z);
 
             IlluminancePoint point;
             point.x = x;
@@ -290,7 +395,34 @@ void IESIsoWidget::calculateYZPlaneIlluminance()
         illuminanceGriddata.push_back(oneLine);
     }
 }
+
 double IESIsoWidget::calculateIlluminanceAtPoint(double x, double y, double z)
+{
+    // 计算距离
+    double dx = x - fixtureX;
+    double dy = y - fixtureY;
+    double dz = z - fixtureZ;
+    double totalDistance = sqrt(dx * dx + dy * dy + dz * dz);
+
+    if (totalDistance == 0) return 0;
+
+    // 计算垂直角度 (从灯具向下为正)
+    double verticalAngle = acos(dz / totalDistance) * 180.0 / M_PI;  // 注意符号
+
+    // 计算水平角度
+    double horizontalAngle = atan2(dy, dx) * 180.0 / M_PI;
+    if (horizontalAngle < 0) horizontalAngle += 360;
+
+    // 获取光强值
+    double candela = IESLoader::instance().getCandelaValue(verticalAngle, horizontalAngle);
+
+    // 计算照度 (距离平方反比定律 + 余弦定律)
+    double cosIncidence = -dz / totalDistance;  // 入射角余弦
+    double illuminance = candela / (totalDistance * totalDistance) * cosIncidence;
+
+    return std::max(0.0, illuminance);
+}
+double IESIsoWidget::calculateIlluminanceAtPoint_(double x, double y, double z)
 {
     // 计算距离
     double dx = x - fixtureX;
@@ -437,6 +569,46 @@ void IESIsoWidget::updateIESXZ(double distance, double halfmap)
         return;
 
     calculateXZPlaneIlluminance();
+
+    updatePlot();
+}
+
+void IESIsoWidget::updateIESXY_(double distance, double halfmap)
+{
+    fixtureX = 0;
+    fixtureY = 0;
+    fixtureZ = distance;
+    calculationWidth = halfmap * 2;
+    if (IESLoader::instance().light.candela.size() < 1)
+        return;
+
+    calculateXY_PlaneIlluminance();
+
+    updatePlot();
+}
+void IESIsoWidget::updateIESYZ_(double distance, double halfmap)
+{
+    fixtureX = distance;
+    fixtureY = 0;
+    fixtureZ = 0;
+    calculationWidth = halfmap * 2;
+    if (IESLoader::instance().light.candela.size() < 1)
+        return;
+
+    calculateYZ_PlaneIlluminance();
+
+    updatePlot();
+}
+void IESIsoWidget::updateIESXZ_(double distance, double halfmap)
+{
+    fixtureX = 0;
+    fixtureY = distance;
+    fixtureZ = 0;
+    calculationWidth = halfmap * 2;
+    if (IESLoader::instance().light.candela.size() < 1)
+        return;
+
+    calculateXZ_PlaneIlluminance();
 
     updatePlot();
 }

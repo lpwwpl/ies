@@ -34,13 +34,23 @@ public:
 	void updateIESXY(double distance, double halfmap);
 	void updateIESYZ(double distance,double halfmap);
 	void updateIESXZ(double distance, double halfmap);
+	// ///-x,-y,-z
+	void updateIESXY_(double distance, double halfmap);
+	void updateIESYZ_(double distance, double halfmap);
+	void updateIESXZ_(double distance, double halfmap);
 	void updateColorMapData();
 	void calculateXZPlaneIlluminance();
 	void calculateYZPlaneIlluminance();
 	void calculateXYPlaneIlluminance();
 
+	void calculateXZ_PlaneIlluminance();
+	void calculateYZ_PlaneIlluminance();
+	void calculateXY_PlaneIlluminance();
+
+	//xyz,-x,-y
 	double calculateIlluminanceAtPoint(double x, double y, double z);
-	//double calculatePointIlluminance(double x, double y, double z);
+	// ////////////////////////-z
+	double calculateIlluminanceAtPoint_(double x, double y, double z);
 
 	void updatePlot();
 

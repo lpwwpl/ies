@@ -41,7 +41,10 @@ enum EPlaneType
 {
     ePlaneX=0,
     ePlaneY,
-    ePlaneZ
+    ePlaneZ,
+    ePlaneX_,
+    ePlaneY_,
+    ePlaneZ_
 };
 namespace Ui {
 class ISOLuxDialog;
@@ -86,8 +89,14 @@ public:
     void updateIESYZ(double distance, double halfmap);
     void updateIESXZ(double distance, double halfmap);
 
+    void updateIESXY_(double distance, double halfmap);
+    void updateIESYZ_(double distance, double halfmap);
+    void updateIESXZ_(double distance, double halfmap);
+
     void setViewToIsometric45();
     double calculateIlluminanceAtPoint(double x, double y, double z);
+    // ///////-z
+    double calculateIlluminanceAtPoint_(double x, double y, double z);
     void updateCubeAxesBounds();
 
     vtkSmartPointer<vtkLookupTable> createColorLookupTable();

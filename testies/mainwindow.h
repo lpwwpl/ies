@@ -49,6 +49,18 @@ public:
 
     void populateTableFromIESData();
     void setupHeaderEditing();
+    std::vector<double> getVerticalAngles() const;
+    std::vector<double> getHorizontalAngles() const;
+    std::vector<std::vector<double>> getIntensityData() const;
+
+    void setTableData(const std::vector<double>& horizontalAngles,
+        const std::vector<double>& verticalAngles,
+        const std::vector<std::vector<double>>& intensityData);
+    void rearrangeTableDataAfterHorizontalSort(const std::vector<int>& newColumnOrder);
+    void sortHorizontalAngles();
+    void sortVerticalAngles();
+    void rearrangeTableDataAfterVerticalSort(const std::vector<int>& newRowOrder);
+
 public Q_SLOTS:
     void on_actionIsoLuxCurves_triggered();
     void on_actionPolarCurves_triggered();
@@ -67,7 +79,9 @@ public Q_SLOTS:
     void slotDoubleValueChanged();
     void slot_heditor();
     void slot_veditor();
- 
+    void enableAutoSort(bool enable);
+    void sortTable(bool);
+    void showContextMenu(const QPoint& pos);
 protected:
     void moveEvent(QMoveEvent* event);
     bool eventFilter(QObject* obj, QEvent* event) override;
@@ -89,5 +103,10 @@ private:
     int logicalIndex;
 
     QString m_filePath;
+    QAction* autoSortAction;
+    QAction* sortAction;
+    bool autoSortEnabled;
+    QString m_editor_old_value;
+    bool m_editor_focusOut;
 };
 #endif // MAINWINDOW_H
