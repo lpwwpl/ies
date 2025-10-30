@@ -50,10 +50,10 @@ MainWindow::MainWindow(QWidget* parent)
     connect(ui->actionAdd_Vertical_Angle, &QAction::triggered, this, &MainWindow::addColumn);
     connect(ui->actionDelete_Vertical_Angle, &QAction::triggered, this, &MainWindow::deleteColumn);
    
-    connect(ui->pbHplus, SIGNAL(clicked()), this, SLOT(deleteRow()));
-    connect(ui->pbHadd, SIGNAL(clicked()), this, SLOT(addRow()));
-    connect(ui->pbVplus, SIGNAL(clicked()), this, SLOT(deleteColumn()));
-    connect(ui->pbVadd, SIGNAL(clicked()), this, SLOT(addColumn()));
+    connect(ui->pbVplus, SIGNAL(clicked()), this, SLOT(deleteRow()));
+    connect(ui->pbVadd, SIGNAL(clicked()), this, SLOT(addRow()));
+    connect(ui->pbHplus, SIGNAL(clicked()), this, SLOT(deleteColumn()));
+    connect(ui->pbHadd, SIGNAL(clicked()), this, SLOT(addColumn()));
 
     QPixmap typeAImage(":/resources/TypeA.png");
     ui->lblTypeA->setPixmap(typeAImage);
