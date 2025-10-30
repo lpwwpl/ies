@@ -62,6 +62,15 @@
     <ClCompile Include="TableItemDelegate.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="SpotDiagramWidget.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="FieldViewWidget.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="MTFViewWidget.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="tiny_ies.hpp">
@@ -100,6 +109,15 @@
       <Filter>widgets</Filter>
     </QtMoc>
     <QtMoc Include="TableItemDelegate.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+    <QtMoc Include="SpotDiagramWidget.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+    <QtMoc Include="FieldViewWidget.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+    <QtMoc Include="MTFViewWidget.h">
       <Filter>Header Files</Filter>
     </QtMoc>
   </ItemGroup>

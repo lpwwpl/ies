@@ -12,7 +12,9 @@
 #include "threeDdialog.h"
 #include "TableItemDelegate.h"
 #include <iostream>
-
+#include "SpotDiagramWidget.h"
+#include "FieldViewWidget.h"
+#include "MTFViewWidget.h"
 #include "IESLoader.h"
 
 MainWindow::MainWindow(QWidget* parent)
@@ -43,12 +45,12 @@ MainWindow::MainWindow(QWidget* parent)
     bool value = connect(delegate, SIGNAL(editingFinished()), this, SLOT(slotDoubleValueChanged()));
 
     // 行操作
-    value = connect(ui->actionAdd_Horizontal_Angle, &QAction::triggered, this, &MainWindow::addRow);
-    connect(ui->actionDelete_Horizontal_Angle, &QAction::triggered, this, &MainWindow::deleteRow);
+    value = connect(ui->actionAdd_Horizontal_Angle, &QAction::triggered, this, &MainWindow::addColumn);
+    connect(ui->actionDelete_Horizontal_Angle, &QAction::triggered, this, &MainWindow::deleteColumn);
 
     // 列操作
-    connect(ui->actionAdd_Vertical_Angle, &QAction::triggered, this, &MainWindow::addColumn);
-    connect(ui->actionDelete_Vertical_Angle, &QAction::triggered, this, &MainWindow::deleteColumn);
+    connect(ui->actionAdd_Vertical_Angle, &QAction::triggered, this, &MainWindow::addRow);
+    connect(ui->actionDelete_Vertical_Angle, &QAction::triggered, this, &MainWindow::deleteRow);
    
     connect(ui->pbVplus, SIGNAL(clicked()), this, SLOT(deleteRow()));
     connect(ui->pbVadd, SIGNAL(clicked()), this, SLOT(addRow()));
@@ -143,6 +145,13 @@ MainWindow::MainWindow(QWidget* parent)
         this, &MainWindow::showContextMenu);
 
     m_editor_focusOut = false;
+
+
+    value = connect(ui->actionspot, &QAction::triggered, this, &MainWindow::showSpot);
+    connect(ui->actiondistort, &QAction::triggered, this, &MainWindow::showDistort);
+    value = connect(ui->actionfov, &QAction::triggered, this, &MainWindow::showFov);
+    connect(ui->actionTrace, &QAction::triggered, this, &MainWindow::showTrace);
+    connect(ui->actionMTF, &QAction::triggered, this, &MainWindow::showMTF);
 }
 
 MainWindow::~MainWindow() { delete ui; }
@@ -800,4 +809,59 @@ void MainWindow::showContextMenu(const QPoint& pos)
     contextMenu.addAction(autoSortAction);  
     contextMenu.addAction(sortAction);
     contextMenu.exec(ui->tableWidget->viewport()->mapToGlobal(pos));
+}
+
+
+void MainWindow::showSpot()
+{
+    auto filepath = QFileDialog::getOpenFileName(
+        this, tr("Open txt"), "", tr("txt File(*.txt);;All Files(*)"));
+    if (filepath.isEmpty()) {
+        return;
+    }
+    SpotDiagramPlotter* w = new SpotDiagramPlotter();
+    w->loadDataFromFile(filepath);
+    w->plotSpotDiagrams();
+    w->show();
+}
+void MainWindow::showTrace()
+{
+    auto filepath = QFileDialog::getOpenFileName(
+        this, tr("Open txt"), "", tr("txt File(*.txt);;All Files(*)"));
+    if (filepath.isEmpty()) {
+        return;
+    }
+}
+void MainWindow::showMTF()
+{
+    auto filepath = QFileDialog::getOpenFileName(
+        this, tr("Open txt"), "", tr("txt File(*.txt);;All Files(*)"));
+    if (filepath.isEmpty()) {
+        return;
+    }
+    MTFViewer* m_mtfViewer = new MTFViewer();
+    m_mtfViewer->setTitle("MTF曲线分析");
+    m_mtfViewer->loadFromFile(filepath);
+    m_mtfViewer->show();
+}
+void MainWindow::showFov()
+{
+    
+    auto filepath = QFileDialog::getOpenFileName(
+        this, tr("Open txt"), "", tr("txt File(*.txt);;All Files(*)"));
+    if (filepath.isEmpty()) {
+        return;
+    }
+    FieldViewWidget* fieldView = new FieldViewWidget();
+    fieldView->loadFieldDataFile(filepath);
+    fieldView->updatePlot();
+    fieldView->show();
+}
+void MainWindow::showDistort()
+{
+    auto filepath = QFileDialog::getOpenFileName(
+        this, tr("Open txt"), "", tr("txt File(*.txt);;All Files(*)"));
+    if (filepath.isEmpty()) {
+        return;
+    }
 }

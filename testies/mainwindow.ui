@@ -560,10 +560,21 @@ photometric planes.</string>
     <addaction name="actionDelete_Vertical_Angle"/>
     <addaction name="actionDelete_Horizontal_Angle"/>
    </widget>
+   <widget class="QMenu" name="menutest">
+    <property name="title">
+     <string>test</string>
+    </property>
+    <addaction name="actionspot"/>
+    <addaction name="actiondistort"/>
+    <addaction name="actionfov"/>
+    <addaction name="actionTrace"/>
+    <addaction name="actionMTF"/>
+   </widget>
    <addaction name="menuFile"/>
    <addaction name="menuEdit"/>
    <addaction name="menuView"/>
    <addaction name="menuOptions"/>
+   <addaction name="menutest"/>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
   <widget class="QToolBar" name="toolBar">
@@ -690,6 +701,31 @@ photometric planes.</string>
   <action name="actionDelete_Horizontal_Angle">
    <property name="text">
     <string>Delete Horizontal Angle</string>
+   </property>
+  </action>
+  <action name="actionspot">
+   <property name="text">
+    <string>spot</string>
+   </property>
+  </action>
+  <action name="actiondistort">
+   <property name="text">
+    <string>distort</string>
+   </property>
+  </action>
+  <action name="actionfov">
+   <property name="text">
+    <string>fov</string>
+   </property>
+  </action>
+  <action name="actionTrace">
+   <property name="text">
+    <string>Trace</string>
+   </property>
+  </action>
+  <action name="actionMTF">
+   <property name="text">
+    <string>MTF</string>
    </property>
   </action>
  </widget>

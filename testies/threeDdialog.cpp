@@ -1201,6 +1201,8 @@ void IESPointCloudWidget::updateIESDataMesh(bool value)
 
 void IESPointCloudWidget::on_chkOXY_stateChanged(int value)
 {
+    if (!IESLoader::instance().light.candela.size() > 0)
+        return;
     if (value)
     {
         m_xyplane_actor->SetVisibility(true);
@@ -1225,6 +1227,8 @@ void IESPointCloudWidget::on_chkOXY_stateChanged(int value)
 }
 void IESPointCloudWidget::on_chkOXZ_stateChanged(int value)
 {
+    if (!IESLoader::instance().light.candela.size() > 0)
+        return;
     if (value)
     {
         m_xzplane_actor->SetVisibility(true);
@@ -1247,6 +1251,8 @@ void IESPointCloudWidget::on_chkOXZ_stateChanged(int value)
 }
 void IESPointCloudWidget::on_chkOYZ_stateChanged(int value)
 {
+    if (!IESLoader::instance().light.candela.size() > 0)
+        return;
     if (value)
     {
         m_yzplane_actor->SetVisibility(true);
@@ -1269,6 +1275,8 @@ void IESPointCloudWidget::on_chkOYZ_stateChanged(int value)
 }
 void IESPointCloudWidget::on_chkAxis_stateChanged(int value)
 {
+    if (!IESLoader::instance().light.candela.size() > 0)
+        return;
     if (value)
     {
         m_xArrow_actor->SetVisibility(true);

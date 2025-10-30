@@ -82,6 +82,13 @@ public Q_SLOTS:
     void enableAutoSort(bool enable);
     void sortTable(bool);
     void showContextMenu(const QPoint& pos);
+
+
+    void showSpot();
+    void showTrace();
+    void showMTF();
+    void showFov();
+    void showDistort();
 protected:
     void moveEvent(QMoveEvent* event);
     bool eventFilter(QObject* obj, QEvent* event) override;

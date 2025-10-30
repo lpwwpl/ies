@@ -108,6 +108,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="contours.cpp" />
+    <ClCompile Include="FieldViewWidget.cpp" />
     <ClCompile Include="IESglwidget.cpp" />
     <ClCompile Include="IESIsoWidget.cpp" />
     <ClCompile Include="IESLoader.cpp" />
@@ -120,8 +121,10 @@
       <QtMocFileName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">%(Filename).moc</QtMocFileName>
     </ClCompile>
     <ClCompile Include="mainwindow.cpp" />
+    <ClCompile Include="MTFViewWidget.cpp" />
     <ClCompile Include="polardialog.cpp" />
     <ClCompile Include="QCustomPlot.cpp" />
+    <ClCompile Include="SpotDiagramWidget.cpp" />
     <ClCompile Include="TableItemDelegate.cpp" />
     <ClCompile Include="threeDdialog.cpp" />
   </ItemGroup>
@@ -129,6 +132,7 @@
     <QtMoc Include="QCustomPlot.h" />
     <ClInclude Include="contours.h" />
     <QtMoc Include="IESglwidget.h" />
+    <QtMoc Include="FieldViewWidget.h" />
     <ClInclude Include="IESIsoWidget.h" />
     <QtMoc Include="mainwindow.h" />
     <ClInclude Include="IESLoader.h" />
@@ -137,6 +141,8 @@
     <QtMoc Include="polardialog.h" />
     <QtMoc Include="threeDdialog.h" />
     <QtMoc Include="TableItemDelegate.h" />
+    <QtMoc Include="SpotDiagramWidget.h" />
+    <QtMoc Include="MTFViewWidget.h" />
     <ClInclude Include="tiny_ies.hpp" />
   </ItemGroup>
   <ItemGroup>
