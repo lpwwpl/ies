@@ -15,6 +15,7 @@
 #include "SpotDiagramWidget.h"
 #include "FieldViewWidget.h"
 #include "MTFViewWidget.h"
+#include "FootprintWidget.h"
 #include "IESLoader.h"
 
 MainWindow::MainWindow(QWidget* parent)
@@ -831,6 +832,10 @@ void MainWindow::showTrace()
     if (filepath.isEmpty()) {
         return;
     }
+    FootprintWidget* footprint = new FootprintWidget();
+    footprint->loadDataFromFile(filepath);
+    footprint->plotFootprints();
+    footprint->show();
 }
 void MainWindow::showMTF()
 {

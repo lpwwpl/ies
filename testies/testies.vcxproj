@@ -109,6 +109,7 @@
   <ItemGroup>
     <ClCompile Include="contours.cpp" />
     <ClCompile Include="FieldViewWidget.cpp" />
+    <ClCompile Include="FootprintWidget.cpp" />
     <ClCompile Include="IESglwidget.cpp" />
     <ClCompile Include="IESIsoWidget.cpp" />
     <ClCompile Include="IESLoader.cpp" />
@@ -133,6 +134,7 @@
     <ClInclude Include="contours.h" />
     <QtMoc Include="IESglwidget.h" />
     <QtMoc Include="FieldViewWidget.h" />
+    <QtMoc Include="FootprintWidget.h" />
     <ClInclude Include="IESIsoWidget.h" />
     <QtMoc Include="mainwindow.h" />
     <ClInclude Include="IESLoader.h" />
