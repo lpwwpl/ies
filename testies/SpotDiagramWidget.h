@@ -1,4 +1,4 @@
-#ifndef SPOTDIAGRAMPLOTTER_H
+﻿#ifndef SPOTDIAGRAMPLOTTER_H
 #define SPOTDIAGRAMPLOTTER_H
 
 #include <QObject>
@@ -11,7 +11,7 @@
 #include <QTextStream>
 #include <QMap>
 
-// QCustomPlot ͷ�ļ�
+// QCustomPlot 头文件
 #include "qcustomplot.h"
 
 struct SpotData {
@@ -43,7 +43,7 @@ private:
     QCustomPlot* m_plot;
     QMap<QString, QColor> m_colorMap;
 
-    // RMS ֵ�洢
+    // RMS 值存储
     QMap<int, double> m_rmsValues;
 };
 

@@ -1,4 +1,4 @@
-#include "IESPolarWidget.h"
+ï»¿#include "IESPolarWidget.h"
 #include "IESLoader.h"
 #include <QDebug>
 
@@ -22,16 +22,16 @@ void IESPolarWidget::Init()
     font.setFamily("Microsoft YaHei");
     font.setPixelSize(10);
 
-    //¼«×ø±ê
-    this->plotLayout()->clear(); // Çå¿ÕÄ¬ÈÏ²¼¾Ö
+    //æåæ ‡
+    this->plotLayout()->clear(); // æ¸…ç©ºé»˜è®¤å¸ƒå±€
     angularAxis = new QCPPolarAxisAngular(this);
-    this->plotLayout()->addElement(0, 0, angularAxis); // ½«½Ç¶ÈÖáÌí¼Óµ½²¼¾ÖÖĞĞÄ
+    this->plotLayout()->addElement(0, 0, angularAxis); // å°†è§’åº¦è½´æ·»åŠ åˆ°å¸ƒå±€ä¸­å¿ƒ
 
-    // 3. ´´½¨¾¶ÏòÖá (´ÓÖĞĞÄÏòÍâ)
+    // 3. åˆ›å»ºå¾„å‘è½´ (ä»ä¸­å¿ƒå‘å¤–)
     radialAxis = angularAxis->radialAxis();
     angularAxis->setTickLabelFont(font);
-    angularAxis->setLabel(tr("½Ç¶ÈÖá (¦È)"));
-    angularAxis->setRange(0, 360); // ½Ç¶È·¶Î§ (0-360¶È)
+    angularAxis->setLabel(tr("è§’åº¦è½´ (Î¸)"));
+    angularAxis->setRange(0, 360); // è§’åº¦èŒƒå›´ (0-360åº¦)
     angularAxis->grid()->setVisible(true);
     angularAxis->setTicks(true);
    
@@ -39,7 +39,7 @@ void IESPolarWidget::Init()
     addLayer("foreground", nullptr, QCustomPlot::limAbove);
 
 
-    radialAxis->setLabel(tr("¾¶ÏòÖá (r)"));
+    radialAxis->setLabel(tr("å¾„å‘è½´ (r)"));
     radialAxis->setAngle(0);
 
     radialAxis->setSubTicks(false);
@@ -47,18 +47,18 @@ void IESPolarWidget::Init()
     graph0_180 = new QCPPolarGraph(angularAxis, radialAxis);
     graph0_180->setLayer("foreground");
 
-    // 8. ÉèÖÃÍ¼ĞÎÑùÊ½ (¿ÉÑ¡)
-    graph0_180->setLineStyle(QCPPolarGraph::lsLine); // ÏßĞÍ
-    graph0_180->setScatterStyle(QCPScatterStyle::ssDot); // É¢µãÑùÊ½
-    graph0_180->setPen(QPen(Qt::blue, 2)); // Ïß¿íºÍÑÕÉ«
+    // 8. è®¾ç½®å›¾å½¢æ ·å¼ (å¯é€‰)
+    graph0_180->setLineStyle(QCPPolarGraph::lsLine); // çº¿å‹
+    graph0_180->setScatterStyle(QCPScatterStyle::ssDot); // æ•£ç‚¹æ ·å¼
+    graph0_180->setPen(QPen(Qt::blue, 2)); // çº¿å®½å’Œé¢œè‰²
     //graph0_180->setBrush(QBrush(QColor(0, 0, 250, 150)));
 
     graph90_270 = new QCPPolarGraph(angularAxis, radialAxis);
     graph90_270->setLayer("background");
-    // 8. ÉèÖÃÍ¼ĞÎÑùÊ½ (¿ÉÑ¡)
-    graph90_270->setLineStyle(QCPPolarGraph::lsLine); // ÏßĞÍ
-    graph90_270->setScatterStyle(QCPScatterStyle::ssDot); // É¢µãÑùÊ½
-    graph90_270->setPen(QPen(Qt::red, 2)); // Ïß¿íºÍÑÕÉ«
+    // 8. è®¾ç½®å›¾å½¢æ ·å¼ (å¯é€‰)
+    graph90_270->setLineStyle(QCPPolarGraph::lsLine); // çº¿å‹
+    graph90_270->setScatterStyle(QCPScatterStyle::ssDot); // æ•£ç‚¹æ ·å¼
+    graph90_270->setPen(QPen(Qt::red, 2)); // çº¿å®½å’Œé¢œè‰²
     //graph90_270->setBrush(QBrush(QColor(255, 0, 0, 150)));
 
 
@@ -77,11 +77,11 @@ void IESPolarWidget::updateIES()
     graph90_270->data().clear();
 
     auto profile0_180 = generateC0C180Profile();
-    // Éú³É90-270¡ãÆÊÃæÊı¾İ (C90¡ã - C270¡ã)
+    // ç”Ÿæˆ90-270Â°å‰–é¢æ•°æ® (C90Â° - C270Â°)
     auto profile90_270 = generateC90C270Profile();
 
 
-    // ´´½¨0-180¡ãÇúÏß
+    // åˆ›å»º0-180Â°æ›²çº¿
     QVector<double> angles0_180, values0_180;
     for (const auto& point : profile0_180) {
         angles0_180.append(point.x());
@@ -90,9 +90,9 @@ void IESPolarWidget::updateIES()
     //graph0_180->setBrush(Qt::NoBrush);
     graph0_180->setData(angles0_180, values0_180);
     //graph0_180->setPen(QPen(Qt::red, 2));
-    graph0_180->setName("C0¡ã - C180¡ã");
+    graph0_180->setName("C0Â° - C180Â°");
 
-    //// ´´½¨90-270¡ãÇúÏß
+    //// åˆ›å»º90-270Â°æ›²çº¿
     QVector<double> angles90_270, values90_270;
     for (const auto& point : profile90_270) {
         angles90_270.append(point.x());
@@ -101,7 +101,7 @@ void IESPolarWidget::updateIES()
     //graph90_270->setBrush(Qt::NoBrush);
     graph90_270->setData(angles90_270, values90_270);
     //graph90_270->setPen(QPen(Qt::blue, 2));
-    graph90_270->setName("C90¡ã - C270¡ã");
+    graph90_270->setName("C90Â° - C270Â°");
 
 
 
@@ -110,7 +110,7 @@ void IESPolarWidget::updateIES()
 }
 
 
-// Éú³É0-180¡ãÆÊÃæÊı¾İ
+// ç”Ÿæˆ0-180Â°å‰–é¢æ•°æ®
 std::vector<QPointF> IESPolarWidget::generateC0C180Profile() {
     std::vector<QPointF> profile;
 
@@ -130,7 +130,7 @@ std::vector<QPointF> IESPolarWidget::generateC0C180Profile() {
     profile.insert(profile.end(), profile2.begin(), profile2.end());
     return profile;
 }
-// Éú³É90-270¡ãÆÊÃæÊı¾İ
+// ç”Ÿæˆ90-270Â°å‰–é¢æ•°æ®
 std::vector<QPointF> IESPolarWidget::generateC90C270Profile() {
     std::vector<QPointF> profile;
 
@@ -164,7 +164,7 @@ void IESPolarWidget::on_chkFillBlue_stateChanged(int value)
     {
         graph0_180->setBrush(Qt::NoBrush);
     }   
-    graph0_180->setPen(QPen(Qt::blue, 2)); // Ïß¿íºÍÑÕÉ«
+    graph0_180->setPen(QPen(Qt::blue, 2)); // çº¿å®½å’Œé¢œè‰²
     replot();
 }
 void IESPolarWidget::on_chkFillRed_stateChanged(int value)
@@ -178,7 +178,7 @@ void IESPolarWidget::on_chkFillRed_stateChanged(int value)
     {
         graph90_270->setBrush(Qt::NoBrush);
     }
-    graph90_270->setPen(QPen(Qt::red, 2)); // Ïß¿íºÍÑÕÉ«
+    graph90_270->setPen(QPen(Qt::red, 2)); // çº¿å®½å’Œé¢œè‰²
     replot();
 }
 void IESPolarWidget::on_chkViewRed_stateChanged(int value)
@@ -207,7 +207,7 @@ void IESPolarWidget::on_chkFillGreen_stateChanged(int value)
     {
         graph0_180->setBrush(Qt::NoBrush);
     }
-    graph0_180->setPen(QPen(Qt::green, 2)); // Ïß¿íºÍÑÕÉ«
+    graph0_180->setPen(QPen(Qt::green, 2)); // çº¿å®½å’Œé¢œè‰²
     replot();
 }
 
@@ -222,7 +222,7 @@ void IESPolarWidget::on_chkFillYellow_stateChanged(int value)
     {
         graph90_270->setBrush(Qt::NoBrush);
     }
-    graph90_270->setPen(QPen(QColor(190, 190, 71), 2)); // Ïß¿íºÍÑÕÉ«
+    graph90_270->setPen(QPen(QColor(190, 190, 71), 2)); // çº¿å®½å’Œé¢œè‰²
     replot();
 }
 

@@ -1,4 +1,4 @@
-#ifndef IESLOADER_H
+ï»¿#ifndef IESLOADER_H
 #define IESLOADER_H
 
 #include <QString>
@@ -16,15 +16,15 @@ public:
 
     static IESLoader& instance();
 
-    // ¼ÓÔØIESÎÄ¼ş
+    // åŠ è½½IESæ–‡ä»¶
     bool loadFromFile(const QString& filename);
 
-    // »ñÈ¡¹âÇ¿·Ö²¼Êı¾İ
+    // è·å–å…‰å¼ºåˆ†å¸ƒæ•°æ®
     const QVector<float>& getIESData() const { return iesData; }
     const QVector<float>& getVerticalAngles() const { return verticalAngles; }
     const QVector<float>& getHorizontalAngles() const { return horizontalAngles; }
 
-    // ´´½¨OpenGLÎÆÀí
+    // åˆ›å»ºOpenGLçº¹ç†
     QOpenGLTexture* createTexture();
 
     void loadIES(QString filename);
@@ -38,11 +38,11 @@ public:
     //double interpolateCandela(double vertical, double horizontal);
     //double getCandelaValue(double vertical, double horizontal) const;
 private:
-    // ½âÎöIESÎÄ¼ş
+    // è§£æIESæ–‡ä»¶
     bool parseIESFile(const QString& filename);
 
 public:
-    // IESÊı¾İ
+    // IESæ•°æ®
     QVector<float> iesData;
     QVector<float> verticalAngles;
     QVector<float> horizontalAngles;

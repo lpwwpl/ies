@@ -1,29 +1,30 @@
-#include "SpotDiagramWidget.h"
+ï»¿#include "SpotDiagramWidget.h"
 #include <QDebug>
 #include <cmath>
 
 SpotDiagramPlotter::SpotDiagramPlotter(QWidget* parent)
     : QWidget(parent)
 {
-    // ³õÊ¼»¯ÑÕÉ«Ó³Éä
+    // åˆå§‹åŒ–é¢œè‰²æ˜ å°„
     m_colorMap["RGBOrange"] = QColor(255, 165, 0);
     m_colorMap["RGBYellow"] = QColor(255, 255, 0);
     m_colorMap["RGBGreen"] = QColor(0, 255, 0);
     m_colorMap["RGBCyan"] = QColor(0, 255, 255);
 
-    // ´´½¨½çÃæ
+    // åˆ›å»ºç•Œé¢
     QVBoxLayout* mainLayout = new QVBoxLayout(this);
     m_plot = new QCustomPlot(this);
     mainLayout->addWidget(m_plot);
 
     setupPlot();
+    resize(QSize(640, 480));
 }
 
 bool SpotDiagramPlotter::loadDataFromFile(const QString& filename)
 {
     QFile file(filename);
     if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
-        //qDebug() << "ÎŞ·¨´ò¿ªÎÄ¼ş:" << filename;
+        //qDebug() << "æ— æ³•æ‰“å¼€æ–‡ä»¶:" << filename;
         return false;
     }
 
@@ -49,7 +50,7 @@ bool SpotDiagramPlotter::loadDataFromFile(const QString& filename)
     }
 
     file.close();
-    //qDebug() << "³É¹¦¼ÓÔØ" << m_spotData.size() << "¸öÊı¾İµã";
+    //qDebug() << "æˆåŠŸåŠ è½½" << m_spotData.size() << "ä¸ªæ•°æ®ç‚¹";
     return true;
 }
 
@@ -86,57 +87,57 @@ void SpotDiagramPlotter::parseDataLine(const QString& line)
 
 void SpotDiagramPlotter::setupPlot()
 {
-    // ÆôÓÃÉÏ²¿ºÍÓÒ²à×ø±êÖá
+    // å¯ç”¨ä¸Šéƒ¨å’Œå³ä¾§åæ ‡è½´
     m_plot->xAxis2->setVisible(true);
     m_plot->yAxis2->setVisible(true);
 
-    // ÉèÖÃÍ¼±í»ù±¾ÊôĞÔ
+    // è®¾ç½®å›¾è¡¨åŸºæœ¬å±æ€§
     m_plot->xAxis->setLabel("X(mm)");
     m_plot->yAxis->setLabel("postion");
 
-    // ÉèÖÃÉÏ²¿ºÍÓÒ²à×ø±êÖáµÄ±êÇ©
+    // è®¾ç½®ä¸Šéƒ¨å’Œå³ä¾§åæ ‡è½´çš„æ ‡ç­¾
     m_plot->xAxis2->setLabel("X(mm)");
     m_plot->yAxis2->setLabel("RMS");
 
-    // Á¬½Ó×ø±êÖá·¶Î§£¬Ê¹ÉÏ²¿ºÍÏÂ²¿¡¢×ó²àºÍÓÒ²àÍ¬²½
+    // è¿æ¥åæ ‡è½´èŒƒå›´ï¼Œä½¿ä¸Šéƒ¨å’Œä¸‹éƒ¨ã€å·¦ä¾§å’Œå³ä¾§åŒæ­¥
     connect(m_plot->xAxis, SIGNAL(rangeChanged(QCPRange)), m_plot->xAxis2, SLOT(setRange(QCPRange)));
     connect(m_plot->yAxis, SIGNAL(rangeChanged(QCPRange)), m_plot->yAxis2, SLOT(setRange(QCPRange)));
 
-    // ÆôÓÃÑ¡ÔñËõ·ÅºÍÍÏ¶¯
+    // å¯ç”¨é€‰æ‹©ç¼©æ”¾å’Œæ‹–åŠ¨
     m_plot->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectPlottables);
 
-    // ÉèÖÃ±êÌâ
+    // è®¾ç½®æ ‡é¢˜
     m_plot->plotLayout()->insertRow(0);
     m_plot->plotLayout()->addElement(0, 0,
-        new QCPTextElement(m_plot, QStringLiteral("¹âÑ§ÏµÍ³µãÁĞÍ¼·ÖÎö"), QFont("sans", 14, QFont::Bold)));
+        new QCPTextElement(m_plot, QStringLiteral("å…‰å­¦ç³»ç»Ÿç‚¹åˆ—å›¾åˆ†æ"), QFont("sans", 14, QFont::Bold)));
 }
 
 void SpotDiagramPlotter::plotSpotDiagrams()
 {
-    // Çå³ıÏÖÓĞÍ¼ĞÎ
+    // æ¸…é™¤ç°æœ‰å›¾å½¢
     m_plot->clearPlottables();
     m_plot->clearItems();
 
-    // °´ÊÓ³¡Ë÷Òı·Ö×é
+    // æŒ‰è§†åœºç´¢å¼•åˆ†ç»„
     QMap<int, QVector<SpotData>> fieldData;
     for (const SpotData& data : m_spotData) {
         fieldData[data.fieldIndex].append(data);
     }
 
-    // ÎªÃ¿¸öÊÓ³¡´´½¨Í¼ĞÎ£¬´¹Ö±·Ö²¼
+    // ä¸ºæ¯ä¸ªè§†åœºåˆ›å»ºå›¾å½¢ï¼Œå‚ç›´åˆ†å¸ƒ
     QList<int> fieldIndices = fieldData.keys();
     std::sort(fieldIndices.begin(), fieldIndices.end());
 
-    // Ö»È¡Ç°3¸öÊÓ³¡
+    // åªå–å‰3ä¸ªè§†åœº
     int maxFields = qMin(3, fieldIndices.size());
 
-    // ÉèÖÃXÖá·¶Î§
-    double xRange = 0.025; // XÖá·¶Î§
+    // è®¾ç½®Xè½´èŒƒå›´
+    double xRange = 0.025; // Xè½´èŒƒå›´
 
-    // ÉèÖÃYÖá·¶Î§ - Ôö¼Ó·¶Î§ÒÔÌá¹©¸ü¶à¿Õ¼ä
-    double yRange = xRange * 6.0; // ½øÒ»²½Ôö¼ÓYÖá·¶Î§
+    // è®¾ç½®Yè½´èŒƒå›´ - å¢åŠ èŒƒå›´ä»¥æä¾›æ›´å¤šç©ºé—´
+    double yRange = xRange * 6.0; // è¿›ä¸€æ­¥å¢åŠ Yè½´èŒƒå›´
 
-    // ¼ÆËã´¹Ö±Æ«ÒÆ - Ê¹µãÁĞÍ¼ÔÚYÖáÉÏ¾ùÔÈ·Ö²¼ÇÒ¾ÓÖĞ
+    // è®¡ç®—å‚ç›´åç§» - ä½¿ç‚¹åˆ—å›¾åœ¨Yè½´ä¸Šå‡åŒ€åˆ†å¸ƒä¸”å±…ä¸­
     QVector<double> verticalOffsets;
     if (maxFields == 1) {
         verticalOffsets << 0;
@@ -148,10 +149,10 @@ void SpotDiagramPlotter::plotSpotDiagrams()
         verticalOffsets << yRange / 3 << 0 << -yRange / 3;
     }
 
-    // ´´½¨×Ô¶¨ÒåµÄYÖá¿Ì¶È±êÇ©
+    // åˆ›å»ºè‡ªå®šä¹‰çš„Yè½´åˆ»åº¦æ ‡ç­¾
     QSharedPointer<QCPAxisTickerText> textTicker(new QCPAxisTickerText);
 
-    // ´æ´¢Ã¿¸öÊÓ³¡µÄRMSÖµ
+    // å­˜å‚¨æ¯ä¸ªè§†åœºçš„RMSå€¼
     QMap<int, double> fieldRMS;
 
     for (int i = 0; i < maxFields; i++) {
@@ -159,10 +160,10 @@ void SpotDiagramPlotter::plotSpotDiagrams()
         double verticalOffset = verticalOffsets[i];
         QString fieldName = QString("%1").arg(fieldIndex);
 
-        // Ìí¼ÓYÖá¿Ì¶È±êÇ©
+        // æ·»åŠ Yè½´åˆ»åº¦æ ‡ç­¾
         textTicker->addTick(verticalOffset, fieldName);
 
-        // ¼ÆËãRMS²¢´æ´¢
+        // è®¡ç®—RMSå¹¶å­˜å‚¨
         double rmsX, rmsY, rmsRadius;
         calculateRMS(fieldData[fieldIndex], rmsX, rmsY, rmsRadius);
         fieldRMS[fieldIndex] = rmsRadius;
@@ -170,10 +171,10 @@ void SpotDiagramPlotter::plotSpotDiagrams()
         addSpotDataToPlot(fieldData[fieldIndex], verticalOffset, fieldName);
     }
 
-    // ÉèÖÃYÖáÊ¹ÓÃÎÄ±¾¿Ì¶È
+    // è®¾ç½®Yè½´ä½¿ç”¨æ–‡æœ¬åˆ»åº¦
     m_plot->yAxis->setTicker(textTicker);
 
-    // ÎªÓÒ²àYÖá´´½¨RMS¿Ì¶È±êÇ©
+    // ä¸ºå³ä¾§Yè½´åˆ›å»ºRMSåˆ»åº¦æ ‡ç­¾
     QSharedPointer<QCPAxisTickerText> rmsTicker(new QCPAxisTickerText);
     for (int i = 0; i < maxFields; i++) {
         int fieldIndex = fieldIndices[i];
@@ -183,16 +184,16 @@ void SpotDiagramPlotter::plotSpotDiagrams()
     }
     m_plot->yAxis2->setTicker(rmsTicker);
 
-    // ÉèÖÃ×ø±êÖá·¶Î§ - Ê¹µãÁĞÍ¼ÔÚYÖáÉÏ¾ÓÖĞÏÔÊ¾
+    // è®¾ç½®åæ ‡è½´èŒƒå›´ - ä½¿ç‚¹åˆ—å›¾åœ¨Yè½´ä¸Šå±…ä¸­æ˜¾ç¤º
     m_plot->xAxis->setRange(-xRange, xRange);
     m_plot->yAxis->setRange(-yRange / 2, yRange / 2);
 
-    // Ìí¼ÓÍ¼Àı
+    // æ·»åŠ å›¾ä¾‹
     //m_plot->legend->setVisible(true);
     //m_plot->legend->setFont(QFont("Arial", 9));
     //m_plot->legend->setRowSpacing(-3);
 
-    // ÖØĞÂ»æÖÆ
+    // é‡æ–°ç»˜åˆ¶
     m_plot->replot();
 }
 
@@ -200,17 +201,17 @@ void SpotDiagramPlotter::addSpotDataToPlot(const QVector<SpotData>& data, double
 {
     if (data.isEmpty()) return;
 
-    // °´ÑÕÉ«·Ö×éÊı¾İ
+    // æŒ‰é¢œè‰²åˆ†ç»„æ•°æ®
     QMap<QString, QVector<QCPGraphData>> colorData;
 
     for (const SpotData& spot : data) {
         QCPGraphData point;
         point.key = spot.x;
-        point.value = spot.y + verticalOffset; // Ìí¼Ó´¹Ö±Æ«ÒÆ
+        point.value = spot.y + verticalOffset; // æ·»åŠ å‚ç›´åç§»
         colorData[spot.colorName].append(point);
     }
 
-    // ÎªÃ¿ÖÖÑÕÉ«´´½¨Í¼ĞÎ
+    // ä¸ºæ¯ç§é¢œè‰²åˆ›å»ºå›¾å½¢
     for (auto it = colorData.begin(); it != colorData.end(); ++it) {
         const QString& colorName = it.key();
         const QVector<QCPGraphData>& points = it.value();
@@ -218,34 +219,34 @@ void SpotDiagramPlotter::addSpotDataToPlot(const QVector<SpotData>& data, double
         QCPGraph* graph = m_plot->addGraph();
         graph->setName(colorName);
 
-        // ÉèÖÃÑÕÉ«ºÍÑùÊ½
+        // è®¾ç½®é¢œè‰²å’Œæ ·å¼
         QColor color = m_colorMap.value(colorName, Qt::black);
         graph->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssCircle, color, color, 4));
         graph->setLineStyle(QCPGraph::lsNone);
         //graph->setSelectable(false);
 
-        // Ìí¼ÓÊı¾İ
+        // æ·»åŠ æ•°æ®
         graph->data()->set(points);
     }
 
-    // ¼ÆËã²¢»æÖÆRMSÔ²
+    // è®¡ç®—å¹¶ç»˜åˆ¶RMSåœ†
     double rmsX, rmsY, rmsRadius;
     calculateRMS(data, rmsX, rmsY, rmsRadius);
     m_rmsValues[data.first().fieldIndex] = rmsRadius;
 
-    // ´´½¨RMSÔ²
+    // åˆ›å»ºRMSåœ†
     QCPItemEllipse* rmsCircle = new QCPItemEllipse(m_plot);
     rmsCircle->topLeft->setCoords(-rmsRadius, verticalOffset + rmsRadius);
     rmsCircle->bottomRight->setCoords(rmsRadius, verticalOffset - rmsRadius);
     rmsCircle->setPen(QPen(Qt::blue, 1, Qt::DashLine));
     rmsCircle->setSelectable(false);
 
-    // Ìí¼ÓÊÓ³¡±êÇ©
+    // æ·»åŠ è§†åœºæ ‡ç­¾
     QCPItemText* fieldLabel = new QCPItemText(m_plot);
     fieldLabel->setPositionAlignment(Qt::AlignLeft | Qt::AlignVCenter);
     fieldLabel->position->setType(QCPItemPosition::ptAxisRectRatio);
 
-    // ¼ÆËã±êÇ©ÔÚYÖáÉÏµÄÏà¶ÔÎ»ÖÃ
+    // è®¡ç®—æ ‡ç­¾åœ¨Yè½´ä¸Šçš„ç›¸å¯¹ä½ç½®
     double yMin = m_plot->yAxis->range().lower;
     double yMax = m_plot->yAxis->range().upper;
     double yRange = yMax - yMin;
@@ -264,7 +265,7 @@ void SpotDiagramPlotter::calculateRMS(const QVector<SpotData>& data, double& rms
         return;
     }
 
-    // ¼ÆËãÆ½¾ùÖµ
+    // è®¡ç®—å¹³å‡å€¼
     double sumX = 0, sumY = 0;
     for (const SpotData& spot : data) {
         sumX += spot.x;
@@ -273,7 +274,7 @@ void SpotDiagramPlotter::calculateRMS(const QVector<SpotData>& data, double& rms
     double meanX = sumX / data.size();
     double meanY = sumY / data.size();
 
-    // ¼ÆËãRMS
+    // è®¡ç®—RMS
     double sumVarX = 0, sumVarY = 0;
     for (const SpotData& spot : data) {
         sumVarX += (spot.x - meanX) * (spot.x - meanX);

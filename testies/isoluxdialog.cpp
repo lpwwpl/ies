@@ -1,10 +1,10 @@
-#include "isoluxdialog.h"
+ï»¿#include "isoluxdialog.h"
 #include "ui_isoluxdialog.h"
 #include "IESIsoWidget.h"
 
 #include "IESLoader.h"
 #include <QOpenGLWidget>
-// °üº¬±ØÒªµÄVTKÍ·ÎÄ¼ş
+// åŒ…å«å¿…è¦çš„VTKå¤´æ–‡ä»¶
 #include <vtkRenderer.h>
 #include <vtkPoints.h>
 #include <vtkFloatArray.h>
@@ -49,7 +49,7 @@ ISOLuxPlot::ISOLuxPlot()/*:vtx(nullptr),itx(nullptr)*/
     m_polyData = vtkSmartPointer<vtkPolyData>::New();
     m_glyphFilter = vtkSmartPointer<vtkVertexGlyphFilter>::New();
     surfaceFilter = vtkSmartPointer<vtkDataSetSurfaceFilter>::New();
-    // ³õÊ¼»¯±ß½ç
+    // åˆå§‹åŒ–è¾¹ç•Œ
     for (int i = 0; i < 6; ++i) {
         bounds[i] = 0.0;
     }
@@ -58,14 +58,14 @@ ISOLuxPlot::ISOLuxPlot()/*:vtx(nullptr),itx(nullptr)*/
     createCoordinateGrid();
     createScalarBar(m_lut);
 
-    // ´´½¨Ó³ÉäÆ÷
+    // åˆ›å»ºæ˜ å°„å™¨
     m_mapper = vtkSmartPointer<vtkPolyDataMapper>::New(); 
     m_mapper->SetScalarRange(m_intensities->GetRange());
     m_mapper->SetLookupTable(createColorLookupTable());
     m_mapper->SetScalarModeToUsePointData();
-    // ´´½¨ÑİÔ±
+    // åˆ›å»ºæ¼”å‘˜
     m_actor = vtkSmartPointer<vtkActor>::New();
-    m_actor->GetProperty()->SetColor(0, 0, 0); // ÌìÀ¶É«Ïß¿ò
+    m_actor->GetProperty()->SetColor(0, 0, 0); // å¤©è“è‰²çº¿æ¡†
     m_actor->SetMapper(m_mapper);
     m_renderer->AddActor(m_actor);
 
@@ -81,7 +81,7 @@ ISOLuxPlot::ISOLuxPlot()/*:vtx(nullptr),itx(nullptr)*/
     contourMapper->SetInputConnection(contourFilter->GetOutputPort());
     contourActor = vtkSmartPointer<vtkActor>::New();
     contourActor->SetMapper(contourMapper);
-    contourActor->GetProperty()->SetColor(0, 0, 0); // ºÚÉ«ÂÖÀªÏß
+    contourActor->GetProperty()->SetColor(0, 0, 0); // é»‘è‰²è½®å»“çº¿
     contourActor->GetProperty()->SetLineWidth(5);
     m_renderer->AddActor(contourActor);
 
@@ -101,7 +101,7 @@ ISOLuxPlot::ISOLuxPlot()/*:vtx(nullptr),itx(nullptr)*/
     //wireframeActor = vtkSmartPointer<vtkActor>::New();
     //wireframeActor->SetMapper(wireframeMapper);
     //wireframeActor->GetProperty()->SetLineWidth(1);
-    //wireframeActor->GetProperty()->SetColor(0,0,0); // À¶É«ÏßÍø
+    //wireframeActor->GetProperty()->SetColor(0,0,0); // è“è‰²çº¿ç½‘
 
     surfaceMapper = vtkSmartPointer<vtkPolyDataMapper>::New();
     surfaceMapper->SetInputConnection(delaunay->GetOutputPort());
@@ -109,17 +109,17 @@ ISOLuxPlot::ISOLuxPlot()/*:vtx(nullptr),itx(nullptr)*/
     surfaceMapper->SetLookupTable(m_lut);
     surfaceActor = vtkSmartPointer<vtkActor>::New();
     surfaceActor->SetMapper(surfaceMapper);
-    surfaceActor->GetProperty()->SetOpacity(1); // ·Ç³£Í¸Ã÷µÄ±íÃæ
+    surfaceActor->GetProperty()->SetOpacity(1); // éå¸¸é€æ˜çš„è¡¨é¢
 
     //m_renderer->AddActor(wireframeActor);
-    m_renderer->AddActor(surfaceActor); // ¿ÉÑ¡£ºÌí¼ÓÍ¸Ã÷±íÃæ
+    m_renderer->AddActor(surfaceActor); // å¯é€‰ï¼šæ·»åŠ é€æ˜è¡¨é¢
 
 
     m_mapper->SetInputData(m_polyData);
 
 
-    m_scalarBarActor->SetTitle("Intensity");  // ÉèÖÃ±êÌâ
-    m_scalarBarActor->SetMaximumNumberOfColors(256); // ÉèÖÃÑÕÉ«ÊıÁ¿
+    m_scalarBarActor->SetTitle("Intensity");  // è®¾ç½®æ ‡é¢˜
+    m_scalarBarActor->SetMaximumNumberOfColors(256); // è®¾ç½®é¢œè‰²æ•°é‡
     m_renderer->AddActor2D(m_scalarBarActor);
     this->renderWindow()->AddRenderer(m_renderer);
 }
@@ -133,13 +133,13 @@ ISOLuxPlot::ISOLuxPlot()/*:vtx(nullptr),itx(nullptr)*/
 //
 //}
 //void ISOLuxPlot::generateMeshIndices() {
-//    // ¼òµ¥µÄÍø¸ñÉú³ÉËã·¨ (½öÓÃÓÚÑİÊ¾)
-//    // Êµ¼ÊÓ¦ÓÃÖĞÓ¦¸ÃÊ¹ÓÃ¸ü¸´ÔÓµÄËã·¨ÈçPoissonÖØ½¨»òDelaunayÈı½Ç»¯
+//    // ç®€å•çš„ç½‘æ ¼ç”Ÿæˆç®—æ³• (ä»…ç”¨äºæ¼”ç¤º)
+//    // å®é™…åº”ç”¨ä¸­åº”è¯¥ä½¿ç”¨æ›´å¤æ‚çš„ç®—æ³•å¦‚Poissoné‡å»ºæˆ–Delaunayä¸‰è§’åŒ–
 //    const int theta = 1810;
 //    const int phi = 361;
 //    const int numPoints = theta * phi;
 //
-//    // ´´½¨¹æÔòÍø¸ñ
+//    // åˆ›å»ºè§„åˆ™ç½‘æ ¼
 //    QVector<QVector3D> gridVertices;
 //    QVector<float> gridValues;
 //
@@ -236,9 +236,9 @@ ISOLuxDialog::ISOLuxDialog(QWidget *parent)
     ui->spinLevels->setFocusPolicy(Qt::NoFocus);
     ui->spinNbOfPoints->setFocusPolicy(Qt::NoFocus);
     Qt::WindowFlags flags = Qt::Dialog;
-    // Ìí¼Ó×î´ó»¯ºÍ×îĞ¡»¯°´Å¥
+    // æ·»åŠ æœ€å¤§åŒ–å’Œæœ€å°åŒ–æŒ‰é’®
     flags |= Qt::WindowMinMaxButtonsHint;
-    // Ìí¼Ó¹Ø±Õ°´Å¥
+    // æ·»åŠ å…³é—­æŒ‰é’®
     flags |= Qt::WindowCloseButtonHint;
     setWindowFlags(flags);
     m_m2feet = 3.2808399;
@@ -456,9 +456,9 @@ void ISOLuxPlot::updateIESXY(double distance, double halfmap)
         return;
     clearPoints();
 
-    m_scalarBarActor->SetNumberOfLabels(m_levelSize);   // ÉèÖÃ±êÇ©ÊıÁ¿
+    m_scalarBarActor->SetNumberOfLabels(m_levelSize);   // è®¾ç½®æ ‡ç­¾æ•°é‡
     m_intensities->SetName("Intensity");
-    // ¼ÆËã×î´ó¹âÇ¿ÖµÓÃÓÚ¹éÒ»»¯
+    // è®¡ç®—æœ€å¤§å…‰å¼ºå€¼ç”¨äºå½’ä¸€åŒ–
     double maxIntensity = IESLoader::instance().light.max_candela;
     maxIlluminance = 0;
     minIlluminance = 1e9;
@@ -499,7 +499,7 @@ void ISOLuxPlot::updateIESXY(double distance, double halfmap)
 
     vtkSmartPointer<vtkCellArray> lines = vtkSmartPointer<vtkCellArray>::New();
 
-    // Ìí¼ÓË®Æ½Ïß
+    // æ·»åŠ æ°´å¹³çº¿
     for (int i = 0; i < gridSize; ++i) {
         for (int j = 0; j < gridSize - 1; ++j) {
             vtkIdType pt1 = i * gridSize + j;
@@ -512,7 +512,7 @@ void ISOLuxPlot::updateIESXY(double distance, double halfmap)
         }
     }
 
-    // Ìí¼Ó´¹Ö±Ïß
+    // æ·»åŠ å‚ç›´çº¿
     for (int j = 0; j < gridSize; ++j) {
         for (int i = 0; i < gridSize - 1; ++i) {
             vtkIdType pt1 = i * gridSize + j;
@@ -525,13 +525,13 @@ void ISOLuxPlot::updateIESXY(double distance, double halfmap)
         }
     }
 
-    // ´´½¨¶à±ßĞÎÊı¾İ
+    // åˆ›å»ºå¤šè¾¹å½¢æ•°æ®
     m_polyData->SetPoints(m_points);
     //m_polyData->SetPolys(cells);
     m_polyData->GetPointData()->SetScalars(m_intensities);
     m_polyData->SetLines(lines);
 
-    // Ê¹ÓÃ¶¥µãÂË²¨Æ÷ÏÔÊ¾µã
+    // ä½¿ç”¨é¡¶ç‚¹æ»¤æ³¢å™¨æ˜¾ç¤ºç‚¹
     //m_glyphFilter->SetInputData(m_polyData);
     //m_glyphFilter->Update();
 
@@ -566,10 +566,10 @@ void ISOLuxPlot::updateIESYZ(double distance, double halfmap)
 
     clearPoints();
 
-    m_scalarBarActor->SetNumberOfLabels(m_levelSize);   // ÉèÖÃ±êÇ©ÊıÁ¿
+    m_scalarBarActor->SetNumberOfLabels(m_levelSize);   // è®¾ç½®æ ‡ç­¾æ•°é‡
 
     m_intensities->SetName("Intensity");
-    // ¼ÆËã×î´ó¹âÇ¿ÖµÓÃÓÚ¹éÒ»»¯
+    // è®¡ç®—æœ€å¤§å…‰å¼ºå€¼ç”¨äºå½’ä¸€åŒ–
     double maxIntensity = IESLoader::instance().light.max_candela;
     maxIlluminance = 0;
     minIlluminance = 1e9;
@@ -610,7 +610,7 @@ void ISOLuxPlot::updateIESYZ(double distance, double halfmap)
 
     vtkSmartPointer<vtkCellArray> lines = vtkSmartPointer<vtkCellArray>::New();
 
-    // Ìí¼ÓË®Æ½Ïß
+    // æ·»åŠ æ°´å¹³çº¿
     for (int i = 0; i < gridSize; ++i) {
         for (int j = 0; j < gridSize - 1; ++j) {
             vtkIdType pt1 = i * gridSize + j;
@@ -623,7 +623,7 @@ void ISOLuxPlot::updateIESYZ(double distance, double halfmap)
         }
     }
 
-    // Ìí¼Ó´¹Ö±Ïß
+    // æ·»åŠ å‚ç›´çº¿
     for (int j = 0; j < gridSize; ++j) {
         for (int i = 0; i < gridSize - 1; ++i) {
             vtkIdType pt1 = i * gridSize + j;
@@ -636,16 +636,16 @@ void ISOLuxPlot::updateIESYZ(double distance, double halfmap)
         }
     }
 
-    // ´´½¨¶à±ßĞÎÊı¾İ
+    // åˆ›å»ºå¤šè¾¹å½¢æ•°æ®
     m_polyData->SetPoints(m_points);
     //m_polyData->SetPolys(cells);
     m_polyData->GetPointData()->SetScalars(m_intensities);
     m_polyData->SetLines(lines);
-    // Ê¹ÓÃ¶¥µãÂË²¨Æ÷ÏÔÊ¾µã
+    // ä½¿ç”¨é¡¶ç‚¹æ»¤æ³¢å™¨æ˜¾ç¤ºç‚¹
     //m_glyphFilter->SetInputData(m_polyData);
     //m_glyphFilter->Update();
 
-    // ¸üĞÂÁ¢·½Ìå×ø±êÖá±ß½ç
+    // æ›´æ–°ç«‹æ–¹ä½“åæ ‡è½´è¾¹ç•Œ
     updateCubeAxesBounds();
     if (cubeAxesActor && m_polyData)
     {
@@ -679,9 +679,9 @@ void ISOLuxPlot::updateIESXY_(double distance, double halfmap)
         return;
     clearPoints();
 
-    m_scalarBarActor->SetNumberOfLabels(m_levelSize);   // ÉèÖÃ±êÇ©ÊıÁ¿
+    m_scalarBarActor->SetNumberOfLabels(m_levelSize);   // è®¾ç½®æ ‡ç­¾æ•°é‡
     m_intensities->SetName("Intensity");
-    // ¼ÆËã×î´ó¹âÇ¿ÖµÓÃÓÚ¹éÒ»»¯
+    // è®¡ç®—æœ€å¤§å…‰å¼ºå€¼ç”¨äºå½’ä¸€åŒ–
     double maxIntensity = IESLoader::instance().light.max_candela;
     maxIlluminance = 0;
     minIlluminance = 1e9;
@@ -722,7 +722,7 @@ void ISOLuxPlot::updateIESXY_(double distance, double halfmap)
 
     vtkSmartPointer<vtkCellArray> lines = vtkSmartPointer<vtkCellArray>::New();
 
-    // Ìí¼ÓË®Æ½Ïß
+    // æ·»åŠ æ°´å¹³çº¿
     for (int i = 0; i < gridSize; ++i) {
         for (int j = 0; j < gridSize - 1; ++j) {
             vtkIdType pt1 = i * gridSize + j;
@@ -735,7 +735,7 @@ void ISOLuxPlot::updateIESXY_(double distance, double halfmap)
         }
     }
 
-    // Ìí¼Ó´¹Ö±Ïß
+    // æ·»åŠ å‚ç›´çº¿
     for (int j = 0; j < gridSize; ++j) {
         for (int i = 0; i < gridSize - 1; ++i) {
             vtkIdType pt1 = i * gridSize + j;
@@ -748,13 +748,13 @@ void ISOLuxPlot::updateIESXY_(double distance, double halfmap)
         }
     }
 
-    // ´´½¨¶à±ßĞÎÊı¾İ
+    // åˆ›å»ºå¤šè¾¹å½¢æ•°æ®
     m_polyData->SetPoints(m_points);
     //m_polyData->SetPolys(cells);
     m_polyData->GetPointData()->SetScalars(m_intensities);
     m_polyData->SetLines(lines);
 
-    // Ê¹ÓÃ¶¥µãÂË²¨Æ÷ÏÔÊ¾µã
+    // ä½¿ç”¨é¡¶ç‚¹æ»¤æ³¢å™¨æ˜¾ç¤ºç‚¹
     //m_glyphFilter->SetInputData(m_polyData);
     //m_glyphFilter->Update();
 
@@ -789,10 +789,10 @@ void ISOLuxPlot::updateIESYZ_(double distance, double halfmap)
 
     clearPoints();
 
-    m_scalarBarActor->SetNumberOfLabels(m_levelSize);   // ÉèÖÃ±êÇ©ÊıÁ¿
+    m_scalarBarActor->SetNumberOfLabels(m_levelSize);   // è®¾ç½®æ ‡ç­¾æ•°é‡
 
     m_intensities->SetName("Intensity");
-    // ¼ÆËã×î´ó¹âÇ¿ÖµÓÃÓÚ¹éÒ»»¯
+    // è®¡ç®—æœ€å¤§å…‰å¼ºå€¼ç”¨äºå½’ä¸€åŒ–
     double maxIntensity = IESLoader::instance().light.max_candela;
     maxIlluminance = 0;
     minIlluminance = 1e9;
@@ -833,7 +833,7 @@ void ISOLuxPlot::updateIESYZ_(double distance, double halfmap)
 
     vtkSmartPointer<vtkCellArray> lines = vtkSmartPointer<vtkCellArray>::New();
 
-    // Ìí¼ÓË®Æ½Ïß
+    // æ·»åŠ æ°´å¹³çº¿
     for (int i = 0; i < gridSize; ++i) {
         for (int j = 0; j < gridSize - 1; ++j) {
             vtkIdType pt1 = i * gridSize + j;
@@ -846,7 +846,7 @@ void ISOLuxPlot::updateIESYZ_(double distance, double halfmap)
         }
     }
 
-    // Ìí¼Ó´¹Ö±Ïß
+    // æ·»åŠ å‚ç›´çº¿
     for (int j = 0; j < gridSize; ++j) {
         for (int i = 0; i < gridSize - 1; ++i) {
             vtkIdType pt1 = i * gridSize + j;
@@ -859,16 +859,16 @@ void ISOLuxPlot::updateIESYZ_(double distance, double halfmap)
         }
     }
 
-    // ´´½¨¶à±ßĞÎÊı¾İ
+    // åˆ›å»ºå¤šè¾¹å½¢æ•°æ®
     m_polyData->SetPoints(m_points);
     //m_polyData->SetPolys(cells);
     m_polyData->GetPointData()->SetScalars(m_intensities);
     m_polyData->SetLines(lines);
-    // Ê¹ÓÃ¶¥µãÂË²¨Æ÷ÏÔÊ¾µã
+    // ä½¿ç”¨é¡¶ç‚¹æ»¤æ³¢å™¨æ˜¾ç¤ºç‚¹
     //m_glyphFilter->SetInputData(m_polyData);
     //m_glyphFilter->Update();
 
-    // ¸üĞÂÁ¢·½Ìå×ø±êÖá±ß½ç
+    // æ›´æ–°ç«‹æ–¹ä½“åæ ‡è½´è¾¹ç•Œ
     updateCubeAxesBounds();
     if (cubeAxesActor && m_polyData)
     {
@@ -901,9 +901,9 @@ void ISOLuxPlot::updateIESXZ_(double distance, double halfmap)
         return;
     clearPoints();
 
-    m_scalarBarActor->SetNumberOfLabels(m_levelSize);   // ÉèÖÃ±êÇ©ÊıÁ¿
+    m_scalarBarActor->SetNumberOfLabels(m_levelSize);   // è®¾ç½®æ ‡ç­¾æ•°é‡
     m_intensities->SetName("Intensity");
-    // ¼ÆËã×î´ó¹âÇ¿ÖµÓÃÓÚ¹éÒ»»¯
+    // è®¡ç®—æœ€å¤§å…‰å¼ºå€¼ç”¨äºå½’ä¸€åŒ–
     double maxIntensity = IESLoader::instance().light.max_candela;
     maxIlluminance = 0;
     minIlluminance = 1e9;
@@ -948,7 +948,7 @@ void ISOLuxPlot::updateIESXZ_(double distance, double halfmap)
 
     vtkSmartPointer<vtkCellArray> lines = vtkSmartPointer<vtkCellArray>::New();
 
-    // Ìí¼ÓË®Æ½Ïß
+    // æ·»åŠ æ°´å¹³çº¿
     for (int i = 0; i < gridSize; ++i) {
         for (int j = 0; j < gridSize - 1; ++j) {
             vtkIdType pt1 = i * gridSize + j;
@@ -961,7 +961,7 @@ void ISOLuxPlot::updateIESXZ_(double distance, double halfmap)
         }
     }
 
-    // Ìí¼Ó´¹Ö±Ïß
+    // æ·»åŠ å‚ç›´çº¿
     for (int j = 0; j < gridSize; ++j) {
         for (int i = 0; i < gridSize - 1; ++i) {
             vtkIdType pt1 = i * gridSize + j;
@@ -973,7 +973,7 @@ void ISOLuxPlot::updateIESXZ_(double distance, double halfmap)
             lines->InsertNextCell(line);
         }
     }
-    // ´´½¨¶à±ßĞÎÊı¾İ
+    // åˆ›å»ºå¤šè¾¹å½¢æ•°æ®
     m_polyData->SetPoints(m_points);
     //m_polyData->SetPolys(cells);
     m_polyData->GetPointData()->SetScalars(m_intensities);
@@ -1004,11 +1004,11 @@ void ISOLuxPlot::updateIESXZ_(double distance, double halfmap)
 
     this->renderWindow()->Render();
 }
-// ´´½¨ÑÕÉ«²éÕÒ±í
+// åˆ›å»ºé¢œè‰²æŸ¥æ‰¾è¡¨
 vtkSmartPointer<vtkLookupTable> ISOLuxPlot::createColorLookupTable() 
 {
     m_lut = vtkSmartPointer<vtkLookupTable>::New();
-    //m_lut->SetHueRange(0.0, 0.7); // ´ÓºìÉ«µ½À¶É«
+    //m_lut->SetHueRange(0.0, 0.7); // ä»çº¢è‰²åˆ°è“è‰²
     //m_lut->SetSaturationRange(1.0, 1.0);
     //m_lut->SetValueRange(1.0, 1.0);
     //m_lut->SetAlphaRange(1.0, 1.0);
@@ -1017,28 +1017,28 @@ vtkSmartPointer<vtkLookupTable> ISOLuxPlot::createColorLookupTable()
         double r, g, b;
 
         if (t < 0.25) {
-            // À¶É«µ½ÇàÉ«
+            // è“è‰²åˆ°é’è‰²
             double local_t = t / 0.25;
             r = 0.0;
             g = 0.5 * local_t;
             b = 1.0 - 0.5 * local_t;
         }
         else if (t < 0.5) {
-            // ÇàÉ«µ½ÂÌÉ«
+            // é’è‰²åˆ°ç»¿è‰²
             double local_t = (t - 0.25) / 0.25;
             r = 0.0;
             g = 0.5 + 0.5 * local_t;
             b = 0.5 - 0.5 * local_t;
         }
         else if (t < 0.75) {
-            // ÂÌÉ«µ½»ÆÉ«
+            // ç»¿è‰²åˆ°é»„è‰²
             double local_t = (t - 0.5) / 0.25;
             r = 1.0 * local_t;
             g = 1.0;
             b = 0.0;
         }
         else {
-            // »ÆÉ«µ½³ÈÉ«
+            // é»„è‰²åˆ°æ©™è‰²
             double local_t = (t - 0.75) / 0.25;
             r = 1.0;
             g = 1.0 - 0.5 * local_t;
@@ -1056,7 +1056,7 @@ void ISOLuxPlot::clearPoints()
     m_points->Reset();
     m_intensities->Reset();
 }
-// ´´½¨±êÁ¿Ìõ
+// åˆ›å»ºæ ‡é‡æ¡
 vtkSmartPointer<vtkScalarBarActor> ISOLuxPlot::createScalarBar(vtkLookupTable* lut) {
     m_scalarBarActor = vtkSmartPointer<vtkScalarBarActor>::New();
     m_scalarBarActor->SetLookupTable(lut);
@@ -1069,21 +1069,21 @@ vtkSmartPointer<vtkScalarBarActor> ISOLuxPlot::createScalarBar(vtkLookupTable* l
     m_scalarBarActor->SetPosition(0.85, 0.15);
     return m_scalarBarActor;
 }
-// ´´½¨×ø±êÖáÍø¸ñ
+// åˆ›å»ºåæ ‡è½´ç½‘æ ¼
 vtkSmartPointer<vtkActor> ISOLuxPlot::createCoordinateGrid() 
 {
     cubeAxesActor = vtkSmartPointer<vtkCubeAxesActor>::New();
     //cubeAxesActor->SetCamera(m_renderer->GetActiveCamera());
-    // ÉèÖÃ×ø±êÖá±êÌâ
+    // è®¾ç½®åæ ‡è½´æ ‡é¢˜
     //cubeAxesActor->SetXTitle("X Axis (m)");
     //cubeAxesActor->SetYTitle("Y Axis (m)");
     //cubeAxesActor->SetZTitle("Z Axis (m)");
 
-    // ÉèÖÃ×ø±êÖá±êÇ©¸ñÊ½
+    // è®¾ç½®åæ ‡è½´æ ‡ç­¾æ ¼å¼
     //cubeAxesActor->SetXLabelFormat("%6.1f");
     //cubeAxesActor->SetYLabelFormat("%6.1f");
     //cubeAxesActor->SetZLabelFormat("%6.1f");
-    //cubeAxesActor->GetXAxesLinesProperty()->SetColor(1, 1, 1); // °×É«ÖáÏß
+    //cubeAxesActor->GetXAxesLinesProperty()->SetColor(1, 1, 1); // ç™½è‰²è½´çº¿
     //cubeAxesActor->GetYAxesLinesProperty()->SetColor(1, 1, 1);
     //cubeAxesActor->GetZAxesLinesProperty()->SetColor(1, 1, 1);
 
@@ -1094,7 +1094,7 @@ vtkSmartPointer<vtkActor> ISOLuxPlot::createCoordinateGrid()
     //cubeAxesActor->GetLabelTextProperty(0)->SetColor(1, 1, 1);
     //cubeAxesActor->GetLabelTextProperty(1)->SetColor(1, 1, 1);
     //cubeAxesActor->GetLabelTextProperty(2)->SetColor(1, 1, 1);
-    //cubeAxesActor->SetFlyModeToOuterEdges(); // ×ø±êÖáÊ¼ÖÕÔÚ±ß½çÉÏ
+    //cubeAxesActor->SetFlyModeToOuterEdges(); // åæ ‡è½´å§‹ç»ˆåœ¨è¾¹ç•Œä¸Š
 
     //cubeAxesActor->SetScreenSize(6);
     cubeAxesActor->DrawXGridlinesOn();
@@ -1109,7 +1109,7 @@ vtkSmartPointer<vtkActor> ISOLuxPlot::createCoordinateGrid()
     cubeAxesActor->SetFlyModeToFurthestTriad();
     cubeAxesActor->SetGridLineLocation(vtkCubeAxesActor::VTK_GRID_LINES_FURTHEST);
 
-    // ´´½¨·½Ïò±ê¼Ç£¨¿ÉÑ¡£¬ÓÃÓÚÏÔÊ¾·½Ïò£©
+    // åˆ›å»ºæ–¹å‘æ ‡è®°ï¼ˆå¯é€‰ï¼Œç”¨äºæ˜¾ç¤ºæ–¹å‘ï¼‰
     ////axes = vtkSmartPointer<vtkAxesActor>::New();
     ////axes->SetTotalLength(1.0, 1.0, 1.0);
     ////axes->SetShaftTypeToCylinder();
@@ -1120,7 +1120,7 @@ vtkSmartPointer<vtkActor> ISOLuxPlot::createCoordinateGrid()
     ////axesWidget->SetInteractor(interactor);
     ////axesWidget->SetViewport(0.0, 0.0, 0.2, 0.2);
     ////axesWidget->SetEnabled(1);
-    ////axesWidget->InteractiveOn(); // ÔÊĞí½»»¥
+    ////axesWidget->InteractiveOn(); // å…è®¸äº¤äº’
 
     //m_renderer->AddActor(cubeAxesActor);
     //m_renderer->ResetCamera();
@@ -1165,23 +1165,23 @@ void ISOLuxPlot::updateCubeAxesBounds() {
 
 
 void ISOLuxPlot::setViewToIsometric45() {
-    // 45¡ãµÈÖá²âÊÓÍ¼
+    // 45Â°ç­‰è½´æµ‹è§†å›¾
     vtkCamera* camera = m_renderer->GetActiveCamera();
 
-    // ¼ÆËã45¡ãµÈÖá²âÎ»ÖÃ
-    double distance = 100; // Ïà»ú¾àÀë
-    double angle = 45.0 * vtkMath::Pi() / 180.0; // 45¶È×ª»»Îª»¡¶È
+    // è®¡ç®—45Â°ç­‰è½´æµ‹ä½ç½®
+    double distance = 100; // ç›¸æœºè·ç¦»
+    double angle = 45.0 * vtkMath::Pi() / 180.0; // 45åº¦è½¬æ¢ä¸ºå¼§åº¦
 
-    // 45¡ãµÈÖá²âÎ»ÖÃ (1,1,1)·½Ïò
+    // 45Â°ç­‰è½´æµ‹ä½ç½® (1,1,1)æ–¹å‘
     double x = distance * sin(angle) * cos(angle);
     double y = distance * sin(angle) * sin(angle);
     double z = distance * cos(angle);
 
     camera->SetPosition(x, y, z);
     camera->SetFocalPoint(0, 0, 10);
-    camera->SetViewUp(0, 0, 1);  // ZÖáÏòÉÏ
+    camera->SetViewUp(0, 0, 1);  // Zè½´å‘ä¸Š
 
-    // µ÷ÕûCubeAxesActor
+    // è°ƒæ•´CubeAxesActor
     if (cubeAxesActor) {
         cubeAxesActor->SetCamera(camera);
     }
@@ -1214,9 +1214,9 @@ void ISOLuxPlot::updateIESXZ(double distance, double halfmap)
         return;
     clearPoints();
 
-    m_scalarBarActor->SetNumberOfLabels(m_levelSize);   // ÉèÖÃ±êÇ©ÊıÁ¿
+    m_scalarBarActor->SetNumberOfLabels(m_levelSize);   // è®¾ç½®æ ‡ç­¾æ•°é‡
     m_intensities->SetName("Intensity");
-    // ¼ÆËã×î´ó¹âÇ¿ÖµÓÃÓÚ¹éÒ»»¯
+    // è®¡ç®—æœ€å¤§å…‰å¼ºå€¼ç”¨äºå½’ä¸€åŒ–
     double maxIntensity = IESLoader::instance().light.max_candela;
     maxIlluminance = 0;
     minIlluminance = 1e9;
@@ -1261,7 +1261,7 @@ void ISOLuxPlot::updateIESXZ(double distance, double halfmap)
 
     vtkSmartPointer<vtkCellArray> lines = vtkSmartPointer<vtkCellArray>::New();
 
-    // Ìí¼ÓË®Æ½Ïß
+    // æ·»åŠ æ°´å¹³çº¿
     for (int i = 0; i < gridSize; ++i) {
         for (int j = 0; j < gridSize - 1; ++j) {
             vtkIdType pt1 = i * gridSize + j;
@@ -1274,7 +1274,7 @@ void ISOLuxPlot::updateIESXZ(double distance, double halfmap)
         }
     }
 
-    // Ìí¼Ó´¹Ö±Ïß
+    // æ·»åŠ å‚ç›´çº¿
     for (int j = 0; j < gridSize; ++j) {
         for (int i = 0; i < gridSize - 1; ++i) {
             vtkIdType pt1 = i * gridSize + j;
@@ -1286,7 +1286,7 @@ void ISOLuxPlot::updateIESXZ(double distance, double halfmap)
             lines->InsertNextCell(line);
         }
     }
-    // ´´½¨Íø¸ñÈı½ÇĞÎ
+    // åˆ›å»ºç½‘æ ¼ä¸‰è§’å½¢
     //for (int i = 0; i < gridSize - 1; ++i) {
     //    for (int j = 0; j < gridSize - 1; ++j) {
     //        vtkIdType quad[4];
@@ -1295,14 +1295,14 @@ void ISOLuxPlot::updateIESXZ(double distance, double halfmap)
     //        quad[2] = (i + 1) * gridSize + (j + 1);
     //        quad[3] = (i + 1) * gridSize + j;
 
-    //        // µÚÒ»¸öÈı½ÇĞÎ
+    //        // ç¬¬ä¸€ä¸ªä¸‰è§’å½¢
     //        vtkSmartPointer<vtkIdList> triangle1 = vtkSmartPointer<vtkIdList>::New();
     //        triangle1->InsertNextId(quad[0]);
     //        triangle1->InsertNextId(quad[1]);
     //        triangle1->InsertNextId(quad[2]);
     //        cells->InsertNextCell(triangle1);
 
-    //        // µÚ¶ş¸öÈı½ÇĞÎ
+    //        // ç¬¬äºŒä¸ªä¸‰è§’å½¢
     //        vtkSmartPointer<vtkIdList> triangle2 = vtkSmartPointer<vtkIdList>::New();
     //        triangle2->InsertNextId(quad[0]);
     //        triangle2->InsertNextId(quad[2]);
@@ -1310,12 +1310,12 @@ void ISOLuxPlot::updateIESXZ(double distance, double halfmap)
     //        cells->InsertNextCell(triangle2);
     //    }
     //}
-    // ´´½¨¶à±ßĞÎÊı¾İ
+    // åˆ›å»ºå¤šè¾¹å½¢æ•°æ®
     m_polyData->SetPoints(m_points);
     //m_polyData->SetPolys(cells);
     m_polyData->GetPointData()->SetScalars(m_intensities);
     m_polyData->SetLines(lines);
-    // Ê¹ÓÃ¶¥µãÂË²¨Æ÷ÏÔÊ¾µã
+    // ä½¿ç”¨é¡¶ç‚¹æ»¤æ³¢å™¨æ˜¾ç¤ºç‚¹
     //m_glyphFilter->SetInputData(m_polyData);
     //m_glyphFilter->Update();
 
@@ -1347,7 +1347,7 @@ void ISOLuxPlot::updateIESXZ(double distance, double halfmap)
 
 double ISOLuxPlot::calculateIlluminanceAtPoint_(double x, double y, double z)
 {
-    // ¼ÆËã¾àÀë
+    // è®¡ç®—è·ç¦»
     double dx = x - fixtureX;
     double dy = y - fixtureY;
     double dz = z - fixtureZ;
@@ -1355,25 +1355,25 @@ double ISOLuxPlot::calculateIlluminanceAtPoint_(double x, double y, double z)
 
     if (totalDistance == 0) return 0;
 
-    // ¼ÆËã´¹Ö±½Ç¶È (´ÓµÆ¾ßÏòÏÂÎªÕı)
-    double verticalAngle = acos(-dz / totalDistance) * 180.0 / M_PI;  // ×¢Òâ·ûºÅ
+    // è®¡ç®—å‚ç›´è§’åº¦ (ä»ç¯å…·å‘ä¸‹ä¸ºæ­£)
+    double verticalAngle = acos(-dz / totalDistance) * 180.0 / M_PI;  // æ³¨æ„ç¬¦å·
 
-    // ¼ÆËãË®Æ½½Ç¶È
+    // è®¡ç®—æ°´å¹³è§’åº¦
     double horizontalAngle = atan2(dy, dx) * 180.0 / M_PI;
     if (horizontalAngle < 0) horizontalAngle += 360;
 
-    // »ñÈ¡¹âÇ¿Öµ
+    // è·å–å…‰å¼ºå€¼
     double candela = IESLoader::instance().getCandelaValue(verticalAngle, horizontalAngle);
 
-    // ¼ÆËãÕÕ¶È (¾àÀëÆ½·½·´±È¶¨ÂÉ + ÓàÏÒ¶¨ÂÉ)
-    double cosIncidence = -dz / totalDistance;  // ÈëÉä½ÇÓàÏÒ
+    // è®¡ç®—ç…§åº¦ (è·ç¦»å¹³æ–¹åæ¯”å®šå¾‹ + ä½™å¼¦å®šå¾‹)
+    double cosIncidence = -dz / totalDistance;  // å…¥å°„è§’ä½™å¼¦
     double illuminance = candela / (totalDistance * totalDistance) * cosIncidence;
 
     return std::max(0.0, illuminance);
 }
 double ISOLuxPlot::calculateIlluminanceAtPoint(double x, double y, double z)
 {
-    // ¼ÆËã¾àÀë
+    // è®¡ç®—è·ç¦»
     double dx = x - fixtureX;
     double dy = y - fixtureY;
     double dz = z - fixtureZ;
@@ -1381,18 +1381,18 @@ double ISOLuxPlot::calculateIlluminanceAtPoint(double x, double y, double z)
 
     if (totalDistance == 0) return 0;
 
-    // ¼ÆËã´¹Ö±½Ç¶È (´ÓµÆ¾ßÏòÏÂÎªÕı)
-    double verticalAngle = acos(dz / totalDistance) * 180.0 / M_PI;  // ×¢Òâ·ûºÅ
+    // è®¡ç®—å‚ç›´è§’åº¦ (ä»ç¯å…·å‘ä¸‹ä¸ºæ­£)
+    double verticalAngle = acos(dz / totalDistance) * 180.0 / M_PI;  // æ³¨æ„ç¬¦å·
 
-    // ¼ÆËãË®Æ½½Ç¶È
+    // è®¡ç®—æ°´å¹³è§’åº¦
     double horizontalAngle = atan2(dy, dx) * 180.0 / M_PI;
     if (horizontalAngle < 0) horizontalAngle += 360;
 
-    // »ñÈ¡¹âÇ¿Öµ
+    // è·å–å…‰å¼ºå€¼
     double candela = IESLoader::instance().getCandelaValue(verticalAngle, horizontalAngle);
 
-    // ¼ÆËãÕÕ¶È (¾àÀëÆ½·½·´±È¶¨ÂÉ + ÓàÏÒ¶¨ÂÉ)
-    double cosIncidence = -dz / totalDistance;  // ÈëÉä½ÇÓàÏÒ
+    // è®¡ç®—ç…§åº¦ (è·ç¦»å¹³æ–¹åæ¯”å®šå¾‹ + ä½™å¼¦å®šå¾‹)
+    double cosIncidence = -dz / totalDistance;  // å…¥å°„è§’ä½™å¼¦
     double illuminance = candela / (totalDistance * totalDistance) * cosIncidence;
 
     return std::max(0.0, illuminance);

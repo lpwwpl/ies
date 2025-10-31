@@ -1,14 +1,24 @@
-#ifndef MTFVIEWER_H
-#define MTFVIEWER_H
+ï»¿#ifndef MTFVIEWWIDGET_H
+#define MTFVIEWWIDGET_H
 
 #include <QWidget>
 #include <QVector>
 #include <QPointF>
+#include <QString>
+#include "qcustomplot.h"
+//class QCustomPlot;
+//class QCPTextElement;
+//class QCPGraph;
 
-class QCustomPlot;
-class QCPGraph;
-class QCPLegend;
-class QCPAbstractLegendItem;
+struct MTFLine {
+    int index = 0;
+    QString label;
+    QString colorName;
+    bool visible = true;
+    bool selected = false;
+    QVector<QPointF> data;
+    QCPGraph* graph = nullptr;
+};
 
 class MTFViewer : public QWidget
 {
@@ -17,42 +27,52 @@ class MTFViewer : public QWidget
 public:
     explicit MTFViewer(QWidget* parent = nullptr);
 
-    // ´ÓÎÄ¼ş¼ÓÔØÊı¾İ
+    // æ•°æ®åŠ è½½
     bool loadFromFile(const QString& filename);
-    // ´Ó×Ö·û´®¼ÓÔØÊı¾İ
     bool loadFromString(const QString& data);
-    // Çå³ıËùÓĞÊı¾İ
     void clearData();
-    // ÉèÖÃ×ø±êÖá·¶Î§
+
+    // è§†å›¾æ§åˆ¶
     void setXRange(double min, double max);
     void setYRange(double min, double max);
-    // ÉèÖÃÍ¼±í±êÌâ
+    void resetView();
     void setTitle(const QString& title);
+
+    // å›¾ä¾‹æ§åˆ¶
+    void setLegendPosition(bool leftSide);
+    void showLegend(bool show);
+
+    QString currentFile() const { return m_currentFile; }
 
 signals:
     void dataLoaded(bool success);
-    void errorOccurred(const QString& error);
+    void errorOccurred(const QString& message);
 
 private slots:
     void onLegendClick(QCPLegend* legend, QCPAbstractLegendItem* item, QMouseEvent* event);
     void onSelectionChanged();
+    void onMouseDoubleClick(QMouseEvent* event);
+    void onPlottableClick(QCPAbstractPlottable* plottable, int dataIndex, QMouseEvent* event);
 
 private:
     void setupUI();
     void plotData();
     QColor getColorFromName(const QString& colorName);
-
-    struct MTFLine {
-        int index;
-        QString label;
-        QString colorName;
-        QVector<QPointF> data;
-        bool visible;
-    };
+    void updateGraphSelection(int graphIndex, bool selected);
+    void clearAllSelections();
 
     QCustomPlot* m_plot;
-    QVector<MTFLine> m_lines;
     QString m_currentFile;
+    QVector<MTFLine> m_lines;
+
+    // é»˜è®¤è§†å›¾èŒƒå›´
+    double m_defaultXMin = 0.0;
+    double m_defaultXMax = 200.0;
+    double m_defaultYMin = 0.0;
+    double m_defaultYMax = 1.1;
+
+    // é€‰æ‹©çŠ¶æ€
+    int m_currentSelectedIndex = -1;
 };
 
-#endif // MTFVIEWER_H
+#endif // MTFVIEWWIDGET_H

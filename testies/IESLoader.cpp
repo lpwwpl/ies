@@ -1,4 +1,4 @@
-#include "IESLoader.h"
+ï»¿#include "IESLoader.h"
 #include <QFile>
 #include <QTextStream>
 #include <QDebug>
@@ -28,7 +28,7 @@ bool IESLoader::loadFromFile(const QString& filename)
 }
 
 
-// Éú³ÉÏßĞÔ¿Õ¼ä
+// ç”Ÿæˆçº¿æ€§ç©ºé—´
 std::vector<double> IESLoader::linspace(double start, double end, int num) {
     if (num <= 1) {
         return std::vector<double>{start};
@@ -136,11 +136,11 @@ void IESLoader::getIntensityVectorized(int numThetas, int numPhis) {
 
 int IESLoader::findThetaIndex(double targetTheta)
 {
-    // ¹æ·¶»¯phiÖµµ½0-360·¶Î§
+    // è§„èŒƒåŒ–phiå€¼åˆ°0-360èŒƒå›´
     targetTheta = std::fmod(targetTheta, 180);
     if (targetTheta < 0) targetTheta += 180.0;
 
-    // ²éÕÒ×î½Ó½üµÄË÷Òı
+    // æŸ¥æ‰¾æœ€æ¥è¿‘çš„ç´¢å¼•
     int closestIndex = -1;
     double minDiff = std::numeric_limits<double>::max();
 
@@ -152,19 +152,19 @@ int IESLoader::findThetaIndex(double targetTheta)
         }
     }
 
-    // Èç¹ûÕÒµ½µÄË÷Òı¶ÔÓ¦µÄ½Ç¶ÈÓëÄ¿±ê½Ç¶ÈÏà²î½Ï´ó£¬ÔòÈÏÎªÃ»ÕÒµ½
-    if (closestIndex >= 0 && minDiff > 1.0) { // 1¶ÈÈİ²î
+    // å¦‚æœæ‰¾åˆ°çš„ç´¢å¼•å¯¹åº”çš„è§’åº¦ä¸ç›®æ ‡è§’åº¦ç›¸å·®è¾ƒå¤§ï¼Œåˆ™è®¤ä¸ºæ²¡æ‰¾åˆ°
+    if (closestIndex >= 0 && minDiff > 1.0) { // 1åº¦å®¹å·®
         return -1;
     }
 
     return closestIndex;
 }
 int IESLoader::findPhiIndex(double targetPhi) {
-    // ¹æ·¶»¯phiÖµµ½0-360·¶Î§
+    // è§„èŒƒåŒ–phiå€¼åˆ°0-360èŒƒå›´
     targetPhi = std::fmod(targetPhi, 360.0);
     if (targetPhi < 0) targetPhi += 360.0;
 
-    // ²éÕÒ×î½Ó½üµÄË÷Òı
+    // æŸ¥æ‰¾æœ€æ¥è¿‘çš„ç´¢å¼•
     int closestIndex = -1;
     double minDiff = std::numeric_limits<double>::max();
 
@@ -176,8 +176,8 @@ int IESLoader::findPhiIndex(double targetPhi) {
         }
     }
 
-    // Èç¹ûÕÒµ½µÄË÷Òı¶ÔÓ¦µÄ½Ç¶ÈÓëÄ¿±ê½Ç¶ÈÏà²î½Ï´ó£¬ÔòÈÏÎªÃ»ÕÒµ½
-    if (closestIndex >= 0 && minDiff > 1.0) { // 1¶ÈÈİ²î
+    // å¦‚æœæ‰¾åˆ°çš„ç´¢å¼•å¯¹åº”çš„è§’åº¦ä¸ç›®æ ‡è§’åº¦ç›¸å·®è¾ƒå¤§ï¼Œåˆ™è®¤ä¸ºæ²¡æ‰¾åˆ°
+    if (closestIndex >= 0 && minDiff > 1.0) { // 1åº¦å®¹å·®
         return -1;
     }
 
@@ -223,18 +223,18 @@ void IESLoader::get_coords()
 //
 //double IESLoader::interpolateCandela(double vertical, double horizontal) 
 //{
-//    // ½Ç¶È¹éÒ»»¯
+//    // è§’åº¦å½’ä¸€åŒ–
 //    while (horizontal < 0) horizontal += 360;
 //    while (horizontal >= 360) horizontal -= 360;
 //
 //    vertical = std::max(0.0, std::min(180.0, vertical));
 //
 //    if (0/*interpolationMethod*/ == 0) {
-//        // Ë«ÏßĞÔ²åÖµ
+//        // åŒçº¿æ€§æ’å€¼
 //        int vIdx1 = -1, vIdx2 = -1;
 //        int hIdx1 = -1, hIdx2 = -1;
 //
-//        // ÕÒµ½´¹Ö±·½ÏòµÄ²åÖµÇø¼ä
+//        // æ‰¾åˆ°å‚ç›´æ–¹å‘çš„æ’å€¼åŒºé—´
 //        for (int i = 0; i < light.vertical_angles.size() - 1; ++i) {
 //            if (vertical >= light.vertical_angles[i] && vertical <= light.vertical_angles[i + 1]) {
 //                vIdx1 = i;
@@ -243,7 +243,7 @@ void IESLoader::get_coords()
 //            }
 //        }
 //
-//        // ÕÒµ½Ë®Æ½·½ÏòµÄ²åÖµÇø¼ä
+//        // æ‰¾åˆ°æ°´å¹³æ–¹å‘çš„æ’å€¼åŒºé—´
 //        for (int j = 0; j < light.horizontal_angles.size() - 1; ++j) {
 //            if (horizontal >= light.horizontal_angles[j] && horizontal <= light.horizontal_angles[j + 1]) {
 //                hIdx1 = j;
@@ -253,11 +253,11 @@ void IESLoader::get_coords()
 //        }
 //
 //        if (vIdx1 == -1 || hIdx1 == -1) {
-//            // Ê¹ÓÃ×î½üÁÚ
+//            // ä½¿ç”¨æœ€è¿‘é‚»
 //            return getCandelaValue(vertical, horizontal);
 //        }
 //
-//        // Ë«ÏßĞÔ²åÖµ
+//        // åŒçº¿æ€§æ’å€¼
 //        double vAlpha = (vertical - light.vertical_angles[vIdx1]) /
 //            (light.vertical_angles[vIdx2] - light.vertical_angles[vIdx1]);
 //        double hAlpha = (horizontal - light.horizontal_angles[hIdx1]) /
@@ -271,7 +271,7 @@ void IESLoader::get_coords()
 //        return val1 * (1 - vAlpha) + val2 * vAlpha;
 //    }
 //    else {
-//        // ×î½üÁÚ²åÖµ
+//        // æœ€è¿‘é‚»æ’å€¼
 //        return getCandelaValue(vertical, horizontal);
 //    }
 //}
@@ -279,11 +279,11 @@ void IESLoader::get_coords()
 
 double IESLoader::getCandelaValue(double vertical, double horizontal) 
 {
-    // ½Ç¶È¹éÒ»»¯
+    // è§’åº¦å½’ä¸€åŒ–
     while (horizontal < 0) horizontal += 360;
     while (horizontal >= 360) horizontal -= 360;
 
-    // ¼òµ¥µÄ×î½üÁÚ²åÖµ - Êµ¼ÊÓ¦ÓÃÖĞÓ¦Ê¹ÓÃË«ÏßĞÔ²åÖµ
+    // ç®€å•çš„æœ€è¿‘é‚»æ’å€¼ - å®é™…åº”ç”¨ä¸­åº”ä½¿ç”¨åŒçº¿æ€§æ’å€¼
     int vIdx = 0, hIdx = 0;
     double minVDiff = 360, minHDiff = 360;
 
@@ -386,7 +386,7 @@ void IESLoader::loadIES(QString filename)
 
         vals4.insert(vals4.end(), vals3.begin(), vals3.end());
         vals4.pop_back();
-        std::reverse(vals4.begin(), vals4.end()); // ·´×ªÕû¸ö vector
+        std::reverse(vals4.begin(), vals4.end()); // åè½¬æ•´ä¸ª vector
         newValues.insert(newValues.end(), vals3.begin(), vals3.end());
         newValues.insert(newValues.end(), vals4.begin(), vals4.end());
 
@@ -411,7 +411,7 @@ void IESLoader::loadIES(QString filename)
         std::vector<std::vector<double>> vals1 = light.candela_hv;
         std::vector<std::vector<double>> vals2 = light.candela_hv;
         vals2.pop_back();
-        std::reverse(vals2.begin(), vals2.end()); // ·´×ªÕû¸ö vector
+        std::reverse(vals2.begin(), vals2.end()); // åè½¬æ•´ä¸ª vector
         newValues.insert(newValues.end(), vals1.begin(), vals1.end());
         newValues.insert(newValues.end(), vals2.begin(), vals2.end());
 
@@ -436,7 +436,7 @@ void IESLoader::loadIES(QString filename)
     for (double theta : newThetas_all) {
         newThetas_r1.push_back(/*qDegreesToRadians*/(theta));
     }
-    // ¼ÆËãtheta2: thetas + 180¶È£¬×ª»»Îª»¡¶È£¬²¢È¥µôµÚÒ»¸öµã
+    // è®¡ç®—theta2: thetas + 180åº¦ï¼Œè½¬æ¢ä¸ºå¼§åº¦ï¼Œå¹¶å»æ‰ç¬¬ä¸€ä¸ªç‚¹
     if (newThetas_all.size() > 1) {
         newThetas_r2.reserve(newThetas_all.size() - 1);
         for (int i = 1; i < newThetas_all.size(); ++i) {
@@ -444,7 +444,7 @@ void IESLoader::loadIES(QString filename)
         }
     }
 
-    // ÌáÈ¡0¶È·½ÏòµÄ¹âÇ¿Öµ
+    // æå–0åº¦æ–¹å‘çš„å…‰å¼ºå€¼
     int zeroPhiIndex = findPhiIndex(0.0);
     if (zeroPhiIndex >= 0) {
         r1 = newValues_all[zeroPhiIndex];
@@ -453,13 +453,13 @@ void IESLoader::loadIES(QString filename)
         qWarning() << "Phi values for 0 degrees not found";
     }
 
-    // ÌáÈ¡180¶È·½ÏòµÄ¹âÇ¿Öµ£¬·­×ª²¢È¥µôµÚÒ»¸öµã
+    // æå–180åº¦æ–¹å‘çš„å…‰å¼ºå€¼ï¼Œç¿»è½¬å¹¶å»æ‰ç¬¬ä¸€ä¸ªç‚¹
     int oneEightyPhiIndex = findPhiIndex(180.0);
     if (oneEightyPhiIndex >= 0) {
         r2 = newValues_all[oneEightyPhiIndex];
-        // ·­×ªÊı×é
+        // ç¿»è½¬æ•°ç»„
         std::reverse(r2.begin(), r2.end());
-        // È¥µôµÚÒ»¸öµã
+        // å»æ‰ç¬¬ä¸€ä¸ªç‚¹
         if (r2.size() > 1) {
             r2.erase(r2.begin());
         }
@@ -470,7 +470,7 @@ void IESLoader::loadIES(QString filename)
 
 
     // c90 - c270
-    // ÌáÈ¡0¶È·½ÏòµÄ¹âÇ¿Öµ
+    // æå–0åº¦æ–¹å‘çš„å…‰å¼ºå€¼
     zeroPhiIndex = findPhiIndex(90);
     if (zeroPhiIndex >= 0) {
         r3 = newValues_all[zeroPhiIndex];
@@ -481,9 +481,9 @@ void IESLoader::loadIES(QString filename)
     oneEightyPhiIndex = findPhiIndex(270);
     if (oneEightyPhiIndex >= 0) {
         r4 = newValues_all[oneEightyPhiIndex];
-        // ·­×ªÊı×é
+        // ç¿»è½¬æ•°ç»„
         std::reverse(r4.begin(), r4.end());
-        // È¥µôµÚÒ»¸öµã
+        // å»æ‰ç¬¬ä¸€ä¸ªç‚¹
         if (r4.size() > 1) {
             r4.erase(r4.begin());
         }
@@ -502,7 +502,7 @@ QOpenGLTexture* IESLoader::createTexture()
     int width = horizontalAngles.size();
     int height = verticalAngles.size();
 
-    // ´´½¨OpenGLÎÆÀí
+    // åˆ›å»ºOpenGLçº¹ç†
     QOpenGLTexture* texture = new QOpenGLTexture(QOpenGLTexture::Target2D);
     texture->setSize(width, height);
     texture->setFormat(QOpenGLTexture::R32F);
@@ -510,10 +510,10 @@ QOpenGLTexture* IESLoader::createTexture()
     texture->setMagnificationFilter(QOpenGLTexture::Linear);
     texture->setWrapMode(QOpenGLTexture::ClampToEdge);
 
-    // ·ÖÅä´æ´¢¿Õ¼ä
+    // åˆ†é…å­˜å‚¨ç©ºé—´
     texture->allocateStorage();
 
-    // ÉÏ´«ÎÆÀíÊı¾İ
+    // ä¸Šä¼ çº¹ç†æ•°æ®
     texture->setData(QOpenGLTexture::Red, QOpenGLTexture::Float32, iesData.constData());
 
     return texture;

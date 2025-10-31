@@ -1,4 +1,4 @@
-/*
+ï»¿/*
 MIT License
 
 Copyright(c) 2021 - 2024 Lukas Lipp
@@ -34,7 +34,7 @@ SOFTWARE.
 #include <stdio.h>
 #include <iostream>
 
-// ÊµÏÖmeshgrid¹¦ÄÜ£¬·µ»ØÁ½¸ö¾ØÕóXºÍY
+// å®ç°meshgridåŠŸèƒ½ï¼Œè¿”å›ä¸¤ä¸ªçŸ©é˜µXå’ŒY
 template<typename T>
 void meshgrid(const std::vector<T>& x, const std::vector<T>& y,
     std::vector<std::vector<T>>& X, std::vector<std::vector<T>>& Y,
@@ -42,12 +42,12 @@ void meshgrid(const std::vector<T>& x, const std::vector<T>& y,
     size_t nx = x.size();
     size_t ny = y.size();
 
-    // ³õÊ¼»¯Êä³ö¾ØÕó
+    // åˆå§‹åŒ–è¾“å‡ºçŸ©é˜µ
     X.resize(ny, std::vector<T>(nx));
     Y.resize(ny, std::vector<T>(nx));
 
     if (indexing) {
-        // 'xy' Ë÷Òı£ºXµÄĞĞÊÇxµÄ¸´ÖÆ£¬YµÄÁĞÊÇyµÄ¸´ÖÆ
+        // 'xy' ç´¢å¼•ï¼šXçš„è¡Œæ˜¯xçš„å¤åˆ¶ï¼ŒYçš„åˆ—æ˜¯yçš„å¤åˆ¶
         for (size_t i = 0; i < ny; ++i) {
             for (size_t j = 0; j < nx; ++j) {
                 X[i][j] = x[j];
@@ -56,7 +56,7 @@ void meshgrid(const std::vector<T>& x, const std::vector<T>& y,
         }
     }
     else {
-        // 'ij' Ë÷Òı£ºXµÄÁĞÊÇxµÄ¸´ÖÆ£¬YµÄĞĞÊÇyµÄ¸´ÖÆ
+        // 'ij' ç´¢å¼•ï¼šXçš„åˆ—æ˜¯xçš„å¤åˆ¶ï¼ŒYçš„è¡Œæ˜¯yçš„å¤åˆ¶
         for (size_t i = 0; i < ny; ++i) {
             for (size_t j = 0; j < nx; ++j) {
                 X[i][j] = x[i];
@@ -65,7 +65,7 @@ void meshgrid(const std::vector<T>& x, const std::vector<T>& y,
         }
     }
 }
-// »ù±¾°æ±¾£º´¦ÀíÇ¶Ì×µÄvector
+// åŸºæœ¬ç‰ˆæœ¬ï¼šå¤„ç†åµŒå¥—çš„vector
 template<typename T>
 std::vector<T> flatten(const std::vector<std::vector<T>>& nested) {
     std::vector<T> result;
@@ -74,7 +74,7 @@ std::vector<T> flatten(const std::vector<std::vector<T>>& nested) {
     }
     return result;
 }
-// ÖØÔØ°æ±¾£¬Ö»·µ»ØXºÍY¾ØÕó
+// é‡è½½ç‰ˆæœ¬ï¼Œåªè¿”å›Xå’ŒYçŸ©é˜µ
 template<typename T>
 std::pair<std::vector<std::vector<T>>, std::vector<std::vector<T>>>
 meshgrid(const std::vector<T>& x, const std::vector<T>& y, bool indexing = true) {
@@ -83,7 +83,7 @@ meshgrid(const std::vector<T>& x, const std::vector<T>& y, bool indexing = true)
     return { X, Y };
 }
 
-// ÊµÏÖNumPyµÄsearchsorted¹¦ÄÜ
+// å®ç°NumPyçš„searchsortedåŠŸèƒ½
 template<typename T>
 std::vector<T> searchsorted(const std::vector<T>& arr,
     const std::vector<T>& values,
@@ -123,7 +123,7 @@ std::vector<std::vector<T>> reshape_2d(const std::vector<T>& data,
 
     return result;
 }
-//// Ä£ÄâPythonµÄnp.mod¹¦ÄÜ£¬½«½Ç¶È¹éÒ»»¯µ½[0, 360)·¶Î§
+//// æ¨¡æ‹ŸPythonçš„np.modåŠŸèƒ½ï¼Œå°†è§’åº¦å½’ä¸€åŒ–åˆ°[0, 360)èŒƒå›´
 //std::vector<double> mod_360(const std::vector<double>& angles) {
 //	std::vector<double> result;
 //	result.reserve(angles.size());
@@ -137,7 +137,7 @@ std::vector<std::vector<T>> reshape_2d(const std::vector<T>& data,
 //	return result;
 //}
 
-// Ä£ÄâPythonµÄnp.clip¹¦ÄÜ
+// æ¨¡æ‹ŸPythonçš„np.clipåŠŸèƒ½
 template<typename T>
 std::vector<T> clip_indices(const std::vector<T>& indices,
     size_t min_val, size_t max_val) {
@@ -508,7 +508,7 @@ class BMPGenerator {
         uint32_t fileSize;
         uint16_t reserved1 = 0;
         uint16_t reserved2 = 0;
-        uint32_t dataOffset = 54; // Í·²¿´óĞ¡
+        uint32_t dataOffset = 54; // å¤´éƒ¨å¤§å°
     };
 
     struct BMPInfoHeader {
@@ -532,7 +532,7 @@ public:
         int width, int height) {
         std::ofstream file(filename, std::ios::binary);
         if (!file.is_open()) {
-            std::cerr << "ÎŞ·¨´´½¨BMPÎÄ¼ş: " << filename << std::endl;
+            std::cerr << "æ— æ³•åˆ›å»ºBMPæ–‡ä»¶: " << filename << std::endl;
             return false;
         }
 
@@ -542,7 +542,7 @@ public:
         infoHeader.width = width;
         infoHeader.height = height;
 
-        // ¼ÆËãÃ¿ĞĞ×Ö½ÚÊı£¨±ØĞëÊÇ4µÄ±¶Êı£©
+        // è®¡ç®—æ¯è¡Œå­—èŠ‚æ•°ï¼ˆå¿…é¡»æ˜¯4çš„å€æ•°ï¼‰
         int rowSize = (width * 3 + 3) & ~3;
         infoHeader.imageSize = rowSize * height;
         header.fileSize = infoHeader.imageSize + sizeof(BMPHeader) + sizeof(BMPInfoHeader);
@@ -550,12 +550,12 @@ public:
         file.write(reinterpret_cast<const char*>(&header), sizeof(header));
         file.write(reinterpret_cast<const char*>(&infoHeader), sizeof(infoHeader));
 
-        // Ğ´ÈëÍ¼ÏñÊı¾İ£¨BMPÊÇ´ÓÏÂµ½ÉÏ´æ´¢µÄ£©
+        // å†™å…¥å›¾åƒæ•°æ®ï¼ˆBMPæ˜¯ä»ä¸‹åˆ°ä¸Šå­˜å‚¨çš„ï¼‰
         for (int y = height - 1; y >= 0; --y) {
             int rowStart = y * width * 3;
             file.write(reinterpret_cast<const char*>(&imageData[rowStart]), width * 3);
 
-            // Ìî³äĞĞ¶ÔÆë×Ö½Ú
+            // å¡«å……è¡Œå¯¹é½å­—èŠ‚
             int padding = rowSize - width * 3;
             for (int i = 0; i < padding; ++i) {
                 file.put(0);
@@ -576,29 +576,29 @@ public:
 
         std::vector<uint8_t> textureData(textureWidth * textureHeight * 3, 0);
 
-        // ÕÒµ½×î´ó¹â¶ÈÖµÓÃÓÚ¹éÒ»»¯
+        // æ‰¾åˆ°æœ€å¤§å…‰åº¦å€¼ç”¨äºå½’ä¸€åŒ–
         float maxCandela = iesData.max_candela;
 
         if (maxCandela == 0.0f) {
-            return textureData; // ±ÜÃâ³ıÒÔÁã
+            return textureData; // é¿å…é™¤ä»¥é›¶
         }
 
-        // ½«IESÊı¾İÓ³Éäµ½ÎÆÀí
+        // å°†IESæ•°æ®æ˜ å°„åˆ°çº¹ç†
         for (int y = 0; y < textureHeight; ++y) {
             for (int x = 0; x < textureWidth; ++x) {
-                // ½«ÎÆÀí×ø±ê×ª»»ÎªÇòÃæ×ø±ê
+                // å°†çº¹ç†åæ ‡è½¬æ¢ä¸ºçƒé¢åæ ‡
                 float u = static_cast<float>(x) / textureWidth;
                 float v = static_cast<float>(y) / textureHeight;
 
-                ////// ¼ÆËã¶ÔÓ¦µÄIES½Ç¶ÈË÷Òı
+                ////// è®¡ç®—å¯¹åº”çš„IESè§’åº¦ç´¢å¼•
                 //int vIdx = static_cast<int>(u * iesData.vertical_angles.size()) % iesData.vertical_angles.size();
                 //int hIdx = static_cast<int>(v * iesData.horizontal_angles.size()) % iesData.horizontal_angles.size();
 
-                // »ñÈ¡¹â¶ÈÖµ²¢¹éÒ»»¯
+                // è·å–å…‰åº¦å€¼å¹¶å½’ä¸€åŒ–
                 float intensity = iesData.candela[x* textureHeight +y] / maxCandela;
                 uint8_t pixelValue = static_cast<uint8_t>(intensity * 255);
 
-                // ÉèÖÃRGBÖµ£¨´´½¨»Ò¶ÈÍ¼Ïñ£©
+                // è®¾ç½®RGBå€¼ï¼ˆåˆ›å»ºç°åº¦å›¾åƒï¼‰
                 int index = (y * textureWidth + x) * 3;
                 textureData[index] = pixelValue;     // B
                 textureData[index + 1] = pixelValue; // G

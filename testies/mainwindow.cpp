@@ -1,4 +1,4 @@
-#include "mainwindow.h"
+ï»¿#include "mainwindow.h"
 
 
 #include <QDebug>
@@ -41,15 +41,15 @@ MainWindow::MainWindow(QWidget* parent)
 
 
     DoubleItemDelegate* delegate = new DoubleItemDelegate(ui->tableWidget);
-    delegate->setRange(0.0, 1000000.0, 4); // ÓëValidatedTableWidgetÖĞµÄÉèÖÃÒ»ÖÂ
-    ui->tableWidget->setItemDelegate(delegate); // ÉèÖÃÎ¯ÍĞÓÃÓÚµ¥Ôª¸ñ
+    delegate->setRange(0.0, 1000000.0, 4); // ä¸ValidatedTableWidgetä¸­çš„è®¾ç½®ä¸€è‡´
+    ui->tableWidget->setItemDelegate(delegate); // è®¾ç½®å§”æ‰˜ç”¨äºå•å…ƒæ ¼
     bool value = connect(delegate, SIGNAL(editingFinished()), this, SLOT(slotDoubleValueChanged()));
 
-    // ĞĞ²Ù×÷
+    // è¡Œæ“ä½œ
     value = connect(ui->actionAdd_Horizontal_Angle, &QAction::triggered, this, &MainWindow::addColumn);
     connect(ui->actionDelete_Horizontal_Angle, &QAction::triggered, this, &MainWindow::deleteColumn);
 
-    // ÁĞ²Ù×÷
+    // åˆ—æ“ä½œ
     connect(ui->actionAdd_Vertical_Angle, &QAction::triggered, this, &MainWindow::addRow);
     connect(ui->actionDelete_Vertical_Angle, &QAction::triggered, this, &MainWindow::deleteRow);
    
@@ -117,18 +117,18 @@ MainWindow::MainWindow(QWidget* parent)
     m_veditor->installEventFilter(this);
     QDoubleValidator* hvalidator = new QDoubleValidator(m_heditor);
     hvalidator->setNotation(QDoubleValidator::StandardNotation);
-    hvalidator->setRange(0.0, 90, 2); // ÉèÖÃ·¶Î§ 0-360£¬×î¶à6Î»Ğ¡Êı
+    hvalidator->setRange(0.0, 90, 2); // è®¾ç½®èŒƒå›´ 0-360ï¼Œæœ€å¤š6ä½å°æ•°
     m_heditor->setValidator(hvalidator);
 
     QDoubleValidator* vvalidator = new QDoubleValidator(m_veditor);
     vvalidator->setNotation(QDoubleValidator::StandardNotation);
-    vvalidator->setRange(0.0, 180, 2); // ÉèÖÃ·¶Î§ 0-360£¬×î¶à6Î»Ğ¡Êı
+    vvalidator->setRange(0.0, 180, 2); // è®¾ç½®èŒƒå›´ 0-360ï¼Œæœ€å¤š6ä½å°æ•°
     m_veditor->setValidator(vvalidator);
 
     m_heditor->close();
     m_veditor->close();
 
-    // µ±±à¼­Æ÷Íê³É±à¼­Ê±£¬¸üĞÂ±íÍ·²¢É¾³ı±à¼­Æ÷
+    // å½“ç¼–è¾‘å™¨å®Œæˆç¼–è¾‘æ—¶ï¼Œæ›´æ–°è¡¨å¤´å¹¶åˆ é™¤ç¼–è¾‘å™¨
     connect(m_heditor, &QLineEdit::editingFinished, this, &MainWindow::slot_heditor);
     connect(m_veditor, &QLineEdit::editingFinished, this, &MainWindow::slot_veditor);
 
@@ -198,7 +198,7 @@ void MainWindow::slot_veditor()
 }
 void MainWindow::setupHeaderEditing()
 {
-    // ÆôÓÃ±íÍ·Ë«»÷±à¼­
+    // å¯ç”¨è¡¨å¤´åŒå‡»ç¼–è¾‘
     ui->tableWidget->horizontalHeader()->setSectionsClickable(true);
     ui->tableWidget->verticalHeader()->setSectionsClickable(true);
 
@@ -211,7 +211,7 @@ bool MainWindow::eventFilter(QObject* obj, QEvent* event)
     if (qobject_cast<QLineEdit*>(obj) && obj == m_heditor)
     {
         if (event->type() == QEvent::FocusOut) {
-            // Ê§È¥½¹µã£¬Ö±½Ó¹Ø±Õ±à¼­Æ÷£¬²»¸üĞÂ£¨ÊÓÎªÈ¡Ïû£©
+            // å¤±å»ç„¦ç‚¹ï¼Œç›´æ¥å…³é—­ç¼–è¾‘å™¨ï¼Œä¸æ›´æ–°ï¼ˆè§†ä¸ºå–æ¶ˆï¼‰
             m_editor_focusOut = false;
             slot_heditor();
  
@@ -221,7 +221,7 @@ bool MainWindow::eventFilter(QObject* obj, QEvent* event)
     else if (qobject_cast<QLineEdit*>(obj) && obj == m_veditor)
     {
         if (event->type() == QEvent::FocusOut) {
-            // Ê§È¥½¹µã£¬Ö±½Ó¹Ø±Õ±à¼­Æ÷£¬²»¸üĞÂ£¨ÊÓÎªÈ¡Ïû£©
+            // å¤±å»ç„¦ç‚¹ï¼Œç›´æ¥å…³é—­ç¼–è¾‘å™¨ï¼Œä¸æ›´æ–°ï¼ˆè§†ä¸ºå–æ¶ˆï¼‰
             m_editor_focusOut = false;
             slot_veditor();  
 
@@ -285,7 +285,7 @@ void MainWindow::addRow()
     }
 
 
-    // ±£´æĞĞÊı¾İµ½¼ôÌù°å
+    // ä¿å­˜è¡Œæ•°æ®åˆ°å‰ªè´´æ¿
     rowClipboard.clear();
     for (int col = 0; col < ui->tableWidget->columnCount(); ++col) {
         QTableWidgetItem* item = ui->tableWidget->item(currentRow, col);
@@ -297,7 +297,7 @@ void MainWindow::addRow()
         }
     }
 
-    // ±£´æ´¹Ö±±íÍ·
+    // ä¿å­˜å‚ç›´è¡¨å¤´
     QTableWidgetItem* headerItem = ui->tableWidget->verticalHeaderItem(currentRow);
     if (headerItem) {
         verticalHeaderClipboard = headerItem->text();
@@ -307,13 +307,13 @@ void MainWindow::addRow()
 
     ui->tableWidget->insertRow(currentRow);
 
-    // ÉèÖÃ´¹Ö±±íÍ·
+    // è®¾ç½®å‚ç›´è¡¨å¤´
     if (!verticalHeaderClipboard.isEmpty()) {
         QTableWidgetItem* headerItem = new QTableWidgetItem(verticalHeaderClipboard);
         ui->tableWidget->setVerticalHeaderItem(currentRow, headerItem);
     }
 
-    // Õ³ÌùÊı¾İ
+    // ç²˜è´´æ•°æ®
     for (int col = 0; col < ui->tableWidget->columnCount() && col < rowClipboard.size(); ++col) {
         QTableWidgetItem* item = new QTableWidgetItem(rowClipboard[col]);
         ui->tableWidget->setItem(currentRow, col, item);
@@ -350,7 +350,7 @@ void MainWindow::addColumn()
         currentColumn = ui->tableWidget->columnCount();
     }
 
-    // ±£´æÁĞÊı¾İµ½¼ôÌù°å
+    // ä¿å­˜åˆ—æ•°æ®åˆ°å‰ªè´´æ¿
     columnClipboard.clear();
     for (int row = 0; row < ui->tableWidget->rowCount(); ++row) {
         QTableWidgetItem* item = ui->tableWidget->item(row, currentColumn);
@@ -362,7 +362,7 @@ void MainWindow::addColumn()
         }
     }
 
-    // ±£´æË®Æ½±íÍ·
+    // ä¿å­˜æ°´å¹³è¡¨å¤´
     QTableWidgetItem* headerItem = ui->tableWidget->horizontalHeaderItem(currentColumn);
     if (headerItem) {
         horizontalHeaderClipboard = headerItem->text();
@@ -370,13 +370,13 @@ void MainWindow::addColumn()
 
     ui->tableWidget->insertColumn(currentColumn);
 
-    // ÉèÖÃË®Æ½±íÍ·
+    // è®¾ç½®æ°´å¹³è¡¨å¤´
     if (!horizontalHeaderClipboard.isEmpty()) {
         QTableWidgetItem* headerItem = new QTableWidgetItem(horizontalHeaderClipboard);
         ui->tableWidget->setHorizontalHeaderItem(currentColumn, headerItem);
     }
 
-    // Õ³ÌùÊı¾İ
+    // ç²˜è´´æ•°æ®
     for (int row = 0; row < ui->tableWidget->rowCount() && row < columnClipboard.size(); ++row) {
         QTableWidgetItem* item = new QTableWidgetItem(columnClipboard[row]);
         ui->tableWidget->setItem(row, currentColumn, item);
@@ -410,25 +410,25 @@ void MainWindow::populateTableFromIESData()
     std::vector<double> horizontalAngles = IESLoader::instance().light.horizontal_angles;
     std::vector<std::vector<double>> intensityData = IESLoader::instance().light.candela_hv;
 
-    // ÉèÖÃ±í¸ñ³ß´ç
+    // è®¾ç½®è¡¨æ ¼å°ºå¯¸
     ui->tableWidget->setColumnCount(horizontalAngles.size());
     ui->tableWidget->setRowCount(verticalAngles.size());
 
-    // ÉèÖÃ´¹Ö±±íÍ·£¨´¹Ö±½Ç¶È£©
+    // è®¾ç½®å‚ç›´è¡¨å¤´ï¼ˆå‚ç›´è§’åº¦ï¼‰
     for (int row = 0; row < verticalAngles.size(); ++row) {
         QTableWidgetItem* headerItem = new QTableWidgetItem(
             QString("%1").arg(verticalAngles[row], 0, 'f', 1));
         ui->tableWidget->setVerticalHeaderItem(row, headerItem);
     }
 
-    // ÉèÖÃË®Æ½±íÍ·£¨Ë®Æ½½Ç¶È£©
+    // è®¾ç½®æ°´å¹³è¡¨å¤´ï¼ˆæ°´å¹³è§’åº¦ï¼‰
     for (int col = 0; col < horizontalAngles.size(); ++col) {
         QTableWidgetItem* headerItem = new QTableWidgetItem(
             QString("%1").arg(horizontalAngles[col], 0, 'f', 1));
         ui->tableWidget->setHorizontalHeaderItem(col, headerItem);
     }
 
-    // Ìî³ä¹âÇ¿Êı¾İ
+    // å¡«å……å…‰å¼ºæ•°æ®
     for (int row = 0; row < verticalAngles.size(); ++row) {
         for (int col = 0; col < horizontalAngles.size(); ++col) {
             QTableWidgetItem* item = new QTableWidgetItem(
@@ -437,7 +437,7 @@ void MainWindow::populateTableFromIESData()
         }
     }
 
-    // µ÷ÕûÁĞ¿í
+    // è°ƒæ•´åˆ—å®½
     ui->tableWidget->resizeColumnsToContents();
 }
 
@@ -497,7 +497,7 @@ void MainWindow::on_actionDark_triggered()
 void MainWindow::on_actionOpen_triggered()
 {
     QString filename;
-    filename = QFileDialog::getOpenFileName(this, QStringLiteral("´ò¿ªÎÄ¼ş"),
+    filename = QFileDialog::getOpenFileName(this, QStringLiteral("æ‰“å¼€æ–‡ä»¶"),
         "./", tr("IES files(*.ies);;All files(*.*)"));
     QFile file(filename);
     if (!file.exists())
@@ -657,7 +657,7 @@ void MainWindow::enableAutoSort(bool enable)
     autoSortEnabled = enable;
     autoSortAction->setChecked(enable);
     if (enable) {
-        // ÆôÓÃÊ±Á¢¼´ÅÅĞò
+        // å¯ç”¨æ—¶ç«‹å³æ’åº
         sortHorizontalAngles();
         sortVerticalAngles();
     }
@@ -666,36 +666,36 @@ void MainWindow::enableAutoSort(bool enable)
 
 void MainWindow::sortHorizontalAngles()
 {
-    // »ñÈ¡µ±Ç°Ë®Æ½½Ç¶È
+    // è·å–å½“å‰æ°´å¹³è§’åº¦
     std::vector<double> horizontalAngles = getHorizontalAngles();
 
-    // ´´½¨Ë÷Òı-½Ç¶È¶Ô
+    // åˆ›å»ºç´¢å¼•-è§’åº¦å¯¹
     std::vector<QPair<double, int>> angleIndexPairs;
     for (int i = 0; i < horizontalAngles.size(); i++) {
         angleIndexPairs.push_back(qMakePair(horizontalAngles[i], i));
     }
 
-    // °´½Ç¶ÈÉıĞòÅÅĞò
+    // æŒ‰è§’åº¦å‡åºæ’åº
     std::sort(angleIndexPairs.begin(), angleIndexPairs.end());
 
-    // ´´½¨ĞÂµÄÁĞË³Ğò
+    // åˆ›å»ºæ–°çš„åˆ—é¡ºåº
     std::vector<int> newColumnOrder;
     for (const auto& pair : angleIndexPairs) {
         newColumnOrder.push_back(pair.second);
     }
 
-    // ÖØĞÂÅÅÁĞ±í¸ñÊı¾İ
+    // é‡æ–°æ’åˆ—è¡¨æ ¼æ•°æ®
     rearrangeTableDataAfterHorizontalSort(newColumnOrder);
 }
 
 void MainWindow::rearrangeTableDataAfterHorizontalSort(const std::vector<int>& newColumnOrder)
 {
-    // ±£´æµ±Ç°Êı¾İ
+    // ä¿å­˜å½“å‰æ•°æ®
     std::vector<double> horizontalAngles = getHorizontalAngles();
     std::vector<double> verticalAngles = getVerticalAngles();
     std::vector<std::vector<double>> intensityData = getIntensityData();
 
-    // ´´½¨ĞÂµÄË®Æ½½Ç¶ÈºÍÇ¿¶ÈÊı¾İ
+    // åˆ›å»ºæ–°çš„æ°´å¹³è§’åº¦å’Œå¼ºåº¦æ•°æ®
     std::vector<double> newHorizontalAngles(horizontalAngles.size());
     std::vector<std::vector<double>> newIntensityData(verticalAngles.size());
 
@@ -703,7 +703,7 @@ void MainWindow::rearrangeTableDataAfterHorizontalSort(const std::vector<int>& n
         newIntensityData[i].resize(horizontalAngles.size());
     }
 
-    // °´ÕÕĞÂµÄÁĞË³ĞòÖØĞÂÅÅÁĞÊı¾İ
+    // æŒ‰ç…§æ–°çš„åˆ—é¡ºåºé‡æ–°æ’åˆ—æ•°æ®
     for (int newCol = 0; newCol < newColumnOrder.size(); newCol++) {
         int oldCol = newColumnOrder[newCol];
         newHorizontalAngles[newCol] = horizontalAngles[oldCol];
@@ -713,7 +713,7 @@ void MainWindow::rearrangeTableDataAfterHorizontalSort(const std::vector<int>& n
         }
     }
 
-    // ¸üĞÂ±í¸ñ
+    // æ›´æ–°è¡¨æ ¼
     setTableData(newHorizontalAngles, verticalAngles, newIntensityData);
 }
 
@@ -721,23 +721,23 @@ void MainWindow::setTableData(const std::vector<double>& horizontalAngles,
     const std::vector<double>& verticalAngles,
     const std::vector<std::vector<double>>& intensityData)
 {
-    // ÉèÖÃ±í¸ñ³ß´ç
+    // è®¾ç½®è¡¨æ ¼å°ºå¯¸
     ui->tableWidget->setRowCount(verticalAngles.size());
     ui->tableWidget->setColumnCount(horizontalAngles.size());
 
-    // ÉèÖÃË®Æ½±íÍ·
+    // è®¾ç½®æ°´å¹³è¡¨å¤´
     for (int col = 0; col < horizontalAngles.size(); col++) {
         ui->tableWidget->setHorizontalHeaderItem(col,
             new QTableWidgetItem(QString::number(horizontalAngles[col], 'f', 2)));
     }
 
-    // ÉèÖÃ´¹Ö±±íÍ·
+    // è®¾ç½®å‚ç›´è¡¨å¤´
     for (int row = 0; row < verticalAngles.size(); row++) {
         ui->tableWidget->setVerticalHeaderItem(row,
             new QTableWidgetItem(QString::number(verticalAngles[row], 'f', 2)));
     }
 
-    // Ìî³äÇ¿¶ÈÊı¾İ
+    // å¡«å……å¼ºåº¦æ•°æ®
     for (int row = 0; row < verticalAngles.size(); row++) {
         for (int col = 0; col < horizontalAngles.size(); col++) {
             QTableWidgetItem* item = ui->tableWidget->item(row, col);
@@ -752,36 +752,36 @@ void MainWindow::setTableData(const std::vector<double>& horizontalAngles,
 
 void MainWindow::sortVerticalAngles()
 {
-    // »ñÈ¡µ±Ç°´¹Ö±½Ç¶È
+    // è·å–å½“å‰å‚ç›´è§’åº¦
     std::vector<double> verticalAngles = getVerticalAngles();
 
-    // ´´½¨Ë÷Òı-½Ç¶È¶Ô
+    // åˆ›å»ºç´¢å¼•-è§’åº¦å¯¹
     std::vector<QPair<double, int>> angleIndexPairs;
     for (int i = 0; i < verticalAngles.size(); i++) {
         angleIndexPairs.push_back(qMakePair(verticalAngles[i], i));
     }
 
-    // °´½Ç¶ÈÉıĞòÅÅĞò
+    // æŒ‰è§’åº¦å‡åºæ’åº
     std::sort(angleIndexPairs.begin(), angleIndexPairs.end());
 
-    // ´´½¨ĞÂµÄĞĞË³Ğò
+    // åˆ›å»ºæ–°çš„è¡Œé¡ºåº
     std::vector<int> newRowOrder;
     for (const auto& pair : angleIndexPairs) {
         newRowOrder.push_back(pair.second);
     }
 
-    // ÖØĞÂÅÅÁĞ±í¸ñÊı¾İ
+    // é‡æ–°æ’åˆ—è¡¨æ ¼æ•°æ®
     rearrangeTableDataAfterVerticalSort(newRowOrder);
 }
 
 void MainWindow::rearrangeTableDataAfterVerticalSort(const std::vector<int>& newRowOrder)
 {
-    // ±£´æµ±Ç°Êı¾İ
+    // ä¿å­˜å½“å‰æ•°æ®
     std::vector<double> horizontalAngles = getHorizontalAngles();
     std::vector<double> verticalAngles = getVerticalAngles();
     std::vector<std::vector<double>> intensityData = getIntensityData();
 
-    // ´´½¨ĞÂµÄ´¹Ö±½Ç¶ÈºÍÇ¿¶ÈÊı¾İ
+    // åˆ›å»ºæ–°çš„å‚ç›´è§’åº¦å’Œå¼ºåº¦æ•°æ®
     std::vector<double> newVerticalAngles(verticalAngles.size());
     std::vector<std::vector<double>> newIntensityData(verticalAngles.size());
 
@@ -789,7 +789,7 @@ void MainWindow::rearrangeTableDataAfterVerticalSort(const std::vector<int>& new
         newIntensityData[i].resize(horizontalAngles.size());
     }
 
-    // °´ÕÕĞÂµÄĞĞË³ĞòÖØĞÂÅÅÁĞÊı¾İ
+    // æŒ‰ç…§æ–°çš„è¡Œé¡ºåºé‡æ–°æ’åˆ—æ•°æ®
     for (int newRow = 0; newRow < newRowOrder.size(); newRow++) {
         int oldRow = newRowOrder[newRow];
         newVerticalAngles[newRow] = verticalAngles[oldRow];
@@ -799,7 +799,7 @@ void MainWindow::rearrangeTableDataAfterVerticalSort(const std::vector<int>& new
         }
     }
 
-    // ¸üĞÂ±í¸ñ
+    // æ›´æ–°è¡¨æ ¼
     setTableData(horizontalAngles, newVerticalAngles, newIntensityData);
 }
 
@@ -845,7 +845,7 @@ void MainWindow::showMTF()
         return;
     }
     MTFViewer* m_mtfViewer = new MTFViewer();
-    m_mtfViewer->setTitle("MTFÇúÏß·ÖÎö");
+    m_mtfViewer->setTitle("MTFæ›²çº¿åˆ†æ");
     m_mtfViewer->loadFromFile(filepath);
     m_mtfViewer->show();
 }
@@ -859,7 +859,7 @@ void MainWindow::showFov()
     }
     FieldViewWidget* fieldView = new FieldViewWidget();
     fieldView->loadFieldDataFile(filepath);
-    fieldView->updatePlot();
+    //fieldView->updatePlot();
     fieldView->show();
 }
 void MainWindow::showDistort()

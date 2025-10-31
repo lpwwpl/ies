@@ -1,9 +1,11 @@
-#include "MainWindow.h"
+ï»¿#include "MainWindow.h"
 #include <QApplication>
 #include <QSurfaceFormat>
 //#include <Quarter/Quarter.h>
 #include <vtkOutputWindow.h>
 #include <cmath> 
+#include <QTextCodec>
+
 //#include <matplot/matplot.h> 
 
 
@@ -16,13 +18,15 @@
 //    double R = sqrt(pow(x, 2) + pow(y, 2)) + eps;
 //    return sin(R) / R; });
 //    mesh(X, Y, Z);
-//    show();// ĞèÒªµ÷ÓÃshow²ÅÄÜÏÔÊ¾ return 0; 
+//    show();// éœ€è¦è°ƒç”¨showæ‰èƒ½æ˜¾ç¤º return 0; 
 //}
 int main(int argc, char* argv[])
 {
+    //QTextCodec::setCodecForLocale(QTextCodec::codecForName("UTF-8"));
+
     QApplication app(argc, argv);
 
-    // ÉèÖÃOpenGL°æ±¾ºÍÅäÖÃ
+    // è®¾ç½®OpenGLç‰ˆæœ¬å’Œé…ç½®
     QSurfaceFormat format;
     format.setVersion(3, 3);
     format.setProfile(QSurfaceFormat::CoreProfile);
@@ -31,8 +35,8 @@ int main(int argc, char* argv[])
     format.setSamples(4);
     QSurfaceFormat::setDefaultFormat(format);
 
-    vtkOutputWindow::SetGlobalWarningDisplay(0); // ¹Ø±Õ¾¯¸æÏÔÊ¾
-    // ´´½¨²¢ÏÔÊ¾Ö÷´°¿Ú
+    vtkOutputWindow::SetGlobalWarningDisplay(0); // å…³é—­è­¦å‘Šæ˜¾ç¤º
+    // åˆ›å»ºå¹¶æ˜¾ç¤ºä¸»çª—å£
     MainWindow window;
     window.show();
 

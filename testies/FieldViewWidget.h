@@ -1,4 +1,4 @@
-#ifndef FIELDVIEWWIDGET_H
+ï»¿#ifndef FIELDVIEWWIDGET_H
 #define FIELDVIEWWIDGET_H
 
 #include <QWidget>
@@ -21,24 +21,24 @@ public:
     explicit FieldViewWidget(QWidget* parent = nullptr);
     ~FieldViewWidget();
 
-    // ¼ÓÔØÊÓ³¡Êý¾ÝÎÄ¼þ
     bool loadFieldDataFile(const QString& filename);
-
-    // Çå³ýËùÓÐÊý¾Ý
     void clearData();
-
-    // ¸üÐÂÏÔÊ¾
-    void updatePlot();
+    void resetView();
 
 private:
     void setupFieldViewPlot();
+    void updatePlot();
     void drawFieldArrows();
     QPen getArrowPen(double magnitude);
+    double getArrowLength(double magnitude);
 
     QCustomPlot* customPlot;
     QVector<FieldData> fieldData;
     double maxMagnitude;
     double minMagnitude;
+
+    // é»˜è®¤è§†å›¾èŒƒå›´
+    double m_defaultRange = 50.0;
 };
 
 #endif // FIELDVIEWWIDGET_H

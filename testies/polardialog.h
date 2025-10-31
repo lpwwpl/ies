@@ -1,4 +1,4 @@
-#ifndef POLARDIALOG_H
+﻿#ifndef POLARDIALOG_H
 #define POLARDIALOG_H
 
 #include <QDialog>

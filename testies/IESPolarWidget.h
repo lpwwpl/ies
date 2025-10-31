@@ -1,4 +1,4 @@
-// IESSpotLightWidget.h
+﻿// IESSpotLightWidget.h
 #pragma once
 #include <QWidget>
 #include "QCustomPlot.h"

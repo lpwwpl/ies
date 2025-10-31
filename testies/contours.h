@@ -1,4 +1,4 @@
-#ifndef MARCHINGSQUARES_STD_H
+﻿#ifndef MARCHINGSQUARES_STD_H
 #define MARCHINGSQUARES_STD_H
 
 #include <vector>

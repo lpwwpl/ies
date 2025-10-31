@@ -1,4 +1,4 @@
-#ifndef ISOLUXDIALOG_H
+ï»¿#ifndef ISOLUXDIALOG_H
 #define ISOLUXDIALOG_H
 
 #include <QDialog>
@@ -104,16 +104,16 @@ public:
     vtkSmartPointer<vtkActor> createCoordinateGrid();
 
     vtkSmartPointer<vtkLookupTable> m_lut;
-    vtkSmartPointer<vtkRenderer> m_renderer;          // ³¡¾°äÖÈ¾Æ÷
-    vtkSmartPointer<vtkPoints> m_points;              // µãÔÆ×ø±ê
-    vtkSmartPointer<vtkFloatArray> m_intensities;     // Ç¿¶ÈÖµ
-    vtkSmartPointer<vtkPolyData> m_polyData;          // µãÔÆÊı¾İ
-    vtkSmartPointer<vtkVertexGlyphFilter> m_glyphFilter; // ½«µãÏÔÊ¾Îª¶¥µã
+    vtkSmartPointer<vtkRenderer> m_renderer;          // åœºæ™¯æ¸²æŸ“å™¨
+    vtkSmartPointer<vtkPoints> m_points;              // ç‚¹äº‘åæ ‡
+    vtkSmartPointer<vtkFloatArray> m_intensities;     // å¼ºåº¦å€¼
+    vtkSmartPointer<vtkPolyData> m_polyData;          // ç‚¹äº‘æ•°æ®
+    vtkSmartPointer<vtkVertexGlyphFilter> m_glyphFilter; // å°†ç‚¹æ˜¾ç¤ºä¸ºé¡¶ç‚¹
     vtkSmartPointer<vtkDataSetSurfaceFilter> surfaceFilter;
-    vtkSmartPointer<vtkPolyDataMapper> m_mapper;      // Êı¾İÓ³ÉäÆ÷
-    vtkSmartPointer<vtkActor> m_actor;                // ³¡¾°ÖĞµÄÑİÔ±
-    vtkSmartPointer<vtkColorTransferFunction> m_colorTransferFunction; // ÑÕÉ«Ó³Éäº¯Êı
-    vtkSmartPointer<vtkScalarBarActor> m_scalarBarActor;  // É«±êÑİÔ±
+    vtkSmartPointer<vtkPolyDataMapper> m_mapper;      // æ•°æ®æ˜ å°„å™¨
+    vtkSmartPointer<vtkActor> m_actor;                // åœºæ™¯ä¸­çš„æ¼”å‘˜
+    vtkSmartPointer<vtkColorTransferFunction> m_colorTransferFunction; // é¢œè‰²æ˜ å°„å‡½æ•°
+    vtkSmartPointer<vtkScalarBarActor> m_scalarBarActor;  // è‰²æ ‡æ¼”å‘˜
     vtkSmartPointer<vtkStructuredGrid> structuredGrid;
     vtkSmartPointer<vtkCubeAxesActor> cubeAxesActor;
     vtkSmartPointer<vtkAxesActor> axes;
@@ -138,7 +138,7 @@ public:
     double zmax;
 
     double m_size = 25;
-    // ×ø±êÖá±ß½ç
+    // åæ ‡è½´è¾¹ç•Œ
     double bounds[6];
 };
 

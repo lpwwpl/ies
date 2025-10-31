@@ -1,4 +1,4 @@
-#include "IESglwidget.h"
+ï»¿#include "IESglwidget.h"
 
 
 void PointCloudViewer::updateIES()
@@ -17,11 +17,11 @@ void PointCloudViewer::updateIES()
 //    : QOpenGLWidget(parent), gridSize(10.0f), gridDivisions(20),
 //    cameraDistance(15.0f), minValue(0.0f), maxValue(1.0f)
 //{
-//    // ÉèÖÃ³õÊ¼Ïà»úÎ»ÖÃ
+//    // è®¾ç½®åˆå§‹ç›¸æœºä½ç½®
 //    cameraPosition = QVector3D(1.0f, 1.0f, 1.0f).normalized() * cameraDistance;
 //    cameraTarget = QVector3D(0.0f, 0.0f, 0.0f);
 //
-//    // ÆôÓÃÊó±ê¸ú×Ù
+//    // å¯ç”¨é¼ æ ‡è·Ÿè¸ª
 //    setMouseTracking(true);
 //}
 //
@@ -35,34 +35,34 @@ void PointCloudViewer::updateIES()
 //
 //void OpenGLWidget::initializeGL()
 //{
-//    // ³õÊ¼»¯OpenGLº¯Êı
+//    // åˆå§‹åŒ–OpenGLå‡½æ•°
 //    initializeOpenGLFunctions();
 //
-//    // ÉèÖÃÇåÆÁÑÕÉ«ºÍÉî¶È²âÊÔ
+//    // è®¾ç½®æ¸…å±é¢œè‰²å’Œæ·±åº¦æµ‹è¯•
 //    glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 //    glEnable(GL_DEPTH_TEST);
 //
-//    // ÉèÖÃÍø¸ñ×ÅÉ«Æ÷
+//    // è®¾ç½®ç½‘æ ¼ç€è‰²å™¨
 //    setupShaderProgram(gridShaderProgram,
 //        ":/resources/shaders/grid.vert",
 //        ":/resources/shaders/grid.frag");
 //
-//    // ÉèÖÃÉ«¶ÈÌõ×ÅÉ«Æ÷
+//    // è®¾ç½®è‰²åº¦æ¡ç€è‰²å™¨
 //    setupShaderProgram(colorBarShaderProgram,
 //        ":/resources/shaders/colorbar.vert",
 //        ":/resources/shaders/colorbar.frag");
 //
-//    // ³õÊ¼»¯Íø¸ñVAOºÍVBO
+//    // åˆå§‹åŒ–ç½‘æ ¼VAOå’ŒVBO
 //    gridVAO.create();
 //    gridVBO = QOpenGLBuffer(QOpenGLBuffer::VertexBuffer);
 //    gridVBO.create();
 //
-//    // Éú³ÉÍø¸ñÊı¾İ
+//    // ç”Ÿæˆç½‘æ ¼æ•°æ®
 //    QVector<float> gridVertices;
 //    float halfSize = gridSize / 2.0f;
 //    float step = gridSize / gridDivisions;
 //
-//    // XYÆ½ÃæÍø¸ñ
+//    // XYå¹³é¢ç½‘æ ¼
 //    for (int i = 0; i <= gridDivisions; ++i) {
 //        float x = -halfSize + i * step;
 //        gridVertices << x << -halfSize << 0.0f;
@@ -71,7 +71,7 @@ void PointCloudViewer::updateIES()
 //        gridVertices << halfSize << x << 0.0f;
 //    }
 //
-//    // XZÆ½ÃæÍø¸ñ
+//    // XZå¹³é¢ç½‘æ ¼
 //    for (int i = 0; i <= gridDivisions; ++i) {
 //        float x = -halfSize + i * step;
 //        gridVertices << x << 0.0f << -halfSize;
@@ -80,7 +80,7 @@ void PointCloudViewer::updateIES()
 //        gridVertices << halfSize << 0.0f << x;
 //    }
 //
-//    // YZÆ½ÃæÍø¸ñ
+//    // YZå¹³é¢ç½‘æ ¼
 //    for (int i = 0; i <= gridDivisions; ++i) {
 //        float y = -halfSize + i * step;
 //        gridVertices << 0.0f << y << -halfSize;
@@ -89,7 +89,7 @@ void PointCloudViewer::updateIES()
 //        gridVertices << 0.0f << halfSize << y;
 //    }
 //
-//    // ÉÏ´«Íø¸ñÊı¾İµ½GPU
+//    // ä¸Šä¼ ç½‘æ ¼æ•°æ®åˆ°GPU
 //    gridVAO.bind();
 //    gridVBO.bind();
 //    gridVBO.allocate(gridVertices.constData(), gridVertices.size() * sizeof(float));
@@ -128,14 +128,14 @@ void PointCloudViewer::updateIES()
 //{
 //    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 //
-//    // ¸üĞÂÊÓÍ¼¾ØÕó
+//    // æ›´æ–°è§†å›¾çŸ©é˜µ
 //    view.setToIdentity();
 //    view.lookAt(cameraPosition, cameraTarget, QVector3D(0.0f, 1.0f, 0.0f));
 //
-//    // »æÖÆÍø¸ñ
+//    // ç»˜åˆ¶ç½‘æ ¼
 //    drawGrids();
 //
-//    // »æÖÆÉ«¶ÈÌõ
+//    // ç»˜åˆ¶è‰²åº¦æ¡
 //    drawColorBar();
 //}
 //
@@ -144,15 +144,15 @@ void PointCloudViewer::updateIES()
 //    gridShaderProgram.bind();
 //    gridVAO.bind();
 //
-//    // ÉèÖÃÄ£ĞÍÊÓÍ¼Í¶Ó°¾ØÕó
+//    // è®¾ç½®æ¨¡å‹è§†å›¾æŠ•å½±çŸ©é˜µ
 //    QMatrix4x4 mvp = projection * view * model;
 //    gridShaderProgram.setUniformValue("mvp", mvp);
 //
-//    // ÉèÖÃÍø¸ñÑÕÉ«
+//    // è®¾ç½®ç½‘æ ¼é¢œè‰²
 //    gridShaderProgram.setUniformValue("color", QVector4D(0.5f, 0.5f, 0.5f, 1.0f));
 //
-//    // »æÖÆÍø¸ñÏß
-//    glDrawArrays(GL_LINES, 0, 3 * 4 * (gridDivisions + 1)); // 3¸öÆ½Ãæ£¬Ã¿¸öÆ½ÃæÓĞ2×éÏß£¬Ã¿×é(gridDivisions+1)ÌõÏß
+//    // ç»˜åˆ¶ç½‘æ ¼çº¿
+//    glDrawArrays(GL_LINES, 0, 3 * 4 * (gridDivisions + 1)); // 3ä¸ªå¹³é¢ï¼Œæ¯ä¸ªå¹³é¢æœ‰2ç»„çº¿ï¼Œæ¯ç»„(gridDivisions+1)æ¡çº¿
 //
 //    gridVAO.release();
 //    gridShaderProgram.release();
@@ -160,7 +160,7 @@ void PointCloudViewer::updateIES()
 //
 //void OpenGLWidget::drawColorBar()
 //{
-//    // ·½·¨1: Ê¹ÓÃOpenGL»æÖÆÉ«¶ÈÌõ
+//    // æ–¹æ³•1: ä½¿ç”¨OpenGLç»˜åˆ¶è‰²åº¦æ¡
 //    glMatrixMode(GL_PROJECTION);
 //    glPushMatrix();
 //    glLoadIdentity();
@@ -170,16 +170,16 @@ void PointCloudViewer::updateIES()
 //    glPushMatrix();
 //    glLoadIdentity();
 //
-//    // ½ûÓÃÉî¶È²âÊÔÒÔÈ·±£É«¶ÈÌõ»æÖÆÔÚ×îÇ°Ãæ
+//    // ç¦ç”¨æ·±åº¦æµ‹è¯•ä»¥ç¡®ä¿è‰²åº¦æ¡ç»˜åˆ¶åœ¨æœ€å‰é¢
 //    glDisable(GL_DEPTH_TEST);
 //
-//    // »æÖÆÉ«¶ÈÌõ±³¾°
+//    // ç»˜åˆ¶è‰²åº¦æ¡èƒŒæ™¯
 //    int barWidth = 30;
 //    int barHeight = 200;
 //    int barX = width() - barWidth - 10;
 //    int barY = height() - barHeight - 10;
 //
-//    // Ê¹ÓÃ½¥±ä×ÅÉ«
+//    // ä½¿ç”¨æ¸å˜ç€è‰²
 //    glBegin(GL_QUADS);
 //    for (int i = 0; i < barHeight; ++i) {
 //        float t = static_cast<float>(i) / barHeight;
@@ -192,7 +192,7 @@ void PointCloudViewer::updateIES()
 //    }
 //    glEnd();
 //
-//    // »æÖÆ±ß¿ò
+//    // ç»˜åˆ¶è¾¹æ¡†
 //    glColor3f(1.0f, 1.0f, 1.0f);
 //    glBegin(GL_LINE_LOOP);
 //    glVertex2i(barX, barY);
@@ -201,25 +201,25 @@ void PointCloudViewer::updateIES()
 //    glVertex2i(barX, barY + barHeight);
 //    glEnd();
 //
-//    // »Ö¸´Éî¶È²âÊÔºÍ¾ØÕó×´Ì¬
+//    // æ¢å¤æ·±åº¦æµ‹è¯•å’ŒçŸ©é˜µçŠ¶æ€
 //    glEnable(GL_DEPTH_TEST);
 //    glPopMatrix();
 //    glMatrixMode(GL_PROJECTION);
 //    glPopMatrix();
 //    glMatrixMode(GL_MODELVIEW);
 //
-//    // ·½·¨2: Ê¹ÓÃQPainter»æÖÆÎÄ±¾±êÇ©£¨ĞèÒª»ìºÏ£©
+//    // æ–¹æ³•2: ä½¿ç”¨QPainterç»˜åˆ¶æ–‡æœ¬æ ‡ç­¾ï¼ˆéœ€è¦æ··åˆï¼‰
 //    QPainter painter(this);
 //    painter.setPen(Qt::white);
 //    painter.setRenderHints(QPainter::Antialiasing | QPainter::TextAntialiasing);
 //
-//    // »æÖÆ×îĞ¡Öµ±êÇ©
+//    // ç»˜åˆ¶æœ€å°å€¼æ ‡ç­¾
 //    painter.drawText(width() - barWidth - 40, height() - 10, QString::number(minValue, 'f', 2));
 //
-//    // »æÖÆ×î´óÖµ±êÇ©
+//    // ç»˜åˆ¶æœ€å¤§å€¼æ ‡ç­¾
 //    painter.drawText(width() - barWidth - 40, height() - barHeight - 20, QString::number(maxValue, 'f', 2));
 //
-//    // »æÖÆ±êÌâ
+//    // ç»˜åˆ¶æ ‡é¢˜
 //    painter.drawText(width() - barWidth - 10, height() - barHeight - 40, "Value");
 //
 //    painter.end();
@@ -227,23 +227,23 @@ void PointCloudViewer::updateIES()
 //
 //QColor OpenGLWidget::getColorFromValue(float value)
 //{
-//    // ½«ÖµÓ³Éäµ½ÑÕÉ«£¨Ê¹ÓÃÈÈÁ¦Í¼ÑÕÉ«Ó³Éä£©
+//    // å°†å€¼æ˜ å°„åˆ°é¢œè‰²ï¼ˆä½¿ç”¨çƒ­åŠ›å›¾é¢œè‰²æ˜ å°„ï¼‰
 //    float normalized = (value - minValue) / (maxValue - minValue);
 //
 //    if (normalized < 0.25f) {
-//        // À¶É«µ½ÇàÉ«
+//        // è“è‰²åˆ°é’è‰²
 //        return QColor::fromRgbF(0.0f, normalized * 4.0f, 1.0f);
 //    }
 //    else if (normalized < 0.5f) {
-//        // ÇàÉ«µ½ÂÌÉ«
+//        // é’è‰²åˆ°ç»¿è‰²
 //        return QColor::fromRgbF(0.0f, 1.0f, 1.0f - (normalized - 0.25f) * 4.0f);
 //    }
 //    else if (normalized < 0.75f) {
-//        // ÂÌÉ«µ½»ÆÉ«
+//        // ç»¿è‰²åˆ°é»„è‰²
 //        return QColor::fromRgbF((normalized - 0.5f) * 4.0f, 1.0f, 0.0f);
 //    }
 //    else {
-//        // »ÆÉ«µ½ºìÉ«
+//        // é»„è‰²åˆ°çº¢è‰²
 //        return QColor::fromRgbF(1.0f, 1.0f - (normalized - 0.75f) * 4.0f, 0.0f);
 //    }
 //}
@@ -259,23 +259,23 @@ void PointCloudViewer::updateIES()
 //    int dy = event->y() - lastMousePos.y();
 //
 //    if (event->buttons() & Qt::LeftButton) {
-//        // Ğı×ªÊÓÍ¼
+//        // æ—‹è½¬è§†å›¾
 //        QVector3D right = QVector3D::crossProduct(
 //            (cameraTarget - cameraPosition).normalized(),
 //            QVector3D(0.0f, 1.0f, 0.0f)).normalized();
 //
 //        QVector3D up = QVector3D(0.0f, 1.0f, 0.0f);
 //
-//        // ¼ÆËãĞı×ª½Ç¶È
+//        // è®¡ç®—æ—‹è½¬è§’åº¦
 //        float xAngle = -dx * 0.5f;
 //        float yAngle = -dy * 0.5f;
 //
-//        // ´´½¨Ğı×ªËÄÔªÊı
+//        // åˆ›å»ºæ—‹è½¬å››å…ƒæ•°
 //        QQuaternion xRot = QQuaternion::fromAxisAndAngle(up, xAngle);
 //        QQuaternion yRot = QQuaternion::fromAxisAndAngle(right, yAngle);
 //        QQuaternion rotation = yRot * xRot;
 //
-//        // Ó¦ÓÃĞı×ª
+//        // åº”ç”¨æ—‹è½¬
 //        cameraPosition = cameraTarget + rotation.rotatedVector(cameraPosition - cameraTarget);
 //    }
 //
@@ -285,7 +285,7 @@ void PointCloudViewer::updateIES()
 //
 //void OpenGLWidget::wheelEvent(QWheelEvent* event)
 //{
-//    // Ëõ·ÅÊÓÍ¼
+//    // ç¼©æ”¾è§†å›¾
 //    float delta = event->angleDelta().y() / 120.0f;
 //    cameraDistance *= (1.0f - delta * 0.1f);
 //    cameraDistance = qMax(1.0f, qMin(cameraDistance, 50.0f));
@@ -301,7 +301,7 @@ void PointCloudViewer::updateIES()
 //    dataPoints = points;
 //    dataValues = values;
 //
-//    // ¼ÆËãÖµµÄ·¶Î§
+//    // è®¡ç®—å€¼çš„èŒƒå›´
 //    if (!values.isEmpty()) {
 //        minValue = maxValue = values[0];
 //        for (float value : values) {

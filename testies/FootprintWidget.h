@@ -1,4 +1,4 @@
-#ifndef FOOTPRINTWIDGET_H
+﻿#ifndef FOOTPRINTWIDGET_H
 #define FOOTPRINTWIDGET_H
 
 #include <QWidget>

@@ -1,4 +1,4 @@
-#include "polardialog.h"
+ï»¿#include "polardialog.h"
 #include "ui_polardialog.h"
 #include "IESPolarWidget.h"
 #include <QHBoxLayout>
@@ -14,9 +14,9 @@ PolarDialog::PolarDialog(QWidget *parent)
      hLayout->addWidget(m_polarWidget);
 
      Qt::WindowFlags flags = Qt::Dialog;
-     // Ìí¼Ó×î´ó»¯ºÍ×îĞ¡»¯°´Å¥
+     // æ·»åŠ æœ€å¤§åŒ–å’Œæœ€å°åŒ–æŒ‰é’®
      flags |= Qt::WindowMinMaxButtonsHint;
-     // Ìí¼Ó¹Ø±Õ°´Å¥
+     // æ·»åŠ å…³é—­æŒ‰é’®
      flags |= Qt::WindowCloseButtonHint;
      setWindowFlags(flags);
 

@@ -1,10 +1,10 @@
-#include "threeDdialog.h"
+ï»¿#include "threeDdialog.h"
 #include "ui_threeddialog.h"
 #include "IESglWidget.h"
 #include <cmath>
 
 
-// °üº¬±ØÒªµÄVTKÍ·ÎÄ¼ş
+// åŒ…å«å¿…è¦çš„VTKå¤´æ–‡ä»¶
 #include <vtkRenderer.h>
 #include <vtkPoints.h>
 #include <vtkFloatArray.h>
@@ -48,9 +48,9 @@ ThreeDDialog::ThreeDDialog(QWidget *parent)
     
 
     Qt::WindowFlags flags = Qt::Dialog;
-    // Ìí¼Ó×î´ó»¯ºÍ×îĞ¡»¯°´Å¥
+    // æ·»åŠ æœ€å¤§åŒ–å’Œæœ€å°åŒ–æŒ‰é’®
     flags |= Qt::WindowMinMaxButtonsHint;
-    // Ìí¼Ó¹Ø±Õ°´Å¥
+    // æ·»åŠ å…³é—­æŒ‰é’®
     flags |= Qt::WindowCloseButtonHint;
     setWindowFlags(flags);
 
@@ -134,7 +134,7 @@ void ThreeDDialog::updateIES()
 IESPointCloudWidget::IESPointCloudWidget(QWidget* parent)
     : QVTKOpenGLNativeWidget(parent)
 {
-    // ³õÊ¼»¯VTK×é¼ş
+    // åˆå§‹åŒ–VTKç»„ä»¶
     m_renderer = vtkSmartPointer<vtkRenderer>::New();
     m_points = vtkSmartPointer<vtkPoints>::New();
     m_intensities = vtkSmartPointer<vtkFloatArray>::New();
@@ -145,60 +145,60 @@ IESPointCloudWidget::IESPointCloudWidget(QWidget* parent)
     m_actor = vtkSmartPointer<vtkActor>::New();
     m_colorTransferFunction = vtkSmartPointer<vtkColorTransferFunction>::New();
     surfaceFilter = vtkSmartPointer<vtkDataSetSurfaceFilter>::New();
-    // ÉèÖÃÇ¿¶ÈÖµÊı×éÃû
+    // è®¾ç½®å¼ºåº¦å€¼æ•°ç»„å
     m_intensities->SetName("Intensity");
 
-    // ×é×°PolyData
+    // ç»„è£…PolyData
     m_polyData->SetPoints(m_points);
-    //m_polyData->GetPointData()->SetScalars(m_intensities);// ->SetScalars(m_intensities); // ÉèÖÃÇ¿¶ÈÖµÓÃÓÚÑÕÉ«Ó³Éä
+    //m_polyData->GetPointData()->SetScalars(m_intensities);// ->SetScalars(m_intensities); // è®¾ç½®å¼ºåº¦å€¼ç”¨äºé¢œè‰²æ˜ å°„
 
 
     structuredGrid->SetPoints(m_points);
     structuredGrid->GetPointData()->SetScalars(m_intensities);
 
-    // ÉèÖÃGlyphFilter
+    // è®¾ç½®GlyphFilter
     m_glyphFilter->SetInputData(m_polyData);
     surfaceFilter->SetInputData(structuredGrid);
 
     //////////////
     //addCoordinateAxes();
 
-    m_mapper->SetScalarModeToUsePointData(); // Ê¹ÓÃµãÊı¾İÖĞµÄ±êÁ¿
-    m_mapper->SetLookupTable(m_colorTransferFunction); // ÉèÖÃÑÕÉ«²éÕÒ±í
+    m_mapper->SetScalarModeToUsePointData(); // ä½¿ç”¨ç‚¹æ•°æ®ä¸­çš„æ ‡é‡
+    m_mapper->SetLookupTable(m_colorTransferFunction); // è®¾ç½®é¢œè‰²æŸ¥æ‰¾è¡¨
 
-    // ÉèÖÃActor
+    // è®¾ç½®Actor
     m_actor->SetMapper(m_mapper);
 
-    // Ìí¼ÓActorµ½Renderer
+    // æ·»åŠ Actoråˆ°Renderer
     m_renderer->AddActor(m_actor);
 
-    // ÉèÖÃäÖÈ¾Æ÷±³¾°É«:cite[6]
-    m_renderer->SetBackground(0.2, 0.2, 0.2); // Éî»ÒÉ«±³¾°
+    // è®¾ç½®æ¸²æŸ“å™¨èƒŒæ™¯è‰²:cite[6]
+    m_renderer->SetBackground(0.2, 0.2, 0.2); // æ·±ç°è‰²èƒŒæ™¯
 
-    // ´´½¨É«±êÑİÔ±
+    // åˆ›å»ºè‰²æ ‡æ¼”å‘˜
     m_scalarBarActor = vtkSmartPointer<vtkScalarBarActor>::New();
-    m_scalarBarActor->SetTitle("Intensity");  // ÉèÖÃ±êÌâ
-    m_scalarBarActor->SetNumberOfLabels(5);   // ÉèÖÃ±êÇ©ÊıÁ¿
-    m_scalarBarActor->SetMaximumNumberOfColors(256); // ÉèÖÃÑÕÉ«ÊıÁ¿
+    m_scalarBarActor->SetTitle("Intensity");  // è®¾ç½®æ ‡é¢˜
+    m_scalarBarActor->SetNumberOfLabels(5);   // è®¾ç½®æ ‡ç­¾æ•°é‡
+    m_scalarBarActor->SetMaximumNumberOfColors(256); // è®¾ç½®é¢œè‰²æ•°é‡
     m_renderer->AddActor2D(m_scalarBarActor);
-    // ÉèÖÃ±êÌâÎÄ±¾ÊôĞÔ
+    // è®¾ç½®æ ‡é¢˜æ–‡æœ¬å±æ€§
     vtkTextProperty* titleProperty = m_scalarBarActor->GetTitleTextProperty();
     titleProperty->SetFontSize(12);
-    titleProperty->SetColor(1.0, 1.0, 1.0);  // °×É«
+    titleProperty->SetColor(1.0, 1.0, 1.0);  // ç™½è‰²
     titleProperty->BoldOn();
 
-    // ÉèÖÃ±êÇ©ÎÄ±¾ÊôĞÔ
+    // è®¾ç½®æ ‡ç­¾æ–‡æœ¬å±æ€§
     vtkTextProperty* labelProperty = m_scalarBarActor->GetLabelTextProperty();
     labelProperty->SetFontSize(10);
 
-    labelProperty->SetColor(1.0, 1.0, 1.0);  // °×É«
-    // »ñÈ¡äÖÈ¾´°¿Ú²¢Ìí¼ÓäÖÈ¾Æ÷:cite[1]:cite[5]
+    labelProperty->SetColor(1.0, 1.0, 1.0);  // ç™½è‰²
+    // è·å–æ¸²æŸ“çª—å£å¹¶æ·»åŠ æ¸²æŸ“å™¨:cite[1]:cite[5]
     this->renderWindow()->AddRenderer(m_renderer);    
 }
 
 IESPointCloudWidget::~IESPointCloudWidget()
 {
-    // ÇåÀí×ÊÔ´
+    // æ¸…ç†èµ„æº
     if (this->renderWindow()) {
         this->renderWindow()->RemoveRenderer(m_renderer);
     }
@@ -209,20 +209,20 @@ void IESPointCloudWidget::updateIESDataShape(bool value)
     if (!value)return;
     m_fillStyle = eShape;
     FillShapeData();
-    // ÉèÖÃMapper
+    // è®¾ç½®Mapper
     m_mapper->SetInputConnection(m_glyphFilter->GetOutputPort());
 
-    // Í¨Öª×é¼şÊı¾İÒÑ¸üĞÂ
+    // é€šçŸ¥ç»„ä»¶æ•°æ®å·²æ›´æ–°
     m_polyData->Modified();
     //structuredGrid->Modified();
     m_points->Modified();
     m_intensities->Modified();
     m_mapper->Modified();
-    // ÖØÖÃÏà»úÒÔÏÔÊ¾ËùÓĞµã:cite[8]
+    // é‡ç½®ç›¸æœºä»¥æ˜¾ç¤ºæ‰€æœ‰ç‚¹:cite[8]
     m_renderer->ResetCamera();
 
     //m_renderer->Render();
-    // äÖÈ¾´°¿Ú:cite[8]
+    // æ¸²æŸ“çª—å£:cite[8]
     this->renderWindow()->Render();
 }
 void IESPointCloudWidget::updateIESDataColor(bool value)
@@ -234,17 +234,17 @@ void IESPointCloudWidget::updateIESDataColor(bool value)
     FillColorData();
     m_mapper->SetInputConnection(surfaceFilter->GetOutputPort());
 
-    // Í¨Öª×é¼şÊı¾İÒÑ¸üĞÂ
+    // é€šçŸ¥ç»„ä»¶æ•°æ®å·²æ›´æ–°
     //m_polyData->Modified();
     structuredGrid->Modified();
     m_points->Modified();
     m_intensities->Modified();
     m_mapper->Modified();
-    // ÖØÖÃÏà»úÒÔÏÔÊ¾ËùÓĞµã:cite[8]
+    // é‡ç½®ç›¸æœºä»¥æ˜¾ç¤ºæ‰€æœ‰ç‚¹:cite[8]
     m_renderer->ResetCamera();
 
     //m_renderer->Render();
-    // äÖÈ¾´°¿Ú:cite[8]
+    // æ¸²æŸ“çª—å£:cite[8]
     this->renderWindow()->Render();
 
 }
@@ -262,7 +262,7 @@ void IESPointCloudWidget::updateIESDataShading(bool value)
     //////////////////////////////
 }
 
-// Ìí¼Ó¾¶Ïò¿Ì¶ÈÏß£¨ÔÚ¾¶ÏòÏßÉÏÌí¼Ó¶Ì¿Ì¶È±ê¼Ç£©
+// æ·»åŠ å¾„å‘åˆ»åº¦çº¿ï¼ˆåœ¨å¾„å‘çº¿ä¸Šæ·»åŠ çŸ­åˆ»åº¦æ ‡è®°ï¼‰
 void IESPointCloudWidget::addRadialScaleMarkers(vtkSmartPointer<vtkPoints> points,
     vtkSmartPointer<vtkCellArray> lines,
     double maxRadius,
@@ -273,16 +273,16 @@ void IESPointCloudWidget::addRadialScaleMarkers(vtkSmartPointer<vtkPoints> point
     double centerY = 0.0;
     double centerZ = 0.0;
 
-    // ÔÚÃ¿¸ö¾¶ÏòÏßÉÏÌí¼Ó¿Ì¶È±ê¼Ç
+    // åœ¨æ¯ä¸ªå¾„å‘çº¿ä¸Šæ·»åŠ åˆ»åº¦æ ‡è®°
     for (int i = 0; i < radialDivisions; i++) {
         double angle = 2.0 * vtkMath::Pi() * i / radialDivisions;
 
-        // ¼ÆËã¾¶ÏòÏßµÄ·½ÏòÏòÁ¿
+        // è®¡ç®—å¾„å‘çº¿çš„æ–¹å‘å‘é‡
         double dirX = cos(angle);
         double dirY = sin(angle);
 
-        // Ìí¼ÓĞ¡¿Ì¶È£¨ÔÚÍ¬ĞÄÔ²Ö®¼ä£©
-        int minorTicks = 4; // Ã¿¸öÇø¼äµÄĞ¡¿Ì¶ÈÊıÁ¿
+        // æ·»åŠ å°åˆ»åº¦ï¼ˆåœ¨åŒå¿ƒåœ†ä¹‹é—´ï¼‰
+        int minorTicks = 4; // æ¯ä¸ªåŒºé—´çš„å°åˆ»åº¦æ•°é‡
         for (int circle = 1; circle <= numCircles; circle++) {
             double outerRadius = maxRadius * circle / numCircles;
             double innerRadius = maxRadius * (circle - 1) / numCircles;
@@ -290,23 +290,23 @@ void IESPointCloudWidget::addRadialScaleMarkers(vtkSmartPointer<vtkPoints> point
 
             for (int tick = 1; tick < minorTicks; tick++) {
                 double radius = innerRadius + segmentLength * tick / minorTicks;
-                double tickLength = maxRadius * 0.03; // ¿Ì¶ÈÏß³¤¶È
+                double tickLength = maxRadius * 0.03; // åˆ»åº¦çº¿é•¿åº¦
 
-                // ¼ÆËã¿Ì¶ÈÏßµÄÆğµãºÍÖÕµã£¨´¹Ö±ÓÚ¾¶ÏòÏß£©
+                // è®¡ç®—åˆ»åº¦çº¿çš„èµ·ç‚¹å’Œç»ˆç‚¹ï¼ˆå‚ç›´äºå¾„å‘çº¿ï¼‰
                 double mainX = centerX + radius * dirX;
                 double mainY = centerY + radius * dirY;
 
-                // ´¹Ö±·½ÏòÏòÁ¿
+                // å‚ç›´æ–¹å‘å‘é‡
                 double perpX = -dirY;
                 double perpY = dirX;
 
-                // ¿Ì¶ÈÏßµÄÁ½¸ö¶Ëµã
+                // åˆ»åº¦çº¿çš„ä¸¤ä¸ªç«¯ç‚¹
                 double startX = mainX - perpX * tickLength * 0.5;
                 double startY = mainY - perpY * tickLength * 0.5;
                 double endX = mainX + perpX * tickLength * 0.5;
                 double endY = mainY + perpY * tickLength * 0.5;
 
-                // Ìí¼Ó¿Ì¶ÈÏß
+                // æ·»åŠ åˆ»åº¦çº¿
                 vtkIdType startPoint = points->InsertNextPoint(startX, startY, centerZ);
                 vtkIdType endPoint = points->InsertNextPoint(endX, endY, centerZ);
 
@@ -333,9 +333,9 @@ void IESPointCloudWidget::createYZPlaneGrid(double maxRadius, double radialDivis
     double centerY = 0.0;
     double centerZ = 0.0;
 
-    // Ìí¼Ó¼«×ø±êÖĞĞÄµã
+    // æ·»åŠ æåæ ‡ä¸­å¿ƒç‚¹
     points->InsertNextPoint(centerX, centerY, centerZ);
-    // ´´½¨¾¶ÏòÏß
+    // åˆ›å»ºå¾„å‘çº¿
     for (int i = 0; i < radialDivisions; i++) {
         double angle = 2.0 * vtkMath::Pi() * i / radialDivisions;
         double x = centerX + maxRadius * cos(angle);
@@ -344,20 +344,20 @@ void IESPointCloudWidget::createYZPlaneGrid(double maxRadius, double radialDivis
 
         points->InsertNextPoint(x, y, z);
 
-        // ´´½¨´ÓÖĞĞÄµ½Ô²ÖÜµÄÏß
+        // åˆ›å»ºä»ä¸­å¿ƒåˆ°åœ†å‘¨çš„çº¿
         vtkSmartPointer<vtkLine> line = vtkSmartPointer<vtkLine>::New();
-        line->GetPointIds()->SetId(0, 0); // ÖĞĞÄµã
-        line->GetPointIds()->SetId(1, i + 1); // Ô²ÖÜµã
+        line->GetPointIds()->SetId(0, 0); // ä¸­å¿ƒç‚¹
+        line->GetPointIds()->SetId(1, i + 1); // åœ†å‘¨ç‚¹
         lines->InsertNextCell(line);
     }
 
-    // ´´½¨Í¬ĞÄÔ²
+    // åˆ›å»ºåŒå¿ƒåœ†
     int numCircles = 5;
     for (int circle = 1; circle <= numCircles; circle++) {
         double radius = maxRadius * circle / numCircles;
         int startIndex = points->GetNumberOfPoints();
 
-        // ´´½¨Ô²ÖÜµã
+        // åˆ›å»ºåœ†å‘¨ç‚¹
         for (int i = 0; i <= radialDivisions; i++) {
             double angle = 2.0 * vtkMath::Pi() * i / radialDivisions;
             double x = centerX + radius * cos(angle);
@@ -367,7 +367,7 @@ void IESPointCloudWidget::createYZPlaneGrid(double maxRadius, double radialDivis
             points->InsertNextPoint(x, y, z);
         }
 
-        // ´´½¨Ô²ÖÜÏß
+        // åˆ›å»ºåœ†å‘¨çº¿
         for (int i = 0; i < radialDivisions; i++) {
             vtkSmartPointer<vtkLine> line = vtkSmartPointer<vtkLine>::New();
             line->GetPointIds()->SetId(0, startIndex + i);
@@ -380,9 +380,9 @@ void IESPointCloudWidget::createYZPlaneGrid(double maxRadius, double radialDivis
     yz_gridData->SetPoints(points);
     yz_gridData->SetLines(lines);
 
-    // Ğı×ªµ½YZÆ½Ãæ
+    // æ—‹è½¬åˆ°YZå¹³é¢
     yz_transform = vtkSmartPointer<vtkTransform>::New();
-    yz_transform->RotateX(90); // ÈÆXÖáĞı×ª90¶È
+    yz_transform->RotateX(90); // ç»•Xè½´æ—‹è½¬90åº¦
 
     yz_transformFilter = vtkSmartPointer<vtkTransformFilter>::New();
     yz_transformFilter->SetInputData(yz_gridData);
@@ -394,7 +394,7 @@ void IESPointCloudWidget::createYZPlaneGrid(double maxRadius, double radialDivis
 
     m_yzplane_actor = vtkSmartPointer<vtkActor>::New();
     m_yzplane_actor->SetMapper(yz_mapper);
-    m_yzplane_actor->GetProperty()->SetColor(0.0, 0.0, 1.0); // À¶É«
+    m_yzplane_actor->GetProperty()->SetColor(0.0, 0.0, 1.0); // è“è‰²
     m_yzplane_actor->GetProperty()->SetLineWidth(2);
 
     m_renderer->AddActor(m_yzplane_actor);
@@ -407,14 +407,14 @@ std::string IESPointCloudWidget::formatCandelaValue(double candelaValue)
 }
 
 
-// Ìí¼Ó¹âÇ¿Öµ±êÇ©£¨xxx cd£©
+// æ·»åŠ å…‰å¼ºå€¼æ ‡ç­¾ï¼ˆxxx cdï¼‰
 void IESPointCloudWidget::updateXYCandelaLabels(double maxRadius, int numCircles)
 {
     double centerX = 0.0;
     double centerY = 0.0;
     double centerZ = 0.0;
 
-    // Çå³ıÖ®Ç°µÄ±êÇ©
+    // æ¸…é™¤ä¹‹å‰çš„æ ‡ç­¾
     for (auto& label : m_xy_candelaLabels) {
         if (label.Get()) {
             m_renderer->RemoveActor(label);
@@ -424,33 +424,33 @@ void IESPointCloudWidget::updateXYCandelaLabels(double maxRadius, int numCircles
     if (m_fillStyle == eColor)
         return;
 
-    // ÎªÃ¿¸ö´ó¿Ì¶ÈÏß£¨Í¬ĞÄÔ²£©Ìí¼Ó¹âÇ¿Öµ±êÇ©
+    // ä¸ºæ¯ä¸ªå¤§åˆ»åº¦çº¿ï¼ˆåŒå¿ƒåœ†ï¼‰æ·»åŠ å…‰å¼ºå€¼æ ‡ç­¾
     for (int circle = 1; circle <= numCircles; circle++) {
         double radius = maxRadius * circle / numCircles;
 
-        // »ñÈ¡¶ÔÓ¦µÄ¹âÇ¿Öµ
+        // è·å–å¯¹åº”çš„å…‰å¼ºå€¼
         double candelaValue = 0.0;
         //if (circle - 1 < candelaValues.size()) {
         //    candelaValue = candelaValues[circle - 1];
         //}
         candelaValue = radius;// candelaValues[circle - 1];
-        // ´´½¨ÎÄ±¾Ô´
+        // åˆ›å»ºæ–‡æœ¬æº
         vtkSmartPointer<vtkVectorText> textSource = vtkSmartPointer<vtkVectorText>::New();
 
-        // ¸ñÊ½»¯¹âÇ¿ÖµÎÄ±¾
+        // æ ¼å¼åŒ–å…‰å¼ºå€¼æ–‡æœ¬
         std::string labelText = formatCandelaValue(candelaValue);
         textSource->SetText(labelText.c_str());
 
-        // ´´½¨ÎÄ±¾Ó³ÉäÆ÷
+        // åˆ›å»ºæ–‡æœ¬æ˜ å°„å™¨
         vtkSmartPointer<vtkPolyDataMapper> textMapper = vtkSmartPointer<vtkPolyDataMapper>::New();
         textMapper->SetInputConnection(textSource->GetOutputPort());
 
-        // ´´½¨ÎÄ±¾ÑİÔ±
+        // åˆ›å»ºæ–‡æœ¬æ¼”å‘˜
         vtkSmartPointer<vtkFollower> textActor = vtkSmartPointer<vtkFollower>::New();
         textActor->SetMapper(textMapper);
 
-        // ½«±êÇ©·ÅÖÃÔÚ0¶È·½ÏòµÄ¾¶ÏòÏßÉÏ
-        double labelOffset = 0;// maxRadius * 0.1; // ±êÇ©ÓëÍø¸ñÏßµÄ¾àÀë
+        // å°†æ ‡ç­¾æ”¾ç½®åœ¨0åº¦æ–¹å‘çš„å¾„å‘çº¿ä¸Š
+        double labelOffset = 0;// maxRadius * 0.1; // æ ‡ç­¾ä¸ç½‘æ ¼çº¿çš„è·ç¦»
         //double labelX = centerX + radius * cos(0) + labelOffset;
         //double labelY = centerY + radius * sin(0);
         //double labelZ = centerZ;
@@ -459,10 +459,10 @@ void IESPointCloudWidget::updateXYCandelaLabels(double maxRadius, int numCircles
         double labelZ = centerZ + radius * cos(0) + labelOffset;
 
         textActor->SetPosition(labelX, labelY, labelZ);
-        textActor->SetScale(maxRadius * 0.03); // ÎÄ±¾´óĞ¡
-        textActor->GetProperty()->SetColor(1.0,0.0, 0.0); // »ÆÉ«ÎÄ±¾£¬Í»³öÏÔÊ¾
+        textActor->SetScale(maxRadius * 0.03); // æ–‡æœ¬å¤§å°
+        textActor->GetProperty()->SetColor(1.0,0.0, 0.0); // é»„è‰²æ–‡æœ¬ï¼Œçªå‡ºæ˜¾ç¤º
 
-        // Ó¦ÓÃÓëÍø¸ñÏàÍ¬µÄ±ä»»
+        // åº”ç”¨ä¸ç½‘æ ¼ç›¸åŒçš„å˜æ¢
         vtkSmartPointer<vtkTransform> textTransform = vtkSmartPointer<vtkTransform>::New();
         textTransform->RotateY(90);
         textActor->SetUserTransform(textTransform);
@@ -483,15 +483,15 @@ void IESPointCloudWidget::createAxisArrow(double axisLength,
     double tipRadius,
     bool showLabels)
 {
-    // XÖá£¨ºìÉ«£©
+    // Xè½´ï¼ˆçº¢è‰²ï¼‰
     createXArrowSourceAxis("X", axisLength, shaftRadius, tipRadius,
         1.0, 0.0, 0.0, 0, 0, 0, 1, 0, 0);
 
-    // YÖá£¨ÂÌÉ«£©
+    // Yè½´ï¼ˆç»¿è‰²ï¼‰
     createYArrowSourceAxis("Y", axisLength, shaftRadius, tipRadius,
         0.0, 1.0, 0.0, 0, 0, 0, 0, 1, 0);
 
-    // ZÖá£¨À¶É«£©
+    // Zè½´ï¼ˆè“è‰²ï¼‰
     createZArrowSourceAxis("Z", axisLength, shaftRadius, tipRadius,
         0.0, 0.0, 1.0, 0, 0, 0, 0, 0, 1);
 }
@@ -514,20 +514,20 @@ void IESPointCloudWidget::createXArrowSourceAxis(
         m_renderer->RemoveActor(m_xArrow_textActor);
     }
     vtkSmartPointer<vtkArrowSource> arrowSource = vtkSmartPointer<vtkArrowSource>::New();
-    arrowSource->SetTipLength(0.25);  // ¼ıÍ·³¤¶È±ÈÀı
+    arrowSource->SetTipLength(0.25);  // ç®­å¤´é•¿åº¦æ¯”ä¾‹
     arrowSource->SetTipRadius(tipRadius);
     arrowSource->SetShaftRadius(shaftRadius);
     arrowSource->SetTipResolution(20);
     arrowSource->SetShaftResolution(20);
     arrowSource->Update();
 
-    // ¼ÆËã±ä»»
+    // è®¡ç®—å˜æ¢
     vtkSmartPointer<vtkTransform> transform = vtkSmartPointer<vtkTransform>::New();
 
-    // ÒÆ¶¯µ½Æğµã
+    // ç§»åŠ¨åˆ°èµ·ç‚¹
     transform->Translate(startX, startY, startZ);
 
-    // ¼ÆËãĞı×ª£¨Ä¬ÈÏ¼ıÍ·ÑØXÖá·½Ïò£©
+    // è®¡ç®—æ—‹è½¬ï¼ˆé»˜è®¤ç®­å¤´æ²¿Xè½´æ–¹å‘ï¼‰
     double defaultDir[3] = { 1.0, 0.0, 0.0 };
     double targetDir[3] = { dirX, dirY, dirZ };
     vtkMath::Normalize(targetDir);
@@ -544,7 +544,7 @@ void IESPointCloudWidget::createXArrowSourceAxis(
         transform->RotateWXYZ(rotationAngle, rotationAxis);
     }
 
-    // Ëõ·Å¼ıÍ·µ½Ö¸¶¨³¤¶È
+    // ç¼©æ”¾ç®­å¤´åˆ°æŒ‡å®šé•¿åº¦
     double arrowLength = vtkMath::Norm(targetDir) * axisLength;
     transform->Scale(arrowLength, arrowLength, arrowLength);
 
@@ -554,7 +554,7 @@ void IESPointCloudWidget::createXArrowSourceAxis(
     transformFilter->SetTransform(transform);
     transformFilter->Update();
 
-    // ´´½¨Ó³ÉäÆ÷ºÍÑİÔ±
+    // åˆ›å»ºæ˜ å°„å™¨å’Œæ¼”å‘˜
     vtkSmartPointer<vtkPolyDataMapper> mapper = vtkSmartPointer<vtkPolyDataMapper>::New();
     mapper->SetInputConnection(transformFilter->GetOutputPort());
 
@@ -564,7 +564,7 @@ void IESPointCloudWidget::createXArrowSourceAxis(
 
     m_renderer->AddActor(m_xArrow_actor);
 
-    // Ìí¼Ó±êÇ©
+    // æ·»åŠ æ ‡ç­¾
     addXArrowAxisLabel(axisName, startX + dirX * axisLength * 1.15,
         startY + dirY * axisLength * 1.15,
         startZ + dirZ * axisLength * 1.15,
@@ -589,20 +589,20 @@ void IESPointCloudWidget::createYArrowSourceAxis(
         m_renderer->RemoveActor(m_yArrow_textActor);
     }
     vtkSmartPointer<vtkArrowSource> arrowSource = vtkSmartPointer<vtkArrowSource>::New();
-    arrowSource->SetTipLength(0.25);  // ¼ıÍ·³¤¶È±ÈÀı
+    arrowSource->SetTipLength(0.25);  // ç®­å¤´é•¿åº¦æ¯”ä¾‹
     arrowSource->SetTipRadius(tipRadius);
     arrowSource->SetShaftRadius(shaftRadius);
     arrowSource->SetTipResolution(20);
     arrowSource->SetShaftResolution(20);
     arrowSource->Update();
 
-    // ¼ÆËã±ä»»
+    // è®¡ç®—å˜æ¢
     vtkSmartPointer<vtkTransform> transform = vtkSmartPointer<vtkTransform>::New();
 
-    // ÒÆ¶¯µ½Æğµã
+    // ç§»åŠ¨åˆ°èµ·ç‚¹
     transform->Translate(startX, startY, startZ);
 
-    // ¼ÆËãĞı×ª£¨Ä¬ÈÏ¼ıÍ·ÑØXÖá·½Ïò£©
+    // è®¡ç®—æ—‹è½¬ï¼ˆé»˜è®¤ç®­å¤´æ²¿Xè½´æ–¹å‘ï¼‰
     double defaultDir[3] = { 1.0, 0.0, 0.0 };
     double targetDir[3] = { dirX, dirY, dirZ };
     vtkMath::Normalize(targetDir);
@@ -619,7 +619,7 @@ void IESPointCloudWidget::createYArrowSourceAxis(
         transform->RotateWXYZ(rotationAngle, rotationAxis);
     }
 
-    // Ëõ·Å¼ıÍ·µ½Ö¸¶¨³¤¶È
+    // ç¼©æ”¾ç®­å¤´åˆ°æŒ‡å®šé•¿åº¦
     double arrowLength = vtkMath::Norm(targetDir) * axisLength;
     transform->Scale(arrowLength, arrowLength, arrowLength);
 
@@ -629,7 +629,7 @@ void IESPointCloudWidget::createYArrowSourceAxis(
     transformFilter->SetTransform(transform);
     transformFilter->Update();
 
-    // ´´½¨Ó³ÉäÆ÷ºÍÑİÔ±
+    // åˆ›å»ºæ˜ å°„å™¨å’Œæ¼”å‘˜
     vtkSmartPointer<vtkPolyDataMapper> mapper = vtkSmartPointer<vtkPolyDataMapper>::New();
     mapper->SetInputConnection(transformFilter->GetOutputPort());
 
@@ -639,7 +639,7 @@ void IESPointCloudWidget::createYArrowSourceAxis(
 
     m_renderer->AddActor(m_yArrow_actor);
 
-    // Ìí¼Ó±êÇ©
+    // æ·»åŠ æ ‡ç­¾
     addYArrowAxisLabel(axisName, startX + dirX * axisLength * 1.15,
         startY + dirY * axisLength * 1.15,
         startZ + dirZ * axisLength * 1.15,
@@ -663,20 +663,20 @@ void IESPointCloudWidget::createZArrowSourceAxis(
         m_renderer->RemoveActor(m_zArrow_textActor);
     }
     vtkSmartPointer<vtkArrowSource> arrowSource = vtkSmartPointer<vtkArrowSource>::New();
-    arrowSource->SetTipLength(0.25);  // ¼ıÍ·³¤¶È±ÈÀı
+    arrowSource->SetTipLength(0.25);  // ç®­å¤´é•¿åº¦æ¯”ä¾‹
     arrowSource->SetTipRadius(tipRadius);
     arrowSource->SetShaftRadius(shaftRadius);
     arrowSource->SetTipResolution(20);
     arrowSource->SetShaftResolution(20);
     arrowSource->Update();
 
-    // ¼ÆËã±ä»»
+    // è®¡ç®—å˜æ¢
     vtkSmartPointer<vtkTransform> transform = vtkSmartPointer<vtkTransform>::New();
 
-    // ÒÆ¶¯µ½Æğµã
+    // ç§»åŠ¨åˆ°èµ·ç‚¹
     transform->Translate(startX, startY, startZ);
 
-    // ¼ÆËãĞı×ª£¨Ä¬ÈÏ¼ıÍ·ÑØXÖá·½Ïò£©
+    // è®¡ç®—æ—‹è½¬ï¼ˆé»˜è®¤ç®­å¤´æ²¿Xè½´æ–¹å‘ï¼‰
     double defaultDir[3] = { 1.0, 0.0, 0.0 };
     double targetDir[3] = { dirX, dirY, dirZ };
     vtkMath::Normalize(targetDir);
@@ -693,7 +693,7 @@ void IESPointCloudWidget::createZArrowSourceAxis(
         transform->RotateWXYZ(rotationAngle, rotationAxis);
     }
 
-    // Ëõ·Å¼ıÍ·µ½Ö¸¶¨³¤¶È
+    // ç¼©æ”¾ç®­å¤´åˆ°æŒ‡å®šé•¿åº¦
     double arrowLength = vtkMath::Norm(targetDir) * axisLength;
     transform->Scale(arrowLength, arrowLength, arrowLength);
 
@@ -703,7 +703,7 @@ void IESPointCloudWidget::createZArrowSourceAxis(
     transformFilter->SetTransform(transform);
     transformFilter->Update();
 
-    // ´´½¨Ó³ÉäÆ÷ºÍÑİÔ±
+    // åˆ›å»ºæ˜ å°„å™¨å’Œæ¼”å‘˜
     vtkSmartPointer<vtkPolyDataMapper> mapper = vtkSmartPointer<vtkPolyDataMapper>::New();
     mapper->SetInputConnection(transformFilter->GetOutputPort());
 
@@ -713,7 +713,7 @@ void IESPointCloudWidget::createZArrowSourceAxis(
 
     m_renderer->AddActor(m_zArrow_actor);
 
-    // Ìí¼Ó±êÇ©
+    // æ·»åŠ æ ‡ç­¾
     addZArrowAxisLabel(axisName, startX + dirX * axisLength * 1.15,
         startY + dirY * axisLength * 1.15,
         startZ + dirZ * axisLength * 1.15,
@@ -773,7 +773,7 @@ void IESPointCloudWidget::updateXZCandelaLabels(double maxRadius, int numCircles
     double centerY = 0.0;
     double centerZ = 0.0;
 
-    // Çå³ıÖ®Ç°µÄ±êÇ©
+    // æ¸…é™¤ä¹‹å‰çš„æ ‡ç­¾
     for (auto& label : m_xz_candelaLabels) {
         if (label.Get()) {
             m_renderer->RemoveActor(label);
@@ -783,40 +783,40 @@ void IESPointCloudWidget::updateXZCandelaLabels(double maxRadius, int numCircles
     if (m_fillStyle == eColor)
         return;
 
-    // ÎªÃ¿¸ö´ó¿Ì¶ÈÏß£¨Í¬ĞÄÔ²£©Ìí¼Ó¹âÇ¿Öµ±êÇ©
+    // ä¸ºæ¯ä¸ªå¤§åˆ»åº¦çº¿ï¼ˆåŒå¿ƒåœ†ï¼‰æ·»åŠ å…‰å¼ºå€¼æ ‡ç­¾
     for (int circle = 1; circle <= numCircles; circle++) {
         double radius = maxRadius * circle / numCircles;
 
-        // »ñÈ¡¶ÔÓ¦µÄ¹âÇ¿Öµ
+        // è·å–å¯¹åº”çš„å…‰å¼ºå€¼
         double candelaValue = 0.0;
 
         candelaValue = radius;
-        // ´´½¨ÎÄ±¾Ô´
+        // åˆ›å»ºæ–‡æœ¬æº
         vtkSmartPointer<vtkVectorText> textSource = vtkSmartPointer<vtkVectorText>::New();
 
-        // ¸ñÊ½»¯¹âÇ¿ÖµÎÄ±¾
+        // æ ¼å¼åŒ–å…‰å¼ºå€¼æ–‡æœ¬
         std::string labelText = formatCandelaValue(candelaValue);
         textSource->SetText(labelText.c_str());
 
-        // ´´½¨ÎÄ±¾Ó³ÉäÆ÷
+        // åˆ›å»ºæ–‡æœ¬æ˜ å°„å™¨
         vtkSmartPointer<vtkPolyDataMapper> textMapper = vtkSmartPointer<vtkPolyDataMapper>::New();
         textMapper->SetInputConnection(textSource->GetOutputPort());
 
-        // ´´½¨ÎÄ±¾ÑİÔ±
+        // åˆ›å»ºæ–‡æœ¬æ¼”å‘˜
         vtkSmartPointer<vtkFollower> textActor = vtkSmartPointer<vtkFollower>::New();
         textActor->SetMapper(textMapper);
 
-        // ½«±êÇ©·ÅÖÃÔÚ0¶È·½ÏòµÄ¾¶ÏòÏßÉÏ
-        double labelOffset = 0;// maxRadius * 0.1; // ±êÇ©ÓëÍø¸ñÏßµÄ¾àÀë
+        // å°†æ ‡ç­¾æ”¾ç½®åœ¨0åº¦æ–¹å‘çš„å¾„å‘çº¿ä¸Š
+        double labelOffset = 0;// maxRadius * 0.1; // æ ‡ç­¾ä¸ç½‘æ ¼çº¿çš„è·ç¦»
         double labelX = centerX + radius * sin(0);
         double labelY = centerY;
         double labelZ = centerZ + radius * cos(0) + labelOffset;
 
         textActor->SetPosition(labelX, labelY, labelZ);
-        textActor->SetScale(maxRadius * 0.03); // ÎÄ±¾´óĞ¡
-        textActor->GetProperty()->SetColor(0, 1.0, 0.0); // »ÆÉ«ÎÄ±¾£¬Í»³öÏÔÊ¾
+        textActor->SetScale(maxRadius * 0.03); // æ–‡æœ¬å¤§å°
+        textActor->GetProperty()->SetColor(0, 1.0, 0.0); // é»„è‰²æ–‡æœ¬ï¼Œçªå‡ºæ˜¾ç¤º
 
-        // Ó¦ÓÃÓëÍø¸ñÏàÍ¬µÄ±ä»»
+        // åº”ç”¨ä¸ç½‘æ ¼ç›¸åŒçš„å˜æ¢
         vtkSmartPointer<vtkTransform> textTransform = vtkSmartPointer<vtkTransform>::New();
         textTransform->RotateX(90);
         textActor->SetUserTransform(textTransform);
@@ -836,7 +836,7 @@ void IESPointCloudWidget::updateYZCandelaLabels(double maxRadius, int numCircles
     double centerY = 0.0;
     double centerZ = 0.0;
 
-    // Çå³ıÖ®Ç°µÄ±êÇ©
+    // æ¸…é™¤ä¹‹å‰çš„æ ‡ç­¾
     for (auto& label : m_yz_candelaLabels) {
         if (label.Get()) {
             m_renderer->RemoveActor(label);
@@ -847,42 +847,42 @@ void IESPointCloudWidget::updateYZCandelaLabels(double maxRadius, int numCircles
     if (m_fillStyle == eColor)
         return;
 
-    // ÎªÃ¿¸ö´ó¿Ì¶ÈÏß£¨Í¬ĞÄÔ²£©Ìí¼Ó¹âÇ¿Öµ±êÇ©
+    // ä¸ºæ¯ä¸ªå¤§åˆ»åº¦çº¿ï¼ˆåŒå¿ƒåœ†ï¼‰æ·»åŠ å…‰å¼ºå€¼æ ‡ç­¾
     for (int circle = 1; circle <= numCircles; circle++) {
         double radius = maxRadius * circle / numCircles;
 
-        // »ñÈ¡¶ÔÓ¦µÄ¹âÇ¿Öµ
+        // è·å–å¯¹åº”çš„å…‰å¼ºå€¼
         double candelaValue = 0.0;
         //if (circle - 1 < candelaValues.size()) {
         //    candelaValue = candelaValues[circle - 1];
         //}
         candelaValue = radius;
-        // ´´½¨ÎÄ±¾Ô´
+        // åˆ›å»ºæ–‡æœ¬æº
         vtkSmartPointer<vtkVectorText> textSource = vtkSmartPointer<vtkVectorText>::New();
 
-        // ¸ñÊ½»¯¹âÇ¿ÖµÎÄ±¾
+        // æ ¼å¼åŒ–å…‰å¼ºå€¼æ–‡æœ¬
         std::string labelText = formatCandelaValue(candelaValue);
         textSource->SetText(labelText.c_str());
 
-        // ´´½¨ÎÄ±¾Ó³ÉäÆ÷
+        // åˆ›å»ºæ–‡æœ¬æ˜ å°„å™¨
         vtkSmartPointer<vtkPolyDataMapper> textMapper = vtkSmartPointer<vtkPolyDataMapper>::New();
         textMapper->SetInputConnection(textSource->GetOutputPort());
 
-        // ´´½¨ÎÄ±¾ÑİÔ±
+        // åˆ›å»ºæ–‡æœ¬æ¼”å‘˜
         vtkSmartPointer<vtkFollower> textActor = vtkSmartPointer<vtkFollower>::New();
         textActor->SetMapper(textMapper);
 
-        // ½«±êÇ©·ÅÖÃÔÚ0¶È·½ÏòµÄ¾¶ÏòÏßÉÏ
-        double labelOffset = 0;// maxRadius * 0.1; // ±êÇ©ÓëÍø¸ñÏßµÄ¾àÀë
+        // å°†æ ‡ç­¾æ”¾ç½®åœ¨0åº¦æ–¹å‘çš„å¾„å‘çº¿ä¸Š
+        double labelOffset = 0;// maxRadius * 0.1; // æ ‡ç­¾ä¸ç½‘æ ¼çº¿çš„è·ç¦»
         double labelX = centerX + radius * sin(0);
         double labelY = centerY;
         double labelZ = centerZ + radius * cos(0) + labelOffset;
 
         textActor->SetPosition(labelX, labelY, labelZ);
-        textActor->SetScale(maxRadius * 0.03); // ÎÄ±¾´óĞ¡
-        textActor->GetProperty()->SetColor(0.0, 0.0, 1.0); // »ÆÉ«ÎÄ±¾£¬Í»³öÏÔÊ¾
+        textActor->SetScale(maxRadius * 0.03); // æ–‡æœ¬å¤§å°
+        textActor->GetProperty()->SetColor(0.0, 0.0, 1.0); // é»„è‰²æ–‡æœ¬ï¼Œçªå‡ºæ˜¾ç¤º
 
-        // Ó¦ÓÃÓëÍø¸ñÏàÍ¬µÄ±ä»»
+        // åº”ç”¨ä¸ç½‘æ ¼ç›¸åŒçš„å˜æ¢
         vtkSmartPointer<vtkTransform> textTransform = vtkSmartPointer<vtkTransform>::New();
         textTransform->RotateZ(90);
         textActor->SetUserTransform(textTransform);
@@ -911,29 +911,29 @@ void IESPointCloudWidget::createXZPlaneGrid(double maxRadius, double radialDivis
     double centerX = 0.0;
     double centerY = 0.0;
     double centerZ = 0.0;
-    // Ìí¼Ó¼«×ø±êÖĞĞÄµã
+    // æ·»åŠ æåæ ‡ä¸­å¿ƒç‚¹
     xz_points->InsertNextPoint(centerX, centerY, centerZ);
-    // ´´½¨¾¶ÏòÏß
+    // åˆ›å»ºå¾„å‘çº¿
     for (int i = 0; i < radialDivisions; i++) {
         double angle = 2.0 * vtkMath::Pi() * i / radialDivisions;
         double x = centerX + maxRadius * cos(angle);
         double y = centerY + maxRadius * sin(angle);
         double z = centerZ;
         xz_points->InsertNextPoint(x, y, z);
-        // ´´½¨´ÓÖĞĞÄµ½Ô²ÖÜµÄÏß
+        // åˆ›å»ºä»ä¸­å¿ƒåˆ°åœ†å‘¨çš„çº¿
         vtkSmartPointer<vtkLine> line = vtkSmartPointer<vtkLine>::New();
-        line->GetPointIds()->SetId(0, 0); // ÖĞĞÄµã
-        line->GetPointIds()->SetId(1, i + 1); // Ô²ÖÜµã
+        line->GetPointIds()->SetId(0, 0); // ä¸­å¿ƒç‚¹
+        line->GetPointIds()->SetId(1, i + 1); // åœ†å‘¨ç‚¹
         xz_lines->InsertNextCell(line);
     }
 
-    // ´´½¨Í¬ĞÄÔ²
+    // åˆ›å»ºåŒå¿ƒåœ†
     int numCircles = 5;
     for (int circle = 1; circle <= numCircles; circle++) {
         double radius = maxRadius * circle / numCircles;
         int startIndex = xz_points->GetNumberOfPoints();
 
-        // ´´½¨Ô²ÖÜµã
+        // åˆ›å»ºåœ†å‘¨ç‚¹
         for (int i = 0; i <= radialDivisions; i++) {
             double angle = 2.0 * vtkMath::Pi() * i / radialDivisions;
             double x = centerX + radius * cos(angle);
@@ -943,7 +943,7 @@ void IESPointCloudWidget::createXZPlaneGrid(double maxRadius, double radialDivis
             xz_points->InsertNextPoint(x, y, z);
         }
 
-        // ´´½¨Ô²ÖÜÏß
+        // åˆ›å»ºåœ†å‘¨çº¿
         for (int i = 0; i < radialDivisions; i++) {
             vtkSmartPointer<vtkLine> line = vtkSmartPointer<vtkLine>::New();
             line->GetPointIds()->SetId(0, startIndex + i);
@@ -956,9 +956,9 @@ void IESPointCloudWidget::createXZPlaneGrid(double maxRadius, double radialDivis
     xz_gridData->SetPoints(xz_points);
     xz_gridData->SetLines(xz_lines);
 
-    // Ğı×ªµ½XZÆ½Ãæ
+    // æ—‹è½¬åˆ°XZå¹³é¢
     xz_transform = vtkSmartPointer<vtkTransform>::New();
-    xz_transform->RotateY(90); // ÈÆYÖáĞı×ª90¶È
+    xz_transform->RotateY(90); // ç»•Yè½´æ—‹è½¬90åº¦
 
     xz_transformFilter = vtkSmartPointer<vtkTransformFilter>::New();
     xz_transformFilter->SetInputData(xz_gridData);
@@ -970,7 +970,7 @@ void IESPointCloudWidget::createXZPlaneGrid(double maxRadius, double radialDivis
 
     m_xzplane_actor = vtkSmartPointer<vtkActor>::New();
     m_xzplane_actor->SetMapper(xz_mapper);
-    m_xzplane_actor->GetProperty()->SetColor(0.0, 1.0, 0.0); // »ÆÉ«
+    m_xzplane_actor->GetProperty()->SetColor(0.0, 1.0, 0.0); // é»„è‰²
     m_xzplane_actor->GetProperty()->SetLineWidth(2);    
     m_renderer->AddActor(m_xzplane_actor);
 
@@ -988,9 +988,9 @@ void IESPointCloudWidget::createXYPlaneGrid(double maxRadius, double radialDivis
     double centerX = 0.0;
     double centerY = 0.0;
     double centerZ = 0.0;
-    // Ìí¼Ó¼«×ø±êÖĞĞÄµã
+    // æ·»åŠ æåæ ‡ä¸­å¿ƒç‚¹
     xy_points->InsertNextPoint(centerX, centerY, centerZ);
-    // ´´½¨¾¶ÏòÏß
+    // åˆ›å»ºå¾„å‘çº¿
     for (int i = 0; i < radialDivisions; i++) {
         double angle = 2.0 * vtkMath::Pi() * i / radialDivisions;
         double x = centerX + maxRadius * cos(angle);
@@ -999,20 +999,20 @@ void IESPointCloudWidget::createXYPlaneGrid(double maxRadius, double radialDivis
 
         xy_points->InsertNextPoint(x, y, z);
 
-        // ´´½¨´ÓÖĞĞÄµ½Ô²ÖÜµÄÏß
+        // åˆ›å»ºä»ä¸­å¿ƒåˆ°åœ†å‘¨çš„çº¿
         vtkSmartPointer<vtkLine> line = vtkSmartPointer<vtkLine>::New();
-        line->GetPointIds()->SetId(0, 0); // ÖĞĞÄµã
-        line->GetPointIds()->SetId(1, i + 1); // Ô²ÖÜµã
+        line->GetPointIds()->SetId(0, 0); // ä¸­å¿ƒç‚¹
+        line->GetPointIds()->SetId(1, i + 1); // åœ†å‘¨ç‚¹
         xy_lines->InsertNextCell(line);
     }
 
-    // ´´½¨Í¬ĞÄÔ²
+    // åˆ›å»ºåŒå¿ƒåœ†
     int numCircles = 5;
     for (int circle = 1; circle <= numCircles; circle++) {
         double radius = maxRadius * circle / numCircles;
         int startIndex = xy_points->GetNumberOfPoints();
 
-        // ´´½¨Ô²ÖÜµã
+        // åˆ›å»ºåœ†å‘¨ç‚¹
         for (int i = 0; i <= radialDivisions; i++) {
             double angle = 2.0 * vtkMath::Pi() * i / radialDivisions;
             double x = centerX + radius * cos(angle);
@@ -1022,7 +1022,7 @@ void IESPointCloudWidget::createXYPlaneGrid(double maxRadius, double radialDivis
             xy_points->InsertNextPoint(x, y, z);
         }
        
-        // ´´½¨Ô²ÖÜÏß
+        // åˆ›å»ºåœ†å‘¨çº¿
         for (int i = 0; i < radialDivisions; i++) {
             vtkSmartPointer<vtkLine> line = vtkSmartPointer<vtkLine>::New();
             line->GetPointIds()->SetId(0, startIndex + i);
@@ -1041,7 +1041,7 @@ void IESPointCloudWidget::createXYPlaneGrid(double maxRadius, double radialDivis
 
     m_xyplane_actor = vtkSmartPointer<vtkActor>::New();
     m_xyplane_actor->SetMapper(xy_mapper);
-    m_xyplane_actor->GetProperty()->SetColor(1.0, 0.0, 0.0); // ÂÌÉ«
+    m_xyplane_actor->GetProperty()->SetColor(1.0, 0.0, 0.0); // ç»¿è‰²
     m_xyplane_actor->GetProperty()->SetLineWidth(2);
 
     m_renderer->AddActor(m_xyplane_actor);
@@ -1050,28 +1050,28 @@ void IESPointCloudWidget::createXYPlaneGrid(double maxRadius, double radialDivis
 }
 void IESPointCloudWidget::addCoordinateAxes() 
 {
-    // ´´½¨¼òµ¥µÄ×ø±êÖá
+    // åˆ›å»ºç®€å•çš„åæ ‡è½´
     axisPoints = vtkSmartPointer<vtkPoints>::New();
     axisLines = vtkSmartPointer<vtkCellArray>::New();
     axisColors = vtkSmartPointer<vtkUnsignedCharArray>::New();
 
     axisColors->SetNumberOfComponents(3);
 
-    // XÖá (ºìÉ«)
+    // Xè½´ (çº¢è‰²)
     axisPoints->InsertNextPoint(0, 0, 0);
     axisPoints->InsertNextPoint(2, 0, 0);
     vtkIdType xAxis[2] = { 0, 1 };
     axisLines->InsertNextCell(2, xAxis);
     axisColors->InsertNextTuple3(255, 0, 0);
 
-    // YÖá (ÂÌÉ«)
+    // Yè½´ (ç»¿è‰²)
     axisPoints->InsertNextPoint(0, 0, 0);
     axisPoints->InsertNextPoint(0, 2, 0);
     vtkIdType yAxis[2] = { 2, 3 };
     axisLines->InsertNextCell(2, yAxis);
     axisColors->InsertNextTuple3(0, 255, 0);
 
-    // ZÖá (À¶É«)
+    // Zè½´ (è“è‰²)
     axisPoints->InsertNextPoint(0, 0, 0);
     axisPoints->InsertNextPoint(0, 0, 2);
     vtkIdType zAxis[2] = { 4, 5 };
@@ -1120,26 +1120,26 @@ void IESPointCloudWidget::FillColorData()
     createAxisArrow(max_z + 0.5);
 
     structuredGrid->SetDimensions(361, 181, 1);
-    // ¸üĞÂÑÕÉ«Ó³Éä·¶Î§
+    // æ›´æ–°é¢œè‰²æ˜ å°„èŒƒå›´
     double range[2];
     m_intensities->GetRange(range);
     m_mapper->SetScalarRange(range);
 
-    // ÉèÖÃÑÕÉ«Ó³Éäº¯Êı (À¶-ÂÌ-ºì)
+    // è®¾ç½®é¢œè‰²æ˜ å°„å‡½æ•° (è“-ç»¿-çº¢)
     m_colorTransferFunction->RemoveAllPoints();
-    m_colorTransferFunction->AddRGBPoint(range[0], 0.0, 0.0, 1.0); // À¶É«´ú±íµÍÇ¿¶È
-    m_colorTransferFunction->AddRGBPoint((range[0] + range[1]) / 2, 0.0, 1.0, 0.0); // ÂÌÉ«´ú±íÖĞÇ¿¶È
-    m_colorTransferFunction->AddRGBPoint(range[1], 1.0, 0.0, 0.0); // ºìÉ«´ú±í¸ßÇ¿¶È
+    m_colorTransferFunction->AddRGBPoint(range[0], 0.0, 0.0, 1.0); // è“è‰²ä»£è¡¨ä½å¼ºåº¦
+    m_colorTransferFunction->AddRGBPoint((range[0] + range[1]) / 2, 0.0, 1.0, 0.0); // ç»¿è‰²ä»£è¡¨ä¸­å¼ºåº¦
+    m_colorTransferFunction->AddRGBPoint(range[1], 1.0, 0.0, 0.0); // çº¢è‰²ä»£è¡¨é«˜å¼ºåº¦
 
 
     m_scalarBarActor->SetLookupTable(m_colorTransferFunction);
     m_scalarBarActor->SetTitle("Intensity");
 
-    // ÉèÖÃÉ«±êÎ»ÖÃºÍ´óĞ¡ (ÓÒ²à´¹Ö±·ÅÖÃ)
-    m_scalarBarActor->SetPosition(0.85, 0.1);    // Î»ÖÃ (Ïà¶Ô×ø±ê)
-    m_scalarBarActor->SetWidth(0.1);             // ¿í¶È
-    m_scalarBarActor->SetHeight(0.8);            // ¸ß¶È
-        // ÉèÖÃÉ«±ê·½ÏòÎª´¹Ö±
+    // è®¾ç½®è‰²æ ‡ä½ç½®å’Œå¤§å° (å³ä¾§å‚ç›´æ”¾ç½®)
+    m_scalarBarActor->SetPosition(0.85, 0.1);    // ä½ç½® (ç›¸å¯¹åæ ‡)
+    m_scalarBarActor->SetWidth(0.1);             // å®½åº¦
+    m_scalarBarActor->SetHeight(0.8);            // é«˜åº¦
+        // è®¾ç½®è‰²æ ‡æ–¹å‘ä¸ºå‚ç›´
 
     m_scalarBarActor->SetOrientationToVertical();
 
@@ -1165,7 +1165,7 @@ void IESPointCloudWidget::FillShapeData()
         //m_intensities->SetValue(i, v.z());
     }
  
-    // ¸üĞÂÑÕÉ«Ó³Éä·¶Î§
+    // æ›´æ–°é¢œè‰²æ˜ å°„èŒƒå›´
     double range[2];
     //m_intensities->GetRange(range);
     //m_mapper->SetScalarRange(range);
@@ -1174,21 +1174,21 @@ void IESPointCloudWidget::FillShapeData()
     createYZPlaneGrid(max_z, 12);
     createXYPlaneGrid(max_z, 12);
     createAxisArrow(max_z );
-    // ÉèÖÃÑÕÉ«Ó³Éäº¯Êı (À¶-ÂÌ-ºì)
+    // è®¾ç½®é¢œè‰²æ˜ å°„å‡½æ•° (è“-ç»¿-çº¢)
     //m_colorTransferFunction->RemoveAllPoints();
-    //m_colorTransferFunction->AddRGBPoint(range[0], 0.0, 0.0, 1.0); // À¶É«´ú±íµÍÇ¿¶È
-    //m_colorTransferFunction->AddRGBPoint((range[0] + range[1]) / 2, 0.0, 1.0, 0.0); // ÂÌÉ«´ú±íÖĞÇ¿¶È
-    //m_colorTransferFunction->AddRGBPoint(range[1], 1.0, 0.0, 0.0); // ºìÉ«´ú±í¸ßÇ¿¶È
+    //m_colorTransferFunction->AddRGBPoint(range[0], 0.0, 0.0, 1.0); // è“è‰²ä»£è¡¨ä½å¼ºåº¦
+    //m_colorTransferFunction->AddRGBPoint((range[0] + range[1]) / 2, 0.0, 1.0, 0.0); // ç»¿è‰²ä»£è¡¨ä¸­å¼ºåº¦
+    //m_colorTransferFunction->AddRGBPoint(range[1], 1.0, 0.0, 0.0); // çº¢è‰²ä»£è¡¨é«˜å¼ºåº¦
 
 
     //m_scalarBarActor->SetLookupTable(m_colorTransferFunction);
     //m_scalarBarActor->SetTitle("Intensity");
 
-    //// ÉèÖÃÉ«±êÎ»ÖÃºÍ´óĞ¡ (ÓÒ²à´¹Ö±·ÅÖÃ)
-    //m_scalarBarActor->SetPosition(0.85, 0.1);    // Î»ÖÃ (Ïà¶Ô×ø±ê)
-    //m_scalarBarActor->SetWidth(0.1);             // ¿í¶È
-    //m_scalarBarActor->SetHeight(0.8);            // ¸ß¶È
-    //    // ÉèÖÃÉ«±ê·½ÏòÎª´¹Ö±
+    //// è®¾ç½®è‰²æ ‡ä½ç½®å’Œå¤§å° (å³ä¾§å‚ç›´æ”¾ç½®)
+    //m_scalarBarActor->SetPosition(0.85, 0.1);    // ä½ç½® (ç›¸å¯¹åæ ‡)
+    //m_scalarBarActor->SetWidth(0.1);             // å®½åº¦
+    //m_scalarBarActor->SetHeight(0.8);            // é«˜åº¦
+    //    // è®¾ç½®è‰²æ ‡æ–¹å‘ä¸ºå‚ç›´
     
     //m_scalarBarActor->SetOrientationToVertical();
     m_renderer->RemoveActor(m_scalarBarActor);

@@ -1,40 +1,42 @@
-#include "FootprintWidget.h"
+ï»¿#include "FootprintWidget.h"
 #include <QDebug>
 #include <QRegularExpression>
 
 FootprintWidget::FootprintWidget(QWidget* parent)
     : QWidget(parent)
 {
-    // ´´½¨Ö÷²¼¾Ö
+    // åˆ›å»ºä¸»å¸ƒå±€
     QVBoxLayout* mainLayout = new QVBoxLayout(this);
 
-    // ´´½¨QCustomPlotÊµÀý
+    // åˆ›å»ºQCustomPlotå®žä¾‹
     m_customPlot = new QCustomPlot(this);
     mainLayout->addWidget(m_customPlot);
 
-    // ÉèÖÃÍ¼±í
+    // è®¾ç½®å›¾è¡¨
     setupPlot();
+
+    resize(QSize(640, 480));
 }
 
 void FootprintWidget::setupPlot()
 {
-    // ÉèÖÃÍ¼±í±êÌâ
+    // è®¾ç½®å›¾è¡¨æ ‡é¢˜
     m_customPlot->plotLayout()->insertRow(0);
     m_customPlot->plotLayout()->addElement(0, 0,
         new QCPTextElement(m_customPlot, "Footprint Limits on Surface 1", QFont("sans", 12, QFont::Bold)));
 
-    // ÉèÖÃ×ø±êÖá±êÇ©
+    // è®¾ç½®åæ ‡è½´æ ‡ç­¾
     m_customPlot->xAxis->setLabel("X Position");
     m_customPlot->yAxis->setLabel("Y Position");
 
-    // ÉèÖÃ×ø±êÖá·¶Î§£¨¸ù¾ÝÊý¾Ýµ÷Õû£©
+    // è®¾ç½®åæ ‡è½´èŒƒå›´ï¼ˆæ ¹æ®æ•°æ®è°ƒæ•´ï¼‰
     m_customPlot->xAxis->setRange(-10, 10);
     m_customPlot->yAxis->setRange(-85, 10);
 
-    // ÆôÓÃÑ¡Ôñ¡¢Ëõ·Å¡¢ÍÏ¶¯µÈ¹¦ÄÜ
+    // å¯ç”¨é€‰æ‹©ã€ç¼©æ”¾ã€æ‹–åŠ¨ç­‰åŠŸèƒ½
     m_customPlot->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectPlottables);
 
-    // ÏÔÊ¾Í¼Àý
+    // æ˜¾ç¤ºå›¾ä¾‹
     m_customPlot->legend->setVisible(true);
     m_customPlot->legend->setFont(QFont("Helvetica", 9));
     m_customPlot->axisRect()->insetLayout()->setInsetAlignment(0, Qt::AlignTop | Qt::AlignRight);
@@ -92,7 +94,7 @@ bool FootprintWidget::loadDataFromFile(const QString& filename)
             else if ((match = radiusRegex.match(line)).hasMatch()) {
                 currentData.radius = match.captured(1).toDouble();
 
-                // Íê³ÉÒ»¸öÊý¾Ý¿éµÄ¶ÁÈ¡
+                // å®Œæˆä¸€ä¸ªæ•°æ®å—çš„è¯»å–
                 if (!currentData.field.isEmpty()) {
                     m_footprintData.append(currentData);
                 }
@@ -135,20 +137,20 @@ void FootprintWidget::plotFootprints()
     for (const FootprintData& data : m_footprintData) {
         QColor color = getFieldColor(data.field);
 
-        // ´´½¨¾ØÐÎÀ´±íÊ¾footprintÇøÓò
-        QCPItemRect* rect = new QCPItemRect(m_customPlot);
+        // åˆ›å»ºçŸ©å½¢æ¥è¡¨ç¤ºfootprintåŒºåŸŸ
+        //QCPItemRect* rect = new QCPItemRect(m_customPlot);
 
-        // ÉèÖÃ¾ØÐÎÎ»ÖÃ
-        rect->topLeft->setCoords(data.left, data.top);
-        rect->bottomRight->setCoords(data.right, data.bottom);
+        //// è®¾ç½®çŸ©å½¢ä½ç½®
+        //rect->topLeft->setCoords(data.left, data.top);
+        //rect->bottomRight->setCoords(data.right, data.bottom);
 
-        // ÉèÖÃ¾ØÐÎÑùÊ½
-        rect->setPen(QPen(color, 2));
+        //// è®¾ç½®çŸ©å½¢æ ·å¼
+        //rect->setPen(QPen(color, 2));
         QColor fillColor = color;
-        fillColor.setAlpha(50); // °ëÍ¸Ã÷Ìî³ä
-        rect->setBrush(QBrush(fillColor));
+        fillColor.setAlpha(50); // åŠé€æ˜Žå¡«å……
+        //rect->setBrush(QBrush(fillColor));
 
-        // Ìí¼Ó°ë¾¶Ô²£¨¿ÉÑ¡£©
+        // æ·»åŠ åŠå¾„åœ†ï¼ˆå¯é€‰ï¼‰
         QCPItemEllipse* ellipse = new QCPItemEllipse(m_customPlot);
         double centerX = (data.left + data.right) / 2.0;
         double centerY = (data.top + data.bottom) / 2.0;
@@ -156,7 +158,7 @@ void FootprintWidget::plotFootprints()
         ellipse->bottomRight->setCoords(centerX + data.radius, centerY - data.radius);
         ellipse->setPen(QPen(color, 1, Qt::DashLine));
 
-        // ´´½¨Í¼ÀýÏî£¨Ê¹ÓÃÒ»¸ö²»¿É¼ûµÄÇúÏßÀ´´´½¨Í¼Àý£©
+        // åˆ›å»ºå›¾ä¾‹é¡¹ï¼ˆä½¿ç”¨ä¸€ä¸ªä¸å¯è§çš„æ›²çº¿æ¥åˆ›å»ºå›¾ä¾‹ï¼‰
         QCPGraph* legendGraph = m_customPlot->addGraph();
         legendGraph->setName(QString("Field %1").arg(data.field));
         legendGraph->setPen(QPen(color, 2));
@@ -165,7 +167,7 @@ void FootprintWidget::plotFootprints()
         legendGraph->setScatterStyle(QCPScatterStyle::ssNone);
     }
 
-    // ÖØÐÂµ÷Õû×ø±êÖá·¶Î§ÒÔÊÊÓ¦ËùÓÐÊý¾Ý
+    // é‡æ–°è°ƒæ•´åæ ‡è½´èŒƒå›´ä»¥é€‚åº”æ‰€æœ‰æ•°æ®
     double minX = 0, maxX = 0, minY = 0, maxY = 0;
     for (const FootprintData& data : m_footprintData) {
         minX = qMin(minX, data.left);
@@ -174,7 +176,7 @@ void FootprintWidget::plotFootprints()
         maxY = qMax(maxY, data.top);
     }
 
-    // Ìí¼ÓÒ»Ð©±ß¾à
+    // æ·»åŠ ä¸€äº›è¾¹è·
     double marginX = (maxX - minX) * 0.1;
     double marginY = (maxY - minY) * 0.1;
     m_customPlot->xAxis->setRange(minX - marginX, maxX + marginX);

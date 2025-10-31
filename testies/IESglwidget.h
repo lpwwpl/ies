@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 #include <QApplication>
 #include <QMainWindow>
 #include <QOpenGLWidget>
@@ -27,12 +27,12 @@
 #include <unordered_map>
 #include <functional>
 
-// °üº¬QCustomPlotÍ·ÎÄ¼ş
+// åŒ…å«QCustomPlotå¤´æ–‡ä»¶
 #include "qcustomplot.h"
 
 #include "IESLoader.h"
 
-// ColorBar ×é¼ş
+// ColorBar ç»„ä»¶
 class ColorBar : public QWidget {
     Q_OBJECT
 public:
@@ -52,17 +52,17 @@ protected:
         QPainter painter(this);
         painter.setRenderHint(QPainter::Antialiasing);
 
-        // »æÖÆÑÕÉ«Ìõ
+        // ç»˜åˆ¶é¢œè‰²æ¡
         QLinearGradient gradient(0, height(), 0, 0);
-        gradient.setColorAt(0.0, QColor(0, 0, 255));   // À¶É«
-        gradient.setColorAt(0.25, QColor(0, 255, 255)); // ÇàÉ«
-        gradient.setColorAt(0.5, QColor(0, 255, 0));   // ÂÌÉ«
-        gradient.setColorAt(0.75, QColor(255, 255, 0)); // »ÆÉ«
-        gradient.setColorAt(1.0, QColor(255, 0, 0));   // ºìÉ«
+        gradient.setColorAt(0.0, QColor(0, 0, 255));   // è“è‰²
+        gradient.setColorAt(0.25, QColor(0, 255, 255)); // é’è‰²
+        gradient.setColorAt(0.5, QColor(0, 255, 0));   // ç»¿è‰²
+        gradient.setColorAt(0.75, QColor(255, 255, 0)); // é»„è‰²
+        gradient.setColorAt(1.0, QColor(255, 0, 0));   // çº¢è‰²
 
         painter.fillRect(10, 10, 20, height() - 20, gradient);
 
-        // »æÖÆ¿Ì¶È
+        // ç»˜åˆ¶åˆ»åº¦
         painter.setPen(Qt::white);
         QFont font;
         font.setPointSize(8);
@@ -80,18 +80,18 @@ protected:
 private:
     float m_minValue, m_maxValue;
 };
-// µãÔÆÊı¾İ½á¹¹
+// ç‚¹äº‘æ•°æ®ç»“æ„
 struct PointCloud {
     QVector<QVector3D> vertices;
-    QVector<QVector3D> normals; // ·¨ÏßÏòÁ¿
-    QVector<float> values; // Ã¿¸öµãµÄ±êÁ¿Öµ£¬ÓÃÓÚÑÕÉ«Ó³Éä
-    QVector<unsigned int> indices; // Íø¸ñË÷Òı
+    QVector<QVector3D> normals; // æ³•çº¿å‘é‡
+    QVector<float> values; // æ¯ä¸ªç‚¹çš„æ ‡é‡å€¼ï¼Œç”¨äºé¢œè‰²æ˜ å°„
+    QVector<unsigned int> indices; // ç½‘æ ¼ç´¢å¼•
     float minValue, maxValue;
     bool hasNormals;
     bool hasIndices;
 };
 
-// Æ½ÃæÀàĞÍÃ¶¾Ù
+// å¹³é¢ç±»å‹æšä¸¾
 enum PlaneType {
     NO_PLANE,
     XY_PLANE,
@@ -99,14 +99,14 @@ enum PlaneType {
     XZ_PLANE
 };
 
-// ÏÔÊ¾Ä£Ê½Ã¶¾Ù
+// æ˜¾ç¤ºæ¨¡å¼æšä¸¾
 enum DisplayMode {
     POINTS_MODE,
     SHADED_MODE,
     MESH_MODE
 };
 
-// OpenGL¿ÉÊÓ»¯×é¼ş
+// OpenGLå¯è§†åŒ–ç»„ä»¶
 class PointCloudViewer : public QOpenGLWidget, protected QOpenGLFunctions {
     Q_OBJECT
 public:
@@ -115,7 +115,7 @@ public:
         m_xyPlanePos(0.0f), m_yzPlanePos(0.0f), m_xzPlanePos(0.0f),
         m_selectedPlane(NO_PLANE), m_planeThreshold(0.05f),
         m_displayMode(POINTS_MODE), m_lightPosition(2.0f, 2.0f, 2.0f) {
-        // Éú³ÉÊ¾ÀıµãÔÆÊı¾İ
+        // ç”Ÿæˆç¤ºä¾‹ç‚¹äº‘æ•°æ®
         //generateSampleData();
     }
 
@@ -177,7 +177,7 @@ public:
     float getYZPlanePosition() const { return m_yzPlanePos; }
     float getXZPlanePosition() const { return m_xzPlanePos; }
 
-    // »ñÈ¡Æ½ÃæÉÏµÄµãÊı¾İ
+    // è·å–å¹³é¢ä¸Šçš„ç‚¹æ•°æ®
     QVector<QPointF> getPlanePoints(PlaneType planeType, float position) const {
         QVector<QPointF> points;
 
@@ -219,7 +219,7 @@ public:
         return points;
     }
 
-    // »ñÈ¡Æ½ÃæÉÏµÄµãÊı¾İ¼°ÆäÖµ
+    // è·å–å¹³é¢ä¸Šçš„ç‚¹æ•°æ®åŠå…¶å€¼
     QVector<QPointF> getPlanePointsWithValues(PlaneType planeType, float position, QVector<float>& values) const {
         QVector<QPointF> points;
         values.clear();
@@ -277,7 +277,7 @@ protected:
         glEnable(GL_DEPTH_TEST);
         glEnable(GL_PROGRAM_POINT_SIZE);
 
-        // ±àÒëµã×ÅÉ«Æ÷
+        // ç¼–è¯‘ç‚¹ç€è‰²å™¨
         m_pointProgram.addShaderFromSourceCode(QOpenGLShader::Vertex,
             "#version 330 core\n"
             "layout(location = 0) in vec3 position;\n"
@@ -295,12 +295,12 @@ protected:
             "void main() {\n"
             "    bool visible = true;\n"
             "    \n"
-            "    // ¸ù¾İÑ¡ÔñµÄÆ½ÃæÀàĞÍ½øĞĞ²Ã¼ô\n"
-            "    if (selectedPlane == 1) { // XYÆ½Ãæ\n"
+            "    // æ ¹æ®é€‰æ‹©çš„å¹³é¢ç±»å‹è¿›è¡Œè£å‰ª\n"
+            "    if (selectedPlane == 1) { // XYå¹³é¢\n"
             "        if (abs(position.z - xyPlanePos) > planeThreshold) visible = false;\n"
-            "    } else if (selectedPlane == 2) { // YZÆ½Ãæ\n"
+            "    } else if (selectedPlane == 2) { // YZå¹³é¢\n"
             "        if (abs(position.x - yzPlanePos) > planeThreshold) visible = false;\n"
-            "    } else if (selectedPlane == 3) { // XZÆ½Ãæ\n"
+            "    } else if (selectedPlane == 3) { // XZå¹³é¢\n"
             "        if (abs(position.y - xzPlanePos) > planeThreshold) visible = false;\n"
             "    }\n"
             "    \n"
@@ -331,7 +331,7 @@ protected:
             "}");
         m_pointProgram.link();
 
-        // ±àÒë×ÅÉ«Æ÷£¨ÓÃÓÚ×ÅÉ«ºÍÍø¸ñÏÔÊ¾£©
+        // ç¼–è¯‘ç€è‰²å™¨ï¼ˆç”¨äºç€è‰²å’Œç½‘æ ¼æ˜¾ç¤ºï¼‰
         m_shadedProgram.addShaderFromSourceCode(QOpenGLShader::Vertex,
             "#version 330 core\n"
             "layout(location = 0) in vec3 position;\n"
@@ -354,12 +354,12 @@ protected:
             "void main() {\n"
             "    bool visible = true;\n"
             "    \n"
-            "    // ¸ù¾İÑ¡ÔñµÄÆ½ÃæÀàĞÍ½øĞĞ²Ã¼ô\n"
-            "    if (selectedPlane == 1) { // XYÆ½Ãæ\n"
+            "    // æ ¹æ®é€‰æ‹©çš„å¹³é¢ç±»å‹è¿›è¡Œè£å‰ª\n"
+            "    if (selectedPlane == 1) { // XYå¹³é¢\n"
             "        if (abs(position.z - xyPlanePos) > planeThreshold) visible = false;\n"
-            "    } else if (selectedPlane == 2) { // YZÆ½Ãæ\n"
+            "    } else if (selectedPlane == 2) { // YZå¹³é¢\n"
             "        if (abs(position.x - yzPlanePos) > planeThreshold) visible = false;\n"
-            "    } else if (selectedPlane == 3) { // XZÆ½Ãæ\n"
+            "    } else if (selectedPlane == 3) { // XZå¹³é¢\n"
             "        if (abs(position.y - xzPlanePos) > planeThreshold) visible = false;\n"
             "    }\n"
             "    \n"
@@ -390,17 +390,17 @@ protected:
             "    else return vec4(0.5, 0.0, 0.0, 1.0);\n"
             "}\n"
             "void main() {\n"
-            "    // »·¾³¹â\n"
+            "    // ç¯å¢ƒå…‰\n"
             "    float ambientStrength = 0.3;\n"
             "    vec3 ambient = ambientStrength * vec3(1.0, 1.0, 1.0);\n"
             "    \n"
-            "    // Âş·´Éä\n"
+            "    // æ¼«åå°„\n"
             "    vec3 norm = normalize(Normal);\n"
             "    vec3 lightDir = normalize(LightPos - FragPos);\n"
             "    float diff = max(dot(norm, lightDir), 0.0);\n"
             "    vec3 diffuse = diff * vec3(1.0, 1.0, 1.0);\n"
             "    \n"
-            "    // ¾µÃæ·´Éä\n"
+            "    // é•œé¢åå°„\n"
             "    float specularStrength = 0.5;\n"
             "    vec3 viewDir = normalize(-FragPos);\n"
             "    vec3 reflectDir = reflect(-lightDir, norm);\n"
@@ -413,7 +413,7 @@ protected:
             "}");
         m_shadedProgram.link();
 
-        // ÉèÖÃµãÔÆÊı¾İ
+        // è®¾ç½®ç‚¹äº‘æ•°æ®
         setupPointCloud();
     }
 
@@ -426,7 +426,7 @@ protected:
     void paintGL() override {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        // ¼ÆËãÄ£ĞÍÊÓÍ¼¾ØÕó
+        // è®¡ç®—æ¨¡å‹è§†å›¾çŸ©é˜µ
         QMatrix4x4 view;
         view.translate(0.0f, 0.0f, -5.0f);
         view.rotate(m_rotation);
@@ -436,9 +436,9 @@ protected:
 
         QMatrix4x4 mvp = m_projection * view * model;
 
-        // ¸ù¾İÏÔÊ¾Ä£Ê½Ñ¡Ôñ»æÖÆ·½Ê½
+        // æ ¹æ®æ˜¾ç¤ºæ¨¡å¼é€‰æ‹©ç»˜åˆ¶æ–¹å¼
         if (m_displayMode == POINTS_MODE) {
-            // »æÖÆµãÔÆ
+            // ç»˜åˆ¶ç‚¹äº‘
             m_pointProgram.bind();
             m_pointProgram.setUniformValue("mvp_matrix", mvp);
             m_pointProgram.setUniformValue("pointSize", m_pointSize);
@@ -456,7 +456,7 @@ protected:
             m_pointProgram.release();
         }
         else if (m_displayMode == SHADED_MODE && m_cloud.hasNormals) {
-            // »æÖÆ×ÅÉ«µãÔÆ
+            // ç»˜åˆ¶ç€è‰²ç‚¹äº‘
             m_shadedProgram.bind();
             m_shadedProgram.setUniformValue("mvp_matrix", mvp);
             m_shadedProgram.setUniformValue("model_matrix", model);
@@ -475,7 +475,7 @@ protected:
             m_shadedProgram.release();
         }
         else if (m_displayMode == MESH_MODE && m_cloud.hasIndices) {
-            // »æÖÆÍø¸ñ
+            // ç»˜åˆ¶ç½‘æ ¼
             m_shadedProgram.bind();
             m_shadedProgram.setUniformValue("mvp_matrix", mvp);
             m_shadedProgram.setUniformValue("model_matrix", model);
@@ -494,7 +494,7 @@ protected:
             m_shadedProgram.release();
         }
 
-        // »æÖÆ×ø±êÖá
+        // ç»˜åˆ¶åæ ‡è½´
         drawCoordinateAxes(view);
     }
 
@@ -513,7 +513,7 @@ protected:
             update();
         }
         else if (event->buttons() & Qt::RightButton) {
-            // µ÷Õû¹âÔ´Î»ÖÃ
+            // è°ƒæ•´å…‰æºä½ç½®
             m_lightPosition.setX(m_lightPosition.x() + dx * 0.01f);
             m_lightPosition.setY(m_lightPosition.y() - dy * 0.01f);
             update();
@@ -530,7 +530,7 @@ protected:
 
 private:
     void generateSampleData() {
-        // Éú³ÉÊ¾ÀıµãÔÆ (ÇòÌåÉÏµÄµã)
+        // ç”Ÿæˆç¤ºä¾‹ç‚¹äº‘ (çƒä½“ä¸Šçš„ç‚¹)
         const long numPoints = IESLoader::instance().intensity.size();
         m_cloud.vertices.resize(numPoints);
         m_cloud.normals.resize(numPoints);
@@ -546,7 +546,7 @@ private:
         for (long i = 0; i < numPoints; ++i) {           
 
             m_cloud.vertices[i] = IESLoader::instance().coords[i];
-            // ¼ÆËã·¨Ïß (´ÓÔ­µãµ½µãµÄ·½Ïò)
+            // è®¡ç®—æ³•çº¿ (ä»åŸç‚¹åˆ°ç‚¹çš„æ–¹å‘)
             m_cloud.normals[i] = m_cloud.vertices[i].normalized();
 
             m_cloud.values[i] = IESLoader::instance().intensity[i];
@@ -557,19 +557,19 @@ private:
 
         m_cloud.hasNormals = true;
 
-        // Éú³É¼òµ¥µÄÍø¸ñË÷Òı (½öÓÃÓÚÑİÊ¾)
+        // ç”Ÿæˆç®€å•çš„ç½‘æ ¼ç´¢å¼• (ä»…ç”¨äºæ¼”ç¤º)
         //generateMeshIndices();
         m_cloud.hasIndices = true;
     }
 
     void generateMeshIndices() {
-        // ¼òµ¥µÄÍø¸ñÉú³ÉËã·¨ (½öÓÃÓÚÑİÊ¾)
-        // Êµ¼ÊÓ¦ÓÃÖĞÓ¦¸ÃÊ¹ÓÃ¸ü¸´ÔÓµÄËã·¨ÈçPoissonÖØ½¨»òDelaunayÈı½Ç»¯
+        // ç®€å•çš„ç½‘æ ¼ç”Ÿæˆç®—æ³• (ä»…ç”¨äºæ¼”ç¤º)
+        // å®é™…åº”ç”¨ä¸­åº”è¯¥ä½¿ç”¨æ›´å¤æ‚çš„ç®—æ³•å¦‚Poissoné‡å»ºæˆ–Delaunayä¸‰è§’åŒ–
 
         const int gridSize = 20;
         const int numPoints = gridSize * gridSize;
 
-        // ´´½¨¹æÔòÍø¸ñ
+        // åˆ›å»ºè§„åˆ™ç½‘æ ¼
         QVector<QVector3D> gridVertices;
         QVector<QVector3D> gridNormals;
         QVector<float> gridValues;
@@ -590,7 +590,7 @@ private:
             }
         }
 
-        // ´´½¨Íø¸ñË÷Òı
+        // åˆ›å»ºç½‘æ ¼ç´¢å¼•
         for (int i = 0; i < gridSize - 1; ++i) {
             for (int j = 0; j < gridSize - 1; ++j) {
                 int topLeft = i * gridSize + j;
@@ -598,19 +598,19 @@ private:
                 int bottomLeft = (i + 1) * gridSize + j;
                 int bottomRight = (i + 1) * gridSize + j + 1;
 
-                // µÚÒ»¸öÈı½ÇĞÎ
+                // ç¬¬ä¸€ä¸ªä¸‰è§’å½¢
                 m_cloud.indices.append(topLeft);
                 m_cloud.indices.append(bottomLeft);
                 m_cloud.indices.append(topRight);
 
-                // µÚ¶ş¸öÈı½ÇĞÎ
+                // ç¬¬äºŒä¸ªä¸‰è§’å½¢
                 m_cloud.indices.append(topRight);
                 m_cloud.indices.append(bottomLeft);
                 m_cloud.indices.append(bottomRight);
             }
         }
 
-        // ½«Íø¸ñÊı¾İÌí¼Óµ½µãÔÆÖĞ (½öÓÃÓÚÑİÊ¾Íø¸ñÄ£Ê½)
+        // å°†ç½‘æ ¼æ•°æ®æ·»åŠ åˆ°ç‚¹äº‘ä¸­ (ä»…ç”¨äºæ¼”ç¤ºç½‘æ ¼æ¨¡å¼)
         m_cloud.vertices = gridVertices;
         m_cloud.normals = gridNormals;
         m_cloud.values = gridValues;
@@ -620,12 +620,12 @@ private:
         m_vao.create();
         m_vao.bind();
 
-        // ´´½¨¶¥µã»º³åÇø
+        // åˆ›å»ºé¡¶ç‚¹ç¼“å†²åŒº
         m_vbo.create();
         m_vbo.bind();
         m_vbo.setUsagePattern(QOpenGLBuffer::StaticDraw);
 
-        // ´´½¨¶¥µãÊı¾İ»º³åÇø (Î»ÖÃ + ·¨Ïß + Öµ)
+        // åˆ›å»ºé¡¶ç‚¹æ•°æ®ç¼“å†²åŒº (ä½ç½® + æ³•çº¿ + å€¼)
         QVector<float> vertexData;
         for (int i = 0; i < m_cloud.vertices.size(); ++i) {
             vertexData << m_cloud.vertices[i].x()
@@ -639,7 +639,7 @@ private:
 
         m_vbo.allocate(vertexData.constData(), vertexData.size() * sizeof(float));
 
-        // ÉèÖÃ¶¥µãÊôĞÔ
+        // è®¾ç½®é¡¶ç‚¹å±æ€§
         m_pointProgram.bind();
         m_pointProgram.enableAttributeArray(0);
         m_pointProgram.setAttributeBuffer(0, GL_FLOAT, 0, 3, 7 * sizeof(float));
@@ -657,7 +657,7 @@ private:
         m_shadedProgram.enableAttributeArray(2);
         m_shadedProgram.setAttributeBuffer(2, GL_FLOAT, 6 * sizeof(float), 1, 7 * sizeof(float));
 
-        // ´´½¨Ë÷Òı»º³åÇø (ÓÃÓÚÍø¸ñÏÔÊ¾)
+        // åˆ›å»ºç´¢å¼•ç¼“å†²åŒº (ç”¨äºç½‘æ ¼æ˜¾ç¤º)
         if (m_cloud.hasIndices) {
             m_ibo.create();
             m_ibo.bind();
@@ -673,7 +673,7 @@ private:
     }
 
     void drawCoordinateAxes(const QMatrix4x4& view) {
-        // ÁÙÊ±Ê¹ÓÃ¹Ì¶¨¹ÜÏß»æÖÆ×ø±êÖá
+        // ä¸´æ—¶ä½¿ç”¨å›ºå®šç®¡çº¿ç»˜åˆ¶åæ ‡è½´
         glMatrixMode(GL_PROJECTION);
         glPushMatrix();
         glLoadMatrixf(m_projection.data());
@@ -685,17 +685,17 @@ private:
         glLineWidth(2.0f);
         glBegin(GL_LINES);
 
-        // XÖá - ºìÉ«
+        // Xè½´ - çº¢è‰²
         glColor3f(1.0f, 0.0f, 0.0f);
         glVertex3f(0.0f, 0.0f, 0.0f);
         glVertex3f(1.5f, 0.0f, 0.0f);
 
-        // YÖá - ÂÌÉ«
+        // Yè½´ - ç»¿è‰²
         glColor3f(0.0f, 1.0f, 0.0f);
         glVertex3f(0.0f, 0.0f, 0.0f);
         glVertex3f(0.0f, 1.5f, 0.0f);
 
-        // ZÖá - À¶É«
+        // Zè½´ - è“è‰²
         glColor3f(0.0f, 0.0f, 1.0f);
         glVertex3f(0.0f, 0.0f, 0.0f);
         glVertex3f(0.0f, 0.0f, 1.5f);
@@ -730,19 +730,19 @@ private:
     QVector3D m_lightPosition;
 };
 
-// Ê¹ÓÃQCustomPlot»æÖÆÆ½ÃæÊı¾İµÄ×é¼ş
+// ä½¿ç”¨QCustomPlotç»˜åˆ¶å¹³é¢æ•°æ®çš„ç»„ä»¶
 class PlaneDataPlotter : public QWidget {
     Q_OBJECT
 public:
     PlaneDataPlotter(QWidget* parent = nullptr) : QWidget(parent) {
         QVBoxLayout* layout = new QVBoxLayout(this);
 
-        // ´´½¨Èı¸öQCustomPlotÓÃÓÚÏÔÊ¾Èı¸öÆ½ÃæµÄÊı¾İ
+        // åˆ›å»ºä¸‰ä¸ªQCustomPlotç”¨äºæ˜¾ç¤ºä¸‰ä¸ªå¹³é¢çš„æ•°æ®
         m_xyPlot = new QCustomPlot;
         m_yzPlot = new QCustomPlot;
         m_xzPlot = new QCustomPlot;
 
-        // ÉèÖÃÍ¼±í±êÌâ
+        // è®¾ç½®å›¾è¡¨æ ‡é¢˜
         m_xyPlot->plotLayout()->insertRow(0);
         m_xyPlot->plotLayout()->addElement(0, 0, new QCPTextElement(m_xyPlot, "XY Plane", QFont("sans", 12, QFont::Bold)));
 
@@ -752,12 +752,12 @@ public:
         m_xzPlot->plotLayout()->insertRow(0);
         m_xzPlot->plotLayout()->addElement(0, 0, new QCPTextElement(m_xzPlot, "XZ Plane", QFont("sans", 12, QFont::Bold)));
 
-        // ÉèÖÃÑÕÉ«Ó³Éä
+        // è®¾ç½®é¢œè‰²æ˜ å°„
         setupColorMap(m_xyPlot);
         setupColorMap(m_yzPlot);
         setupColorMap(m_xzPlot);
 
-        // Ìí¼Óµ½²¼¾Ö
+        // æ·»åŠ åˆ°å¸ƒå±€
         layout->addWidget(m_xyPlot);
         layout->addWidget(m_yzPlot);
         layout->addWidget(m_xzPlot);
@@ -784,16 +784,16 @@ public:
 
         if (!plot) return;
 
-        // »ñÈ¡ÑÕÉ«Ó³Éä
+        // è·å–é¢œè‰²æ˜ å°„
         QCPColorMap* colorMap = qobject_cast<QCPColorMap*>(plot->plottable(0));
         if (!colorMap) return;
 
-        // Çå³ıÏÖÓĞÊı¾İ
+        // æ¸…é™¤ç°æœ‰æ•°æ®
         colorMap->data()->clear();
 
-        // ÉèÖÃÊı¾İ·¶Î§
+        // è®¾ç½®æ•°æ®èŒƒå›´
         if (!points.isEmpty()) {
-            // ¼ÆËãÊı¾İ·¶Î§
+            // è®¡ç®—æ•°æ®èŒƒå›´
             double xMin = std::numeric_limits<double>::max();
             double xMax = std::numeric_limits<double>::lowest();
             double yMin = std::numeric_limits<double>::max();
@@ -806,22 +806,22 @@ public:
                 yMax = std::max(yMax, static_cast<double>(point.y()));
             }
 
-            // ÉèÖÃÊı¾İ·¶Î§
-            int nx = 100, ny = 100; // Íø¸ñ·Ö±æÂÊ
+            // è®¾ç½®æ•°æ®èŒƒå›´
+            int nx = 100, ny = 100; // ç½‘æ ¼åˆ†è¾¨ç‡
             colorMap->data()->setSize(nx, ny);
             colorMap->data()->setRange(QCPRange(xMin, xMax), QCPRange(yMin, yMax));
 
-            // ´´½¨Íø¸ñÊı¾İ
+            // åˆ›å»ºç½‘æ ¼æ•°æ®
             double dx = (xMax - xMin) / (nx - 1);
             double dy = (yMax - yMin) / (ny - 1);
 
-            // Ê¹ÓÃ×î½üÁÚ²åÖµÌî³äÍø¸ñ
+            // ä½¿ç”¨æœ€è¿‘é‚»æ’å€¼å¡«å……ç½‘æ ¼
             for (int xIndex = 0; xIndex < nx; ++xIndex) {
                 for (int yIndex = 0; yIndex < ny; ++yIndex) {
                     double x = xMin + xIndex * dx;
                     double y = yMin + yIndex * dy;
 
-                    // ÕÒµ½×î½üµÄµãµÄÖµ
+                    // æ‰¾åˆ°æœ€è¿‘çš„ç‚¹çš„å€¼
                     double minDist = std::numeric_limits<double>::max();
                     float value = 0;
 
@@ -837,56 +837,56 @@ public:
                 }
             }
 
-            // ÖØĞÂËõ·ÅÑÕÉ«Ó³ÉäµÄÊı¾İ·¶Î§
+            // é‡æ–°ç¼©æ”¾é¢œè‰²æ˜ å°„çš„æ•°æ®èŒƒå›´
             colorMap->setDataRange(QCPRange(minValue, maxValue));
 
-            // ÖØĞÂ»æÖÆ
+            // é‡æ–°ç»˜åˆ¶
             plot->replot();
         }
     }
 
 private:
     void setupColorMap(QCustomPlot* plot) {
-        // ´´½¨ÑÕÉ«Ó³Éä
+        // åˆ›å»ºé¢œè‰²æ˜ å°„
         QCPColorMap* colorMap = new QCPColorMap(plot->xAxis, plot->yAxis);
         //plot->(colorMap);
 
-        // ÉèÖÃÑÕÉ«½¥±ä
+        // è®¾ç½®é¢œè‰²æ¸å˜
         QCPColorGradient gradient;
-        gradient.setColorStopAt(0.0, QColor(0, 0, 255));   // À¶É«
-        gradient.setColorStopAt(0.25, QColor(0, 255, 255)); // ÇàÉ«
-        gradient.setColorStopAt(0.5, QColor(0, 255, 0));   // ÂÌÉ«
-        gradient.setColorStopAt(0.75, QColor(255, 255, 0)); // »ÆÉ«
-        gradient.setColorStopAt(1.0, QColor(255, 0, 0));   // ºìÉ«
+        gradient.setColorStopAt(0.0, QColor(0, 0, 255));   // è“è‰²
+        gradient.setColorStopAt(0.25, QColor(0, 255, 255)); // é’è‰²
+        gradient.setColorStopAt(0.5, QColor(0, 255, 0));   // ç»¿è‰²
+        gradient.setColorStopAt(0.75, QColor(255, 255, 0)); // é»„è‰²
+        gradient.setColorStopAt(1.0, QColor(255, 0, 0));   // çº¢è‰²
         colorMap->setGradient(gradient);
 
-        // ÉèÖÃÑÕÉ«Ëõ·Å
+        // è®¾ç½®é¢œè‰²ç¼©æ”¾
         QCPColorScale* colorScale = new QCPColorScale(plot);
         plot->plotLayout()->addElement(1, 1, colorScale);
         colorScale->setType(QCPAxis::atRight);
         colorMap->setColorScale(colorScale);
         colorScale->axis()->setLabel("Value");
 
-        // ÉèÖÃÖá±êÇ©
+        // è®¾ç½®è½´æ ‡ç­¾
         plot->xAxis->setLabel("X");
         plot->yAxis->setLabel("Y");
 
-        // ÉèÖÃ½»»¥
+        // è®¾ç½®äº¤äº’
         plot->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom);
 
-        // ³õÊ¼Êı¾İ·¶Î§
+        // åˆå§‹æ•°æ®èŒƒå›´
         colorMap->data()->setSize(100, 100);
         colorMap->data()->setRange(QCPRange(-1, 1), QCPRange(-1, 1));
         colorMap->setDataRange(QCPRange(0, 1));
 
-        // ³õÊ¼Ìî³äÒ»Ğ©Êı¾İ
+        // åˆå§‹å¡«å……ä¸€äº›æ•°æ®
         for (int x = 0; x < 100; ++x) {
             for (int y = 0; y < 100; ++y) {
                 colorMap->data()->setCell(x, y, 0);
             }
         }
 
-        // ÖØĞÂËõ·ÅÖá
+        // é‡æ–°ç¼©æ”¾è½´
         plot->rescaleAxes();
     }
 
@@ -896,43 +896,43 @@ private:
     QCustomPlot* m_xzPlot;
 };
 
-//// Ö÷´°¿Ú
+//// ä¸»çª—å£
 //class MainWindow : public QMainWindow {
 //    Q_OBJECT
 //public:
 //    MainWindow() {
-//        // ´´½¨ÖĞÑë²¿¼şºÍ²¼¾Ö
+//        // åˆ›å»ºä¸­å¤®éƒ¨ä»¶å’Œå¸ƒå±€
 //        QWidget* centralWidget = new QWidget;
 //        QHBoxLayout* mainLayout = new QHBoxLayout(centralWidget);
 //
-//        // ´´½¨×ó²àÃæ°å£¨OpenGLÊÓÍ¼ºÍ¿ØÖÆÃæ°å£©
+//        // åˆ›å»ºå·¦ä¾§é¢æ¿ï¼ˆOpenGLè§†å›¾å’Œæ§åˆ¶é¢æ¿ï¼‰
 //        QWidget* leftPanel = new QWidget;
 //        QVBoxLayout* leftLayout = new QVBoxLayout(leftPanel);
 //
-//        // ´´½¨OpenGLÊÓÍ¼
+//        // åˆ›å»ºOpenGLè§†å›¾
 //        m_viewer = new PointCloudViewer;
 //        leftLayout->addWidget(m_viewer, 3);
 //
-//        // ´´½¨¿ØÖÆÃæ°å
+//        // åˆ›å»ºæ§åˆ¶é¢æ¿
 //        QWidget* controlPanel = createControlPanel();
 //        leftLayout->addWidget(controlPanel, 1);
 //
-//        // ´´½¨ÓÒ²àÃæ°å£¨Æ½ÃæÊı¾İÍ¼±í£©
+//        // åˆ›å»ºå³ä¾§é¢æ¿ï¼ˆå¹³é¢æ•°æ®å›¾è¡¨ï¼‰
 //        m_planePlotter = new PlaneDataPlotter;
 //
-//        // Ìí¼Óµ½Ö÷²¼¾Ö
+//        // æ·»åŠ åˆ°ä¸»å¸ƒå±€
 //        mainLayout->addWidget(leftPanel, 2);
 //        mainLayout->addWidget(m_planePlotter, 1);
 //
 //        setCentralWidget(centralWidget);
 //
-//        // ³õÊ¼»¯ÑÕÉ«Ìõ·¶Î§
+//        // åˆå§‹åŒ–é¢œè‰²æ¡èŒƒå›´
 //        m_colorBar->setRange(m_viewer->getMinValue(), m_viewer->getMaxValue());
 //
-//        // Á¬½ÓĞÅºÅºÍ²Û
+//        // è¿æ¥ä¿¡å·å’Œæ§½
 //        connect(m_viewer, &PointCloudViewer::planePositionChanged, this, &MainWindow::updatePlaneData);
 //
-//        // ³õÊ¼¸üĞÂÆ½ÃæÊı¾İ
+//        // åˆå§‹æ›´æ–°å¹³é¢æ•°æ®
 //        updateAllPlaneData();
 //    }
 //
@@ -942,17 +942,17 @@ private:
 //        QVBoxLayout* layout = new QVBoxLayout(panel);
 //        layout->setAlignment(Qt::AlignTop);
 //
-//        // ÑÕÉ«Ìõ
+//        // é¢œè‰²æ¡
 //        m_colorBar = new ColorBar;
 //        layout->addWidget(m_colorBar);
 //
-//        // ÏÔÊ¾Ä£Ê½¿ØÖÆ
-//        QGroupBox* displayModeGroup = new QGroupBox(QStringLiteral("ÏÔÊ¾Ä£Ê½"));
+//        // æ˜¾ç¤ºæ¨¡å¼æ§åˆ¶
+//        QGroupBox* displayModeGroup = new QGroupBox(QStringLiteral("æ˜¾ç¤ºæ¨¡å¼"));
 //        QVBoxLayout* displayModeLayout = new QVBoxLayout(displayModeGroup);
 //
-//        QRadioButton* pointsModeRadio = new QRadioButton(QStringLiteral("µãÄ£Ê½"));
-//        QRadioButton* shadedModeRadio = new QRadioButton(QStringLiteral("×ÅÉ«Ä£Ê½"));
-//        QRadioButton* meshModeRadio = new QRadioButton(QStringLiteral("Íø¸ñÄ£Ê½"));
+//        QRadioButton* pointsModeRadio = new QRadioButton(QStringLiteral("ç‚¹æ¨¡å¼"));
+//        QRadioButton* shadedModeRadio = new QRadioButton(QStringLiteral("ç€è‰²æ¨¡å¼"));
+//        QRadioButton* meshModeRadio = new QRadioButton(QStringLiteral("ç½‘æ ¼æ¨¡å¼"));
 //
 //        pointsModeRadio->setChecked(true);
 //
@@ -970,8 +970,8 @@ private:
 //        displayModeLayout->addWidget(meshModeRadio);
 //        layout->addWidget(displayModeGroup);
 //
-//        // µã´óĞ¡¿ØÖÆ
-//        QGroupBox* pointSizeGroup = new QGroupBox(QStringLiteral("µã´óĞ¡"));
+//        // ç‚¹å¤§å°æ§åˆ¶
+//        QGroupBox* pointSizeGroup = new QGroupBox(QStringLiteral("ç‚¹å¤§å°"));
 //        QVBoxLayout* pointSizeLayout = new QVBoxLayout(pointSizeGroup);
 //
 //        QSlider* pointSizeSlider = new QSlider(Qt::Horizontal);
@@ -987,14 +987,14 @@ private:
 //        pointSizeLayout->addWidget(pointSizeSlider);
 //        layout->addWidget(pointSizeGroup);
 //
-//        // Æ½ÃæÑ¡Ôñ¿ØÖÆ
-//        QGroupBox* planeSelectGroup = new QGroupBox(QStringLiteral("Æ½ÃæÑ¡Ôñ"));
+//        // å¹³é¢é€‰æ‹©æ§åˆ¶
+//        QGroupBox* planeSelectGroup = new QGroupBox(QStringLiteral("å¹³é¢é€‰æ‹©"));
 //        QVBoxLayout* planeSelectLayout = new QVBoxLayout(planeSelectGroup);
 //
-//        QRadioButton* noPlaneRadio = new QRadioButton(QStringLiteral("ÎŞÆ½Ãæ"));
-//        QRadioButton* xyPlaneRadio = new QRadioButton(QStringLiteral("XYÆ½Ãæ"));
-//        QRadioButton* yzPlaneRadio = new QRadioButton(QStringLiteral("YZÆ½Ãæ"));
-//        QRadioButton* xzPlaneRadio = new QRadioButton(QStringLiteral("XZÆ½Ãæ"));
+//        QRadioButton* noPlaneRadio = new QRadioButton(QStringLiteral("æ— å¹³é¢"));
+//        QRadioButton* xyPlaneRadio = new QRadioButton(QStringLiteral("XYå¹³é¢"));
+//        QRadioButton* yzPlaneRadio = new QRadioButton(QStringLiteral("YZå¹³é¢"));
+//        QRadioButton* xzPlaneRadio = new QRadioButton(QStringLiteral("XZå¹³é¢"));
 //
 //        noPlaneRadio->setChecked(true);
 //
@@ -1014,8 +1014,8 @@ private:
 //        planeSelectLayout->addWidget(xzPlaneRadio);
 //        layout->addWidget(planeSelectGroup);
 //
-//        // Æ½ÃæãĞÖµ¿ØÖÆ
-//        QGroupBox* thresholdGroup = new QGroupBox(QStringLiteral("Æ½ÃæãĞÖµ"));
+//        // å¹³é¢é˜ˆå€¼æ§åˆ¶
+//        QGroupBox* thresholdGroup = new QGroupBox(QStringLiteral("å¹³é¢é˜ˆå€¼"));
 //        QVBoxLayout* thresholdLayout = new QVBoxLayout(thresholdGroup);
 //
 //        QSlider* thresholdSlider = new QSlider(Qt::Horizontal);
@@ -1028,8 +1028,8 @@ private:
 //        thresholdLayout->addWidget(thresholdSlider);
 //        layout->addWidget(thresholdGroup);
 //
-//        // XYÆ½Ãæ¿ØÖÆ
-//        QGroupBox* xyPlaneGroup = new QGroupBox(QStringLiteral("XYÆ½ÃæÎ»ÖÃ"));
+//        // XYå¹³é¢æ§åˆ¶
+//        QGroupBox* xyPlaneGroup = new QGroupBox(QStringLiteral("XYå¹³é¢ä½ç½®"));
 //        QVBoxLayout* xyPlaneLayout = new QVBoxLayout(xyPlaneGroup);
 //
 //        QSlider* xyPlaneSlider = new QSlider(Qt::Horizontal);
@@ -1045,8 +1045,8 @@ private:
 //        xyPlaneLayout->addWidget(xyPlaneSlider);
 //        layout->addWidget(xyPlaneGroup);
 //
-//        // YZÆ½Ãæ¿ØÖÆ
-//        QGroupBox* yzPlaneGroup = new QGroupBox(QStringLiteral("YZÆ½ÃæÎ»ÖÃ"));
+//        // YZå¹³é¢æ§åˆ¶
+//        QGroupBox* yzPlaneGroup = new QGroupBox(QStringLiteral("YZå¹³é¢ä½ç½®"));
 //        QVBoxLayout* yzPlaneLayout = new QVBoxLayout(yzPlaneGroup);
 //
 //        QSlider* yzPlaneSlider = new QSlider(Qt::Horizontal);
@@ -1062,8 +1062,8 @@ private:
 //        yzPlaneLayout->addWidget(yzPlaneSlider);
 //        layout->addWidget(yzPlaneGroup);
 //
-//        // XZÆ½Ãæ¿ØÖÆ
-//        QGroupBox* xzPlaneGroup = new QGroupBox(QStringLiteral("XZÆ½ÃæÎ»ÖÃ"));
+//        // XZå¹³é¢æ§åˆ¶
+//        QGroupBox* xzPlaneGroup = new QGroupBox(QStringLiteral("XZå¹³é¢ä½ç½®"));
 //        QVBoxLayout* xzPlaneLayout = new QVBoxLayout(xzPlaneGroup);
 //
 //        QSlider* xzPlaneSlider = new QSlider(Qt::Horizontal);
@@ -1079,17 +1079,17 @@ private:
 //        xzPlaneLayout->addWidget(xzPlaneSlider);
 //        layout->addWidget(xzPlaneGroup);
 //
-//        // ¹âÔ´Î»ÖÃ¿ØÖÆ
-//        QGroupBox* lightGroup = new QGroupBox(QStringLiteral("¹âÔ´Î»ÖÃ"));
+//        // å…‰æºä½ç½®æ§åˆ¶
+//        QGroupBox* lightGroup = new QGroupBox(QStringLiteral("å…‰æºä½ç½®"));
 //        QVBoxLayout* lightLayout = new QVBoxLayout(lightGroup);
 //
-//        QLabel* lightInfo = new QLabel(QStringLiteral("ÓÒ¼üÍÏ¶¯µ÷Õû¹âÔ´Î»ÖÃ"));
+//        QLabel* lightInfo = new QLabel(QStringLiteral("å³é”®æ‹–åŠ¨è°ƒæ•´å…‰æºä½ç½®"));
 //        lightLayout->addWidget(lightInfo);
 //
 //        layout->addWidget(lightGroup);
 //
-//        // ¸üĞÂÆ½ÃæÊı¾İ°´Å¥
-//        QPushButton* updateButton = new QPushButton(QStringLiteral("¸üĞÂÆ½ÃæÊı¾İ"));
+//        // æ›´æ–°å¹³é¢æ•°æ®æŒ‰é’®
+//        QPushButton* updateButton = new QPushButton(QStringLiteral("æ›´æ–°å¹³é¢æ•°æ®"));
 //        connect(updateButton, &QPushButton::clicked, this, &MainWindow::updateAllPlaneData);
 //        layout->addWidget(updateButton);
 //
@@ -1139,7 +1139,7 @@ private:
 //#include <QMouseEvent>
 //#include <QWheelEvent>
 //
-//// ColorBar ×é¼ş
+//// ColorBar ç»„ä»¶
 //class ColorBar : public QWidget {
 //    Q_OBJECT
 //public:
@@ -1159,17 +1159,17 @@ private:
 //        QPainter painter(this);
 //        painter.setRenderHint(QPainter::Antialiasing);
 //
-//        // »æÖÆÑÕÉ«Ìõ
+//        // ç»˜åˆ¶é¢œè‰²æ¡
 //        QLinearGradient gradient(0, height(), 0, 0);
-//        gradient.setColorAt(0.0, QColor(0, 0, 255));   // À¶É«
-//        gradient.setColorAt(0.25, QColor(0, 255, 255)); // ÇàÉ«
-//        gradient.setColorAt(0.5, QColor(0, 255, 0));   // ÂÌÉ«
-//        gradient.setColorAt(0.75, QColor(255, 255, 0)); // »ÆÉ«
-//        gradient.setColorAt(1.0, QColor(255, 0, 0));   // ºìÉ«
+//        gradient.setColorAt(0.0, QColor(0, 0, 255));   // è“è‰²
+//        gradient.setColorAt(0.25, QColor(0, 255, 255)); // é’è‰²
+//        gradient.setColorAt(0.5, QColor(0, 255, 0));   // ç»¿è‰²
+//        gradient.setColorAt(0.75, QColor(255, 255, 0)); // é»„è‰²
+//        gradient.setColorAt(1.0, QColor(255, 0, 0));   // çº¢è‰²
 //
 //        painter.fillRect(10, 10, 20, height() - 20, gradient);
 //
-//        // »æÖÆ¿Ì¶È
+//        // ç»˜åˆ¶åˆ»åº¦
 //        painter.setPen(Qt::white);
 //        QFont font;
 //        font.setPointSize(8);
@@ -1213,11 +1213,11 @@ private:
 //    void setupShaderProgram(QOpenGLShaderProgram& program, const QString& vertexShader, const QString& fragmentShader);
 //    QColor getColorFromValue(float value);
 //
-//    // Íø¸ñ²ÎÊı
+//    // ç½‘æ ¼å‚æ•°
 //    float gridSize;
 //    int gridDivisions;
 //
-//    // ÊÓÍ¼²ÎÊı
+//    // è§†å›¾å‚æ•°
 //    QMatrix4x4 projection;
 //    QMatrix4x4 view;
 //    QMatrix4x4 model;
@@ -1226,15 +1226,15 @@ private:
 //    float cameraDistance;
 //    QPoint lastMousePos;
 //
-//    // ×ÅÉ«Æ÷³ÌĞò
+//    // ç€è‰²å™¨ç¨‹åº
 //    QOpenGLShaderProgram gridShaderProgram;
 //    QOpenGLShaderProgram colorBarShaderProgram;
 //
-//    // ¶¥µã»º³åÇø
+//    // é¡¶ç‚¹ç¼“å†²åŒº
 //    QOpenGLBuffer gridVBO;
 //    QOpenGLVertexArrayObject gridVAO;
 //
-//    // Êı¾İ
+//    // æ•°æ®
 //    QVector<QVector3D> dataPoints;
 //    QVector<float> dataValues;
 //    float minValue, maxValue;

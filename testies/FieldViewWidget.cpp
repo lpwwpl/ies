@@ -1,10 +1,12 @@
-#include "fieldviewwidget.h"
+ï»¿#include "fieldviewwidget.h"
 #include <QVBoxLayout>
 #include <QFile>
 #include <QTextStream>
 #include <QDebug>
 #include <QMessageBox>
 #include <cmath>
+#include <QMenu>
+#include <QAction>
 
 #ifndef M_PI
 #define M_PI 3.14159265358979323846
@@ -13,16 +15,17 @@
 FieldViewWidget::FieldViewWidget(QWidget* parent)
     : QWidget(parent), maxMagnitude(0.0), minMagnitude(0.0)
 {
-    // ´´½¨²¼¾Ö
+    // åˆ›å»ºå¸ƒå±€
     QVBoxLayout* layout = new QVBoxLayout(this);
     layout->setContentsMargins(0, 0, 0, 0);
 
-    // ´´½¨QCustomPlot
+    // åˆ›å»ºQCustomPlot
     customPlot = new QCustomPlot(this);
     layout->addWidget(customPlot);
 
-    // ÉèÖÃÍ¼±í
+    // è®¾ç½®å›¾è¡¨
     setupFieldViewPlot();
+    resize(QSize(640, 480));
 }
 
 FieldViewWidget::~FieldViewWidget()
@@ -31,38 +34,62 @@ FieldViewWidget::~FieldViewWidget()
 
 void FieldViewWidget::setupFieldViewPlot()
 {
-    // ÉèÖÃ×ø±êÖá
+    // è®¾ç½®äº¤äº’åŠŸèƒ½
+    customPlot->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectPlottables);
+
+    // è®¾ç½®åæ ‡è½´
     customPlot->xAxis->setLabel("X");
     customPlot->yAxis->setLabel("Y");
 
-    // ÉèÖÃ×ø±êÖá·¶Î§£¨¶Ô³ÆÏÔÊ¾£©
-    double range = 50.0; // Ä¬ÈÏ·¶Î§
-    customPlot->xAxis->setRange(-range, range);
-    customPlot->yAxis->setRange(-range, range);
+    // è®¾ç½®åæ ‡è½´èŒƒå›´ï¼ˆå¯¹ç§°æ˜¾ç¤ºï¼‰
+    customPlot->xAxis->setRange(-m_defaultRange, m_defaultRange);
+    customPlot->yAxis->setRange(-m_defaultRange, m_defaultRange);
 
-    // ÉèÖÃÍø¸ñ
+    // è®¾ç½®ç½‘æ ¼
     customPlot->xAxis->grid()->setVisible(true);
     customPlot->yAxis->grid()->setVisible(true);
     customPlot->xAxis->grid()->setSubGridVisible(true);
     customPlot->yAxis->grid()->setSubGridVisible(true);
 
-    // ÉèÖÃ±êÌâ
+    // è®¾ç½®æ ‡é¢˜
     customPlot->plotLayout()->insertRow(0);
     QCPTextElement* title = new QCPTextElement(customPlot, "FOV", QFont("sans", 12, QFont::Bold));
     customPlot->plotLayout()->addElement(0, 0, title);
 
-    // ÉèÖÃµÈ±ÈÀıÏÔÊ¾
-    //customPlot->setAspectRatio(1.0);
+    // å¯ç”¨ä¸Šä¸‹æ–‡èœå•
+    customPlot->setContextMenuPolicy(Qt::CustomContextMenu);
+
+    // è¿æ¥è‡ªå®šä¹‰ä¸Šä¸‹æ–‡èœå•
+    connect(customPlot, &QCustomPlot::customContextMenuRequested, this, [this](const QPoint& pos) {
+        QMenu menu(this);
+        QAction* resetAction = menu.addAction("é‡ç½®è§†å›¾");
+        QAction* autoRangeAction = menu.addAction("è‡ªåŠ¨è°ƒæ•´èŒƒå›´");
+
+        QAction* selectedAction = menu.exec(customPlot->mapToGlobal(pos));
+
+        if (selectedAction == resetAction) {
+            resetView();
+        }
+        else if (selectedAction == autoRangeAction) {
+            updatePlot();
+        }
+        });
+
+    // è¿æ¥åŒå‡»é‡ç½®è§†å›¾
+    connect(customPlot, &QCustomPlot::mouseDoubleClick, this, [this](QMouseEvent* event) {
+        Q_UNUSED(event)
+            resetView();
+        });
 }
 
 bool FieldViewWidget::loadFieldDataFile(const QString& filename)
 {
-    // Çå¿ÕÏÖÓĞÊı¾İ
+    // æ¸…ç©ºç°æœ‰æ•°æ®
     clearData();
 
     QFile file(filename);
     if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
-        QMessageBox::warning(this, "´íÎó", "ÎŞ·¨´ò¿ªÎÄ¼ş: " + filename);
+        QMessageBox::warning(this, "é”™è¯¯", "æ— æ³•æ‰“å¼€æ–‡ä»¶: " + filename);
         return false;
     }
 
@@ -70,7 +97,7 @@ bool FieldViewWidget::loadFieldDataFile(const QString& filename)
     int lineNumber = 0;
     bool hasValidData = false;
 
-    // ³õÊ¼»¯×î´óÖµ×îĞ¡Öµ
+    // åˆå§‹åŒ–æœ€å¤§å€¼æœ€å°å€¼
     maxMagnitude = -1e9;
     minMagnitude = 1e9;
 
@@ -78,12 +105,12 @@ bool FieldViewWidget::loadFieldDataFile(const QString& filename)
         QString line = in.readLine().trimmed();
         lineNumber++;
 
-        // Ìø¹ı¿ÕĞĞºÍ±êÌâĞĞ
+        // è·³è¿‡ç©ºè¡Œå’Œæ ‡é¢˜è¡Œ
         if (line.isEmpty() || line.startsWith("index") || line.startsWith("#")) {
             continue;
         }
 
-        // ½âÎöÊı¾İĞĞ
+        // è§£ææ•°æ®è¡Œ
         QStringList parts = line.split(QRegExp("\\s+"), Qt::SkipEmptyParts);
         if (parts.size() >= 5) {
             bool ok;
@@ -107,7 +134,7 @@ bool FieldViewWidget::loadFieldDataFile(const QString& filename)
             fieldData.append(data);
             hasValidData = true;
 
-            // ¸üĞÂ×î´óÖµ×îĞ¡Öµ
+            // æ›´æ–°æœ€å¤§å€¼æœ€å°å€¼
             if (data.magnitude > maxMagnitude) maxMagnitude = data.magnitude;
             if (data.magnitude < minMagnitude) minMagnitude = data.magnitude;
         }
@@ -117,12 +144,10 @@ bool FieldViewWidget::loadFieldDataFile(const QString& filename)
 
     if (hasValidData) {
         updatePlot();
-        //qDebug() << "³É¹¦¼ÓÔØ" << fieldData.size() << "¸öÊÓ³¡µã";
-        //qDebug() << "·ùÖµ·¶Î§:" << minMagnitude << "µ½" << maxMagnitude;
         return true;
     }
     else {
-        QMessageBox::warning(this, "´íÎó", "ÎÄ¼şÖĞÃ»ÓĞÕÒµ½ÓĞĞ§µÄÊÓ³¡Êı¾İ");
+        QMessageBox::warning(this, "é”™è¯¯", "æ–‡ä»¶ä¸­æ²¡æœ‰æ‰¾åˆ°æœ‰æ•ˆçš„è§†åœºæ•°æ®");
         return false;
     }
 }
@@ -136,12 +161,20 @@ void FieldViewWidget::clearData()
     customPlot->replot();
 }
 
+void FieldViewWidget::resetView()
+{
+    // é‡ç½®åˆ°é»˜è®¤èŒƒå›´
+    customPlot->xAxis->setRange(-m_defaultRange, m_defaultRange);
+    customPlot->yAxis->setRange(-m_defaultRange, m_defaultRange);
+    customPlot->replot();
+}
+
 void FieldViewWidget::updatePlot()
 {
-    // Çå³ıÖ®Ç°µÄ¼ıÍ·
+    // æ¸…é™¤ä¹‹å‰çš„ç®­å¤´
     customPlot->clearItems();
 
-    // ×Ô¶¯µ÷Õû×ø±êÖá·¶Î§
+    // è‡ªåŠ¨è°ƒæ•´åæ ‡è½´èŒƒå›´
     if (!fieldData.isEmpty()) {
         double xMin = 1e9, xMax = -1e9, yMin = 1e9, yMax = -1e9;
         for (const FieldData& data : fieldData) {
@@ -151,13 +184,29 @@ void FieldViewWidget::updatePlot()
             if (data.yField > yMax) yMax = data.yField;
         }
 
-        // Ìí¼Ó±ß¾à
-        double margin = std::max((xMax - xMin), (yMax - yMin)) * 0.1;
-        customPlot->xAxis->setRange(xMin - margin, xMax + margin);
-        customPlot->yAxis->setRange(yMin - margin, yMax + margin);
+        // æ·»åŠ è¾¹è·
+        double xRange = xMax - xMin;
+        double yRange = yMax - yMin;
+        double marginX = xRange * 0.1;
+        double marginY = yRange * 0.1;
+
+        // å¦‚æœæ•°æ®èŒƒå›´å¾ˆå°ï¼Œä½¿ç”¨é»˜è®¤èŒƒå›´
+        if (xRange < 1e-6 || yRange < 1e-6) {
+            customPlot->xAxis->setRange(-m_defaultRange, m_defaultRange);
+            customPlot->yAxis->setRange(-m_defaultRange, m_defaultRange);
+        }
+        else {
+            customPlot->xAxis->setRange(xMin - marginX, xMax + marginX);
+            customPlot->yAxis->setRange(yMin - marginY, yMax + marginY);
+        }
+    }
+    else {
+        // æ²¡æœ‰æ•°æ®æ—¶ä½¿ç”¨é»˜è®¤èŒƒå›´
+        resetView();
+        return;
     }
 
-    // »æÖÆ¼ıÍ·
+    // ç»˜åˆ¶ç®­å¤´
     drawFieldArrows();
 
     customPlot->replot();
@@ -165,50 +214,71 @@ void FieldViewWidget::updatePlot()
 
 void FieldViewWidget::drawFieldArrows()
 {
-    // ¼ıÍ·³¤¶È»ùÓÚÊÓ³¡·¶Î§µÄ±ÈÀı
+    // è·å–å½“å‰åæ ‡è½´èŒƒå›´æ¥è®¡ç®—åŸºå‡†ç®­å¤´é•¿åº¦
     double xRange = customPlot->xAxis->range().size();
     double yRange = customPlot->yAxis->range().size();
-    double baseArrowLength = std::min(xRange, yRange) * 0.1;
+    double baseArrowLength = 4; // åŸºå‡†é•¿åº¦ä¸ºè§†å›¾èŒƒå›´çš„8%
 
     for (const FieldData& data : fieldData) {
-        // ´´½¨¼ıÍ·
+        // åˆ›å»ºç®­å¤´
         QCPItemLine* arrow = new QCPItemLine(customPlot);
 
-        // ¼ÆËã¼ıÍ··½Ïò£¨½Ç¶È×ª»»Îª»¡¶È£©
+        // è®¡ç®—ç®­å¤´æ–¹å‘ï¼ˆè§’åº¦è½¬æ¢ä¸ºå¼§åº¦ï¼‰
         double angleRad = data.angle * M_PI / 180.0;
 
-        // ¼ıÍ·Æğµã£¨Êı¾İµãÎ»ÖÃ£©
+        // ç®­å¤´èµ·ç‚¹ï¼ˆæ•°æ®ç‚¹ä½ç½®ï¼‰
         arrow->start->setCoords(data.xField, data.yField);
 
-        // ¼ıÍ·ÖÕµã£¨»ùÓÚ½Ç¶ÈºÍ³¤¶È¼ÆËã£©
-        double endX = data.xField + baseArrowLength * std::cos(angleRad);
-        double endY = data.yField + baseArrowLength * std::sin(angleRad);
+        // è®¡ç®—ç®­å¤´é•¿åº¦ï¼ˆä¸magnitudeæˆæ­£æ¯”ï¼‰
+        double arrowLength = getArrowLength(data.magnitude) * baseArrowLength;
+
+        // ç®­å¤´ç»ˆç‚¹ï¼ˆåŸºäºè§’åº¦å’Œé•¿åº¦è®¡ç®—ï¼‰
+        double endX = data.xField + arrowLength * std::cos(angleRad);
+        double endY = data.yField + arrowLength * std::sin(angleRad);
         arrow->end->setCoords(endX, endY);
 
-        // ÉèÖÃ¼ıÍ·ÑùÊ½
+        // è®¾ç½®ç®­å¤´æ ·å¼
         QPen arrowPen = getArrowPen(data.magnitude);
         arrow->setPen(arrowPen);
         arrow->setHead(QCPLineEnding::esSpikeArrow);
+
+        // è®¾ç½®ç®­å¤´å¤´éƒ¨å¤§å°ä¸çº¿æ¡ç²—ç»†æˆæ¯”ä¾‹
+        double headSize = arrowPen.widthF() * 2.0;
+        arrow->setHead(QCPLineEnding(QCPLineEnding::esSpikeArrow, headSize, headSize * 0.8));
     }
+}
+
+double FieldViewWidget::getArrowLength(double magnitude)
+{
+    // æ ¹æ®å¹…å€¼è®¡ç®—ç®­å¤´é•¿åº¦æ¯”ä¾‹ (0.5 - 2.0å€)
+    if (maxMagnitude <= minMagnitude) {
+        return 0.5; // é»˜è®¤é•¿åº¦
+    }
+
+    // å½’ä¸€åŒ–å¹…å€¼
+    double normalized = (magnitude - minMagnitude) / (maxMagnitude - minMagnitude);
+
+    // é•¿åº¦åœ¨0.1åˆ°1.0ä¹‹é—´çº¿æ€§å˜åŒ–
+    return 0.1 + normalized * 1;
 }
 
 QPen FieldViewWidget::getArrowPen(double magnitude)
 {
-    // ¸ù¾İ·ùÖµÉèÖÃ¼ıÍ·ÑÕÉ«ºÍ´ÖÏ¸
-    // Ê¹ÓÃÀ¶É«Ïµ£¬·ùÖµÔ½´óÑÕÉ«Ô½Éî/ÏßÔ½´Ö
+    // æ ¹æ®å¹…å€¼è®¾ç½®ç®­å¤´é¢œè‰²å’Œç²—ç»†
+    // ä½¿ç”¨è“è‰²ç³»ï¼Œå¹…å€¼è¶Šå¤§é¢œè‰²è¶Šæ·±/çº¿è¶Šç²—
 
-    // ¹éÒ»»¯·ùÖµ
+    // å½’ä¸€åŒ–å¹…å€¼
     double normalized = 0.5;
     if (maxMagnitude > minMagnitude) {
         normalized = (magnitude - minMagnitude) / (maxMagnitude - minMagnitude);
     }
 
-    // ¼ÆËãÑÕÉ«£¨´ÓÇ³À¶µ½ÉîÀ¶£©
+    // è®¡ç®—é¢œè‰²ï¼ˆä»æµ…è“åˆ°æ·±è“ï¼‰
     int blueValue = 100 + static_cast<int>(155 * normalized);
     QColor arrowColor(0, 0, blueValue);
 
-    // ¼ÆËãÏß¿í£¨1.0 - 3.0£©
-    double lineWidth = 1.0 + normalized * 2.0;
+    // è®¡ç®—çº¿å®½ï¼ˆ1 - 3.0ï¼‰
+    double lineWidth = 1 + normalized * 2.5;
 
     return QPen(arrowColor, lineWidth);
 }

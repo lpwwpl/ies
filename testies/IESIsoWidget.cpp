@@ -1,4 +1,4 @@
-#include "IESIsoWidget.h"
+ï»¿#include "IESIsoWidget.h"
 #include "contours.h"
 #include <QDebug>
 
@@ -26,8 +26,8 @@ void IESIsoWidget::Init()
     m_colorScale= new QCPColorScale(this);
     
 
-    addLayer("gridLayer", nullptr, QCustomPlot::limAbove); // ÏÈÌí¼Óµ½Ä¬ÈÏÍ¼²ãÉÏ·½
-    layer("gridLayer")->setMode(QCPLayer::lmBuffered); // ¹Ø¼ü£ºÉèÖÃÎª»º³åÄ£Ê½
+    addLayer("gridLayer", nullptr, QCustomPlot::limAbove); // å…ˆæ·»åŠ åˆ°é»˜è®¤å›¾å±‚ä¸Šæ–¹
+    layer("gridLayer")->setMode(QCPLayer::lmBuffered); // å…³é”®ï¼šè®¾ç½®ä¸ºç¼“å†²æ¨¡å¼
 
     m_margin = new QCPMarginGroup(this);
     axisRect()->setMarginGroup(QCP::msBottom | QCP::msTop, m_margin);
@@ -38,80 +38,80 @@ void IESIsoWidget::Init()
 
 //void IESIsoWidget::setupColorSchemes()
 //{
-//    // ¶¨Òå¶àÖÖÑÕÉ«·½°¸
+//    // å®šä¹‰å¤šç§é¢œè‰²æ–¹æ¡ˆ
 //    colorSchemes.clear();
 //
-//    // ·½°¸1: ²ÊºçÉ«
+//    // æ–¹æ¡ˆ1: å½©è™¹è‰²
 //    ColorScheme rainbow;
-//    rainbow.name = "²ÊºçÉ«";
+//    rainbow.name = "å½©è™¹è‰²";
 //    rainbow.colors = {
-//        QColor(148, 0, 211),   // ×ÏÉ«
-//        QColor(75, 0, 130),    // µåÀ¶É«
-//        QColor(0, 0, 255),     // À¶É«
-//        QColor(0, 255, 0),     // ÂÌÉ«
-//        QColor(255, 255, 0),   // »ÆÉ«
-//        QColor(255, 127, 0),   // ³ÈÉ«
-//        QColor(255, 0, 0)      // ºìÉ«
+//        QColor(148, 0, 211),   // ç´«è‰²
+//        QColor(75, 0, 130),    // é›è“è‰²
+//        QColor(0, 0, 255),     // è“è‰²
+//        QColor(0, 255, 0),     // ç»¿è‰²
+//        QColor(255, 255, 0),   // é»„è‰²
+//        QColor(255, 127, 0),   // æ©™è‰²
+//        QColor(255, 0, 0)      // çº¢è‰²
 //    };
 //    colorSchemes.push_back(rainbow);
 //
-//    // ·½°¸2: ÈÈÁ¦Í¼
+//    // æ–¹æ¡ˆ2: çƒ­åŠ›å›¾
 //    ColorScheme heatmap;
-//    heatmap.name = "ÈÈÁ¦Í¼";
+//    heatmap.name = "çƒ­åŠ›å›¾";
 //    heatmap.colors = {
-//        QColor(0, 0, 0),       // ºÚÉ«
-//        QColor(128, 0, 0),     // ÉîºìÉ«
-//        QColor(255, 0, 0),     // ºìÉ«
-//        QColor(255, 128, 0),   // ³ÈÉ«
-//        QColor(255, 255, 0),   // »ÆÉ«
-//        QColor(255, 255, 128), // Ç³»ÆÉ«
-//        QColor(255, 255, 255)  // °×É«
+//        QColor(0, 0, 0),       // é»‘è‰²
+//        QColor(128, 0, 0),     // æ·±çº¢è‰²
+//        QColor(255, 0, 0),     // çº¢è‰²
+//        QColor(255, 128, 0),   // æ©™è‰²
+//        QColor(255, 255, 0),   // é»„è‰²
+//        QColor(255, 255, 128), // æµ…é»„è‰²
+//        QColor(255, 255, 255)  // ç™½è‰²
 //    };
 //    colorSchemes.push_back(heatmap);
 //
-//    // ·½°¸3: ÀäÉ«µ÷
+//    // æ–¹æ¡ˆ3: å†·è‰²è°ƒ
 //    ColorScheme cool;
-//    cool.name = "ÀäÉ«µ÷";
+//    cool.name = "å†·è‰²è°ƒ";
 //    cool.colors = {
-//        QColor(255, 255, 255), // °×É«
-//        QColor(200, 230, 255), // Ç³À¶É«
-//        QColor(150, 200, 255), // µ­À¶É«
-//        QColor(100, 150, 255), // À¶É«
-//        QColor(50, 100, 200),  // ÖĞÀ¶É«
-//        QColor(0, 50, 150),    // ÉîÀ¶É«
-//        QColor(0, 0, 100)      // º£¾üÀ¶
+//        QColor(255, 255, 255), // ç™½è‰²
+//        QColor(200, 230, 255), // æµ…è“è‰²
+//        QColor(150, 200, 255), // æ·¡è“è‰²
+//        QColor(100, 150, 255), // è“è‰²
+//        QColor(50, 100, 200),  // ä¸­è“è‰²
+//        QColor(0, 50, 150),    // æ·±è“è‰²
+//        QColor(0, 0, 100)      // æµ·å†›è“
 //    };
 //    colorSchemes.push_back(cool);
 //
-//    // ·½°¸4: µØĞÎÍ¼
+//    // æ–¹æ¡ˆ4: åœ°å½¢å›¾
 //    ColorScheme terrain;
-//    terrain.name = "µØĞÎÍ¼";
+//    terrain.name = "åœ°å½¢å›¾";
 //    terrain.colors = {
-//        QColor(0, 0, 70),      // ÉîÀ¶É«
-//        QColor(0, 0, 255),     // À¶É«
-//        QColor(0, 128, 255),   // Ç³À¶É«
-//        QColor(240, 240, 64),  // »ÆÉ«
-//        QColor(32, 160, 0),    // ÂÌÉ«
-//        QColor(0, 96, 0),      // ÉîÂÌÉ«
-//        QColor(128, 128, 128)  // »ÒÉ«
+//        QColor(0, 0, 70),      // æ·±è“è‰²
+//        QColor(0, 0, 255),     // è“è‰²
+//        QColor(0, 128, 255),   // æµ…è“è‰²
+//        QColor(240, 240, 64),  // é»„è‰²
+//        QColor(32, 160, 0),    // ç»¿è‰²
+//        QColor(0, 96, 0),      // æ·±ç»¿è‰²
+//        QColor(128, 128, 128)  // ç°è‰²
 //    };
 //    colorSchemes.push_back(terrain);
 //
-//    // ·½°¸5: ×Ô¶¨ÒåÏÊÑŞÉ«
+//    // æ–¹æ¡ˆ5: è‡ªå®šä¹‰é²œè‰³è‰²
 //    ColorScheme vibrant;
-//    vibrant.name = "ÏÊÑŞÉ«";
+//    vibrant.name = "é²œè‰³è‰²";
 //    vibrant.colors = {
-//        QColor(255, 0, 0),     // ºìÉ«
-//        QColor(255, 128, 0),   // ³ÈÉ«
-//        QColor(255, 255, 0),   // »ÆÉ«
-//        QColor(0, 255, 0),     // ÂÌÉ«
-//        QColor(0, 255, 255),   // ÇàÉ«
-//        QColor(0, 128, 255),   // À¶É«
-//        QColor(128, 0, 255)    // ×ÏÉ«
+//        QColor(255, 0, 0),     // çº¢è‰²
+//        QColor(255, 128, 0),   // æ©™è‰²
+//        QColor(255, 255, 0),   // é»„è‰²
+//        QColor(0, 255, 0),     // ç»¿è‰²
+//        QColor(0, 255, 255),   // é’è‰²
+//        QColor(0, 128, 255),   // è“è‰²
+//        QColor(128, 0, 255)    // ç´«è‰²
 //    };
 //    colorSchemes.push_back(vibrant);
 //
-//    //// Ìí¼Óµ½ÏÂÀ­¿ò
+//    //// æ·»åŠ åˆ°ä¸‹æ‹‰æ¡†
 //    //colorSchemeComboBox->clear();
 //    //for (const auto& scheme : colorSchemes) {
 //    //    colorSchemeComboBox->addItem(scheme.name);
@@ -132,7 +132,7 @@ void IESIsoWidget::updatePlot()
     int gridSize = calculationWidth / gridSpacing;
 
 
-    // ÎªÃ¿¸öµÈÖµÏß´´½¨IsoluxCurve
+    // ä¸ºæ¯ä¸ªç­‰å€¼çº¿åˆ›å»ºIsoluxCurve
     std::vector<QColor> colors;
     double dist = maxIlluminance - minIlluminance;
  
@@ -143,7 +143,7 @@ void IESIsoWidget::updatePlot()
     }
 
     //if (m_levelSize <= static_cast<int>(src_colors.size())) {
-    //    // Èç¹ûĞèÒªµÄÑÕÉ«ÊıÁ¿Ğ¡ÓÚµÈÓÚ·½°¸ÖĞµÄÑÕÉ«ÊıÁ¿£¬Ö±½ÓÈ¡Ç°ÃæµÄÑÕÉ«
+    //    // å¦‚æœéœ€è¦çš„é¢œè‰²æ•°é‡å°äºç­‰äºæ–¹æ¡ˆä¸­çš„é¢œè‰²æ•°é‡ï¼Œç›´æ¥å–å‰é¢çš„é¢œè‰²
     //    for (int i = 0; i < m_levelSize; ++i) {
     //        colors.push_back(src_colors[i]);
     //    }
@@ -195,17 +195,17 @@ void IESIsoWidget::updatePlot()
         }
     }
 
-    // ÉèÖÃ×ø±êÖá·¶Î§
+    // è®¾ç½®åæ ‡è½´èŒƒå›´
     xAxis->setRange(-halfRange, halfRange);
     yAxis->setRange(-halfRange, halfRange);
 
-    //ÏÔÊ¾Íø¸ñÏß
+    //æ˜¾ç¤ºç½‘æ ¼çº¿
     if (m_bUseGrid)
     {
         xAxis->grid()->setLayer("gridLayer");
         yAxis->grid()->setLayer("gridLayer");
 
-        xAxis->grid()->setSubGridVisible(true); // È·±£×ÓÍø¸ñÏß¿É¼û
+        xAxis->grid()->setSubGridVisible(true); // ç¡®ä¿å­ç½‘æ ¼çº¿å¯è§
         yAxis->grid()->setSubGridVisible(true);
         xAxis->grid()->setLayer("gridLayer");
         yAxis->grid()->setLayer("gridLayer");
@@ -237,7 +237,7 @@ void IESIsoWidget::calculateXZ_PlaneIlluminance()
         double x = -halfRange + i * gridSpacing;
         for (int j = 0; j <= gridSize; ++j) {
             double z = -halfRange + j * gridSpacing;
-            double y = 0;  // XYÆ½ÃæµÄ¹Ì¶¨¸ß¶È
+            double y = 0;  // XYå¹³é¢çš„å›ºå®šé«˜åº¦
 
             double illuminance = calculateIlluminanceAtPoint_(x, 0, z);
 
@@ -273,7 +273,7 @@ void IESIsoWidget::calculateYZ_PlaneIlluminance()
         double y = -halfRange + i * gridSpacing;
         for (int j = 0; j <= gridSize; ++j) {
             double z = -halfRange + j * gridSpacing;
-            double x = 0;  // YZÆ½ÃæµÄ¹Ì¶¨XÎ»ÖÃ
+            double x = 0;  // YZå¹³é¢çš„å›ºå®šXä½ç½®
 
             double illuminance = calculateIlluminanceAtPoint_(0, y, z);
 
@@ -342,7 +342,7 @@ void IESIsoWidget::calculateXZPlaneIlluminance()
         double x = -halfRange + i * gridSpacing;
         for (int j = 0; j <= gridSize; ++j) {
             double z = -halfRange + j * gridSpacing;
-            double y = 0;  // XYÆ½ÃæµÄ¹Ì¶¨¸ß¶È
+            double y = 0;  // XYå¹³é¢çš„å›ºå®šé«˜åº¦
 
             double illuminance = calculateIlluminanceAtPoint_(x,0,  z);
 
@@ -377,7 +377,7 @@ void IESIsoWidget::calculateYZPlaneIlluminance()
         double y = -halfRange + i * gridSpacing;
         for (int j = 0; j <= gridSize; ++j) {
             double z = -halfRange + j * gridSpacing;
-            double x = 0;  // YZÆ½ÃæµÄ¹Ì¶¨XÎ»ÖÃ
+            double x = 0;  // YZå¹³é¢çš„å›ºå®šXä½ç½®
 
             double illuminance = calculateIlluminanceAtPoint_(0,y, z);
 
@@ -398,7 +398,7 @@ void IESIsoWidget::calculateYZPlaneIlluminance()
 
 double IESIsoWidget::calculateIlluminanceAtPoint(double x, double y, double z)
 {
-    // ¼ÆËã¾àÀë
+    // è®¡ç®—è·ç¦»
     double dx = x - fixtureX;
     double dy = y - fixtureY;
     double dz = z - fixtureZ;
@@ -406,25 +406,25 @@ double IESIsoWidget::calculateIlluminanceAtPoint(double x, double y, double z)
 
     if (totalDistance == 0) return 0;
 
-    // ¼ÆËã´¹Ö±½Ç¶È (´ÓµÆ¾ßÏòÏÂÎªÕı)
-    double verticalAngle = acos(dz / totalDistance) * 180.0 / M_PI;  // ×¢Òâ·ûºÅ
+    // è®¡ç®—å‚ç›´è§’åº¦ (ä»ç¯å…·å‘ä¸‹ä¸ºæ­£)
+    double verticalAngle = acos(dz / totalDistance) * 180.0 / M_PI;  // æ³¨æ„ç¬¦å·
 
-    // ¼ÆËãË®Æ½½Ç¶È
+    // è®¡ç®—æ°´å¹³è§’åº¦
     double horizontalAngle = atan2(dy, dx) * 180.0 / M_PI;
     if (horizontalAngle < 0) horizontalAngle += 360;
 
-    // »ñÈ¡¹âÇ¿Öµ
+    // è·å–å…‰å¼ºå€¼
     double candela = IESLoader::instance().getCandelaValue(verticalAngle, horizontalAngle);
 
-    // ¼ÆËãÕÕ¶È (¾àÀëÆ½·½·´±È¶¨ÂÉ + ÓàÏÒ¶¨ÂÉ)
-    double cosIncidence = -dz / totalDistance;  // ÈëÉä½ÇÓàÏÒ
+    // è®¡ç®—ç…§åº¦ (è·ç¦»å¹³æ–¹åæ¯”å®šå¾‹ + ä½™å¼¦å®šå¾‹)
+    double cosIncidence = -dz / totalDistance;  // å…¥å°„è§’ä½™å¼¦
     double illuminance = candela / (totalDistance * totalDistance) * cosIncidence;
 
     return std::max(0.0, illuminance);
 }
 double IESIsoWidget::calculateIlluminanceAtPoint_(double x, double y, double z)
 {
-    // ¼ÆËã¾àÀë
+    // è®¡ç®—è·ç¦»
     double dx = x - fixtureX;
     double dy = y - fixtureY;
     double dz = z - fixtureZ;
@@ -432,18 +432,18 @@ double IESIsoWidget::calculateIlluminanceAtPoint_(double x, double y, double z)
 
     if (totalDistance == 0) return 0;
 
-    // ¼ÆËã´¹Ö±½Ç¶È (´ÓµÆ¾ßÏòÏÂÎªÕı)
-    double verticalAngle = acos(-dz / totalDistance) * 180.0 / M_PI;  // ×¢Òâ·ûºÅ
+    // è®¡ç®—å‚ç›´è§’åº¦ (ä»ç¯å…·å‘ä¸‹ä¸ºæ­£)
+    double verticalAngle = acos(-dz / totalDistance) * 180.0 / M_PI;  // æ³¨æ„ç¬¦å·
  
-    // ¼ÆËãË®Æ½½Ç¶È
+    // è®¡ç®—æ°´å¹³è§’åº¦
     double horizontalAngle = atan2(dy, dx) * 180.0 / M_PI;
     if (horizontalAngle < 0) horizontalAngle += 360;
 
-    // »ñÈ¡¹âÇ¿Öµ
+    // è·å–å…‰å¼ºå€¼
     double candela = IESLoader::instance().getCandelaValue(verticalAngle, horizontalAngle);
 
-    // ¼ÆËãÕÕ¶È (¾àÀëÆ½·½·´±È¶¨ÂÉ + ÓàÏÒ¶¨ÂÉ)
-    double cosIncidence = -dz / totalDistance;  // ÈëÉä½ÇÓàÏÒ
+    // è®¡ç®—ç…§åº¦ (è·ç¦»å¹³æ–¹åæ¯”å®šå¾‹ + ä½™å¼¦å®šå¾‹)
+    double cosIncidence = -dz / totalDistance;  // å…¥å°„è§’ä½™å¼¦
     double illuminance = candela / (totalDistance * totalDistance) * cosIncidence;
 
     return std::max(0.0, illuminance);
@@ -493,11 +493,11 @@ void IESIsoWidget::updateColorMapData()
     m_colorMap->setColorScale(m_colorScale);
     //m_colorMap->setGradient(QCPColorGradient::gpJet);
     QCPColorGradient gradient;
-    gradient.setColorStopAt(0, QColor(0, 0, 255));     // À¶É«
-    gradient.setColorStopAt(0.25, QColor(0, 255, 255)); // ÇàÉ«
-    gradient.setColorStopAt(0.5, QColor(0, 255, 0));   // ÂÌÉ«
-    gradient.setColorStopAt(0.75, QColor(255, 255, 0)); // »ÆÉ«
-    gradient.setColorStopAt(1, QColor(255, 0, 0));     // ºìÉ«
+    gradient.setColorStopAt(0, QColor(0, 0, 255));     // è“è‰²
+    gradient.setColorStopAt(0.25, QColor(0, 255, 255)); // é’è‰²
+    gradient.setColorStopAt(0.5, QColor(0, 255, 0));   // ç»¿è‰²
+    gradient.setColorStopAt(0.75, QColor(255, 255, 0)); // é»„è‰²
+    gradient.setColorStopAt(1, QColor(255, 0, 0));     // çº¢è‰²
 
     m_colorMap->setGradient(gradient);
     m_colorMap->setInterpolate(true);
@@ -515,7 +515,7 @@ void IESIsoWidget::updateColorMapData()
 
     double minIllu=INFINITY;
     double maxIllu=-INFINITY;
-    // Ìî³äÊı¾İ
+    // å¡«å……æ•°æ®
     for (int i = 0; i < gridSize; ++i) {
         for (int j = 0; j < gridSize; ++j) {
             int idx = i * (gridSize + 1) + j;
@@ -527,7 +527,7 @@ void IESIsoWidget::updateColorMapData()
         }
     }
 
-    // ÉèÖÃÊı¾İ·¶Î§
+    // è®¾ç½®æ•°æ®èŒƒå›´
     m_colorMap->setData(m_colorMapData);
     m_colorMap->setDataRange(QCPRange(minIllu, maxIllu));
     m_colorScale->setDataRange(QCPRange(minIllu, maxIllu));

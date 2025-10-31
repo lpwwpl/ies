@@ -1,22 +1,22 @@
-// IESSpotLightWidget.h
+ï»¿// IESSpotLightWidget.h
 #pragma once
 #include <QWidget>
 #include "QCustomPlot.h"
 #include "tiny_ies.hpp"
 #include "contours.h"
 
-// ÕÕ¶È¼ÆËãµã
+// ç…§åº¦è®¡ç®—ç‚¹
 struct IlluminancePoint {
 	double x, y,z;
-	double illuminance; // ÕÕ¶È(lux)
+	double illuminance; // ç…§åº¦(lux)
 };
-// µÈÕÕ¶ÈÏß
+// ç­‰ç…§åº¦çº¿
 struct IsoluxCurve {
 	double illuminanceLevel;
 	std::vector<QPointF> points;
 	QColor color;
 };
-// ÑÕÉ«·½°¸
+// é¢œè‰²æ–¹æ¡ˆ
 struct ColorScheme {
 	QString name;
 	std::vector<QColor> colors;
@@ -79,7 +79,7 @@ public:
 	int m_levelSize;
 	bool m_bUseGrid;
 	int m_numOfPoints;
-	// ÑÕÉ«·½°¸
+	// é¢œè‰²æ–¹æ¡ˆ
 	std::vector<ColorScheme> colorSchemes;
 };
 
