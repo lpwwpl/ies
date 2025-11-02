@@ -74,6 +74,9 @@
     <ClCompile Include="FootprintWidget.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="newfiledialog.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="tiny_ies.hpp">
@@ -126,6 +129,9 @@
     <QtMoc Include="FootprintWidget.h">
       <Filter>Header Files</Filter>
     </QtMoc>
+    <QtMoc Include="newfiledialog.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
   </ItemGroup>
   <ItemGroup>
     <QtRcc Include="res.qrc">
@@ -149,6 +155,9 @@
       <Filter>Form Files</Filter>
     </QtUic>
     <QtUic Include="threeddialog.ui">
+      <Filter>Form Files</Filter>
+    </QtUic>
+    <QtUic Include="newfile.ui">
       <Filter>Form Files</Filter>
     </QtUic>
   </ItemGroup>

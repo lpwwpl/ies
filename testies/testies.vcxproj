@@ -124,6 +124,7 @@
     </ClCompile>
     <ClCompile Include="mainwindow.cpp" />
     <ClCompile Include="MTFViewWidget.cpp" />
+    <ClCompile Include="newfiledialog.cpp" />
     <ClCompile Include="polardialog.cpp" />
     <ClCompile Include="QCustomPlot.cpp" />
     <ClCompile Include="SpotDiagramWidget.cpp" />
@@ -146,6 +147,7 @@
     <QtMoc Include="TableItemDelegate.h" />
     <QtMoc Include="SpotDiagramWidget.h" />
     <QtMoc Include="MTFViewWidget.h" />
+    <QtMoc Include="newfiledialog.h" />
     <ClInclude Include="tiny_ies.hpp" />
   </ItemGroup>
   <ItemGroup>
@@ -156,6 +158,7 @@
   <ItemGroup>
     <QtUic Include="isoluxdialog.ui" />
     <QtUic Include="mainwindow.ui" />
+    <QtUic Include="newfile.ui" />
     <QtUic Include="polardialog.ui" />
     <QtUic Include="threeddialog.ui" />
   </ItemGroup>
