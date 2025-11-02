@@ -80,13 +80,13 @@ MainWindow::MainWindow(QWidget* parent)
     size.push_back(300);
     size.push_back(320);
     size.push_back(140);
-    resizeDocks(docks, size, Qt::Orientation::Vertical);
+    //resizeDocks(docks, size, Qt::Orientation::Vertical);
 
     // init qrc
     Q_INIT_RESOURCE(res);
 
-    ui->tableWidget->horizontalHeader()->setStyleSheet("QHeaderView::section { background-color: rgb(0,255,0,60); }");
-    ui->tableWidget->verticalHeader()->setStyleSheet("QHeaderView::section { background-color: rgb(0,0,255,60); }");
+    ui->tableWidget->horizontalHeader()->setStyleSheet("QHeaderView::section { background-color: rgba(0,255,0,60%); }");
+    ui->tableWidget->verticalHeader()->setStyleSheet("QHeaderView::section { background-color: rgba(0,0,255,60%); }");
 
   
     ui->leNumberOf->setText(QString::number(1));

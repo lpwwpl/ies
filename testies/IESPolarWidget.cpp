@@ -35,7 +35,7 @@ void IESPolarWidget::Init()
     angularAxis->grid()->setVisible(true);
     angularAxis->setTicks(true);
    
-    addLayer("background", nullptr, QCustomPlot::limBelow);
+    addLayer("background1", nullptr, QCustomPlot::limBelow);
     addLayer("foreground", nullptr, QCustomPlot::limAbove);
 
 
@@ -54,7 +54,7 @@ void IESPolarWidget::Init()
     //graph0_180->setBrush(QBrush(QColor(0, 0, 250, 150)));
 
     graph90_270 = new QCPPolarGraph(angularAxis, radialAxis);
-    graph90_270->setLayer("background");
+    graph90_270->setLayer("background1");
     // 8. 设置图形样式 (可选)
     graph90_270->setLineStyle(QCPPolarGraph::lsLine); // 线型
     graph90_270->setScatterStyle(QCPScatterStyle::ssDot); // 散点样式
@@ -63,7 +63,7 @@ void IESPolarWidget::Init()
 
 
 
-    moveLayer(layer("foreground"), layer("background"));
+    moveLayer(layer("foreground"), layer("background1"));
 }
 
 
