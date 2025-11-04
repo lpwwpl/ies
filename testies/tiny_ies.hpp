@@ -34,6 +34,8 @@ SOFTWARE.
 #include <stdio.h>
 #include <iostream>
 
+#include "common.h"
+
 // 实现meshgrid功能，返回两个矩阵X和Y
 template<typename T>
 void meshgrid(const std::vector<T>& x, const std::vector<T>& y,
@@ -164,14 +166,7 @@ std::vector<T> clip_indices(const std::vector<T>& indices,
 
 template <typename T>
 struct tiny_ies {
-    enum EIESType
-    {
-        eC0=0,
-        eC90,
-        eC180,
-        eC360,
-        eNotSupoort,
-    };
+
     static_assert(std::is_floating_point<T>::value, "T must be floating point");
     struct light {
         light() :
@@ -191,8 +186,8 @@ struct tiny_ies {
             max_vertical_angle{},
             min_horizontal_angle{},
             max_horizontal_angle{},
-            max_candela{}, m_IESType{},
-            header{}
+            max_candela{}, m_IESType{eNotSupoort}
+            //header{}
         {
         }
 
@@ -228,6 +223,7 @@ struct tiny_ies {
         T future_use;
         T input_watts;
         EIESType m_IESType;
+        EIES_VType m_vType;
         std::vector<T> vertical_angles;
         T min_vertical_angle;
         T max_vertical_angle;
@@ -238,7 +234,7 @@ struct tiny_ies {
         std::vector<T> candela;
         std::vector<std::vector<T>> candela_hv;
         T max_candela;
-        std::string header;
+        //std::string header;
     };
 
     static bool load_ies(const std::string& file, std::string& err_out, std::string& warn_out, light& ies_out) {
@@ -268,8 +264,8 @@ struct tiny_ies {
             {        
                 break;
             }
-            ies_out.header += line;
-            ies_out.header += "\n";
+            //ies_out.header += line;
+            //ies_out.header += "\n";
             read_property(line, ies_out.properties);
         }
         if (ies_out.tilt.empty()) {
@@ -380,8 +376,45 @@ struct tiny_ies {
                 case 180:
                     ies_out.m_IESType = eC180;
                     break;
+                case 270:
+                    ies_out.m_IESType = eC270;
                 case 360:
                     ies_out.m_IESType = eC360;
+                    break;
+                default:
+                    break;
+                }
+
+                int minV = ies_out.vertical_angles[/*ies_out.vertical_angles.size() - 1*/0];
+                int maxV = ies_out.vertical_angles[ies_out.vertical_angles.size() - 1];
+                switch (minV)
+                {
+                case 0:
+                {
+                    switch (maxV)
+                    {
+                    case 90:
+                        ies_out.m_vType = eC_V90;
+                        break;
+                    case 180:
+                        ies_out.m_vType = eC_V180;
+                        break;
+                    default:
+                        break;
+                    }
+                }
+                    break;
+                case 90:
+                {
+                    switch (maxV)
+                    {
+                    case 180:
+                        ies_out.m_vType = eC_V90_180;
+                        break;
+                    default:
+                        break;
+                    }
+                }
                     break;
                 default:
                     break;
@@ -391,12 +424,83 @@ struct tiny_ies {
         break;
         case 2:
         {
+            if (ies_out.horizontal_angles.size() > 0)
+            {
+                int maxAngle = ies_out.horizontal_angles[ies_out.horizontal_angles.size() - 1];
+                int minAngle = ies_out.horizontal_angles[0];
+                switch (minAngle)
+                {
+                case 0:
+                    ies_out.m_IESType = eA090;
+                    break;
+                case -90:
+                    ies_out.m_IESType = eA_9090;
+                    break;              
+                default:
+                    break;
+                }
+            }
+
+            if (ies_out.vertical_angles.size() > 0)
+            {
+                int minV = ies_out.vertical_angles[/*ies_out.vertical_angles.size() - 1*/0];
+                switch (minV)
+                {
+                case 0:
+                {
+                    ies_out.m_vType = eB_V90;
+                }
+                break;
+                case -90:
+                {
+                    ies_out.m_vType = eB_V_90_90;
+                }
+                break;
+                default:
+                    break;
+                }
+            }
 
         }
             break;
         case 3:
         {
+            if (ies_out.horizontal_angles.size() > 0)
+            {
+                int maxAngle = ies_out.horizontal_angles[ies_out.horizontal_angles.size() - 1];
+                int minAngle = ies_out.horizontal_angles[0];
+                switch (minAngle)
+                {
+                case 0:
+                    ies_out.m_IESType = eB090;
+                    break;
+                case -90:
+                    ies_out.m_IESType = eB_9090;
+                    break;
+                default:
+                    break;
+                }
+            }
 
+            if (ies_out.vertical_angles.size() > 0)
+            {
+                int minV = ies_out.vertical_angles[/*ies_out.vertical_angles.size() - 1*/0];
+                switch (minV)
+                {
+                case 0:
+                {
+                    ies_out.m_vType = eA_V90;
+                }
+                break;
+                case -90:
+                {
+                    ies_out.m_vType = eA_V_90_90;
+                }
+                break;
+                default:
+                    break;
+                }
+            }
         }
             break;
         default:

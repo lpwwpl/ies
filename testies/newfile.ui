@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>625</width>
-    <height>367</height>
+    <width>645</width>
+    <height>431</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -19,7 +19,7 @@
      <x>20</x>
      <y>70</y>
      <width>351</width>
-     <height>51</height>
+     <height>61</height>
     </rect>
    </property>
    <property name="title">
@@ -27,21 +27,21 @@
    </property>
    <layout class="QHBoxLayout" name="horizontalLayout">
     <item>
-     <widget class="QRadioButton" name="radioButton">
+     <widget class="QRadioButton" name="rbTypeA">
       <property name="text">
        <string>Type A</string>
       </property>
      </widget>
     </item>
     <item>
-     <widget class="QRadioButton" name="radioButton_2">
+     <widget class="QRadioButton" name="rbTypeB">
       <property name="text">
        <string>Type B</string>
       </property>
      </widget>
     </item>
     <item>
-     <widget class="QRadioButton" name="radioButton_3">
+     <widget class="QRadioButton" name="rbTypeC">
       <property name="text">
        <string>Type C</string>
       </property>
@@ -82,7 +82,7 @@
     </property>
    </item>
   </widget>
-  <widget class="QPushButton" name="pushButton">
+  <widget class="QPushButton" name="pbOk">
    <property name="geometry">
     <rect>
      <x>440</x>
@@ -95,7 +95,7 @@
     <string>OK</string>
    </property>
   </widget>
-  <widget class="QPushButton" name="pushButton_2">
+  <widget class="QPushButton" name="pbCancel">
    <property name="geometry">
     <rect>
      <x>440</x>
@@ -113,21 +113,21 @@
     <rect>
      <x>0</x>
      <y>160</y>
-     <width>601</width>
-     <height>191</height>
+     <width>631</width>
+     <height>241</height>
     </rect>
    </property>
    <property name="currentIndex">
-    <number>1</number>
+    <number>0</number>
    </property>
    <widget class="QWidget" name="pageC">
     <widget class="QGroupBox" name="groupVertical">
      <property name="geometry">
       <rect>
-       <x>330</x>
+       <x>350</x>
        <y>20</y>
-       <width>251</width>
-       <height>161</height>
+       <width>261</width>
+       <height>201</height>
       </rect>
      </property>
      <property name="title">
@@ -165,8 +165,8 @@
       <rect>
        <x>10</x>
        <y>10</y>
-       <width>299</width>
-       <height>213</height>
+       <width>321</width>
+       <height>221</height>
       </rect>
      </property>
      <property name="title">

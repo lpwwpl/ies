@@ -1,6 +1,5 @@
 ﻿#include "mainwindow.h"
 
-
 #include <QDebug>
 #include <QDesktopWidget>
 #include <QDir>
@@ -12,11 +11,13 @@
 #include "threeDdialog.h"
 #include "TableItemDelegate.h"
 #include <iostream>
+#include <QMessageBox>
 #include "SpotDiagramWidget.h"
 #include "FieldViewWidget.h"
 #include "MTFViewWidget.h"
 #include "FootprintWidget.h"
 #include "IESLoader.h"
+#include "newfiledialog.h"
 
 MainWindow::MainWindow(QWidget* parent)
     : QMainWindow(parent),
@@ -25,10 +26,11 @@ MainWindow::MainWindow(QWidget* parent)
 {
     ui->setupUi(this);
     setupHeaderEditing();
-
+    m_fileState = eFile_clean;
     m_isoDialog = new ISOLuxDialog();
     m_3dDialog = new ThreeDDialog();
     m_polarDialog = new PolarDialog();
+    m_newFileDialog = new NewFileDialog();
 
     ui->action3DCurves->setIcon(QIcon(":/resources/threeDcurves.png"));
     ui->actionIsoLuxCurves->setIcon(QIcon(":/resources/isoluxcurves.png"));
@@ -153,6 +155,20 @@ MainWindow::MainWindow(QWidget* parent)
     value = connect(ui->actionfov, &QAction::triggered, this, &MainWindow::showFov);
     connect(ui->actionTrace, &QAction::triggered, this, &MainWindow::showTrace);
     connect(ui->actionMTF, &QAction::triggered, this, &MainWindow::showMTF);
+
+
+    connect(m_newFileDialog, SIGNAL(signalCreateTypeC_0(QString,EIES_VType)), this, SLOT(slotCreateTypeC_0(QString, EIES_VType)));
+    connect(m_newFileDialog, SIGNAL(signalCreateTypeC_0_90(QString, EIES_VType)), this, SLOT(slotCreateTypeC_0_90(QString, EIES_VType)));
+    connect(m_newFileDialog, SIGNAL(signalCreateTypeC_0_180(QString, EIES_VType)), this, SLOT(slotCreateTypeC_0_180(QString, EIES_VType)));
+    connect(m_newFileDialog, SIGNAL(signalCreateTypeC_90_270(QString, EIES_VType)), this, SLOT(slotCreateTypeC_90_270(QString, EIES_VType)));
+    connect(m_newFileDialog, SIGNAL(signalCreateTypeC_0_360(QString, EIES_VType)), this, SLOT(slotCreateTypeC_0_360(QString, EIES_VType)));
+    connect(m_newFileDialog, SIGNAL(signalCreateTypeB_m90_p90(QString, EIES_VType)), this, SLOT(slotCreateTypeB_m90_p90(QString, EIES_VType)));
+    connect(m_newFileDialog, SIGNAL(signalCreateTypeB_0_90(QString, EIES_VType)), this, SLOT(slotCreateTypeB_0_90(QString, EIES_VType)));
+    connect(m_newFileDialog, SIGNAL(signalCreateTypeA_m90_p90(QString, EIES_VType)), this, SLOT(slotCreateTypeA_m90_p90(QString, EIES_VType)));
+    connect(m_newFileDialog, SIGNAL(signalCreateTypeA_0_90(QString, EIES_VType)), this, SLOT(slotCreateTypeA_0_90(QString, EIES_VType)));
+
+    //default
+    slotCreateTypeC_0_360("IESNA:LM-63-2002", eC_V180);
 }
 
 MainWindow::~MainWindow() { delete ui; }
@@ -168,6 +184,7 @@ void MainWindow::slot_heditor()
     else
     {
         ui->tableWidget->setHorizontalHeaderItem(logicalIndex, new QTableWidgetItem(m_heditor->text()));
+        m_fileState = eFile_dirty;
     }
     m_heditor->clearFocus();
     m_heditor->close();
@@ -187,6 +204,7 @@ void MainWindow::slot_veditor()
     else
     {
         ui->tableWidget->setVerticalHeaderItem(logicalIndex, new QTableWidgetItem(m_veditor->text()));
+        m_fileState = eFile_dirty;
     }
     m_veditor->clearFocus();
     m_veditor->close();
@@ -275,15 +293,15 @@ void MainWindow::slotDoubleValueChanged()
 
     double value = index.data(Qt::DisplayRole).toDouble();
 
+    m_fileState = eFile_dirty;
     //IESLoader::instance().light.candela_hv[col][row] = value;
 }
 void MainWindow::addRow()
 {
     int currentRow = ui->tableWidget->currentRow();
     if (currentRow == -1) {
-        currentRow = ui->tableWidget->rowCount();
+        currentRow = 0;
     }
-
 
     // 保存行数据到剪贴板
     rowClipboard.clear();
@@ -318,15 +336,30 @@ void MainWindow::addRow()
         QTableWidgetItem* item = new QTableWidgetItem(rowClipboard[col]);
         ui->tableWidget->setItem(currentRow, col, item);
     }
-
+    m_fileState = eFile_dirty;
     //if (autoSortEnabled) {
     //    sortTableByHorizontalAngle();
     //    sortTableByVerticalAngle();
     //}
 }
 
+
+void MainWindow::NewHeader(tiny_ies<double>::light& light)
+{
+    std::string header;
+    light.properties.emplace("TESTLAB","Test laboratory");
+    light.properties.emplace("ISSUEDATE", "Creation date of this file");
+    light.properties.emplace("TEST", "Test report number and laboratory");
+    light.properties.emplace("MANUFAC", "Manufacturer of luminaire");
+    light.properties.emplace("LUMCAT", "Luminaire catalog number");
+    light.properties.emplace("LUMINAIRE", "Luminaire description");
+    light.properties.emplace("LAMPCAT", "Lamp catalogue number");
+    light.properties.emplace("LAMP", "Lamp description"); 
+}
 void MainWindow::deleteRow()
 {
+    if (ui->tableWidget->rowCount() <= 2)
+        return;
     int currentRow = ui->tableWidget->currentRow();
     if (currentRow == -1) {
         QMessageBox::warning(this, "Delete Row", "Please select a row to delete.");
@@ -341,13 +374,14 @@ void MainWindow::deleteRow()
     //    ui->tableWidget->removeRow(currentRow);
     //}
     ui->tableWidget->removeRow(currentRow);
+    m_fileState = eFile_dirty;
 }
 
 void MainWindow::addColumn()
 {
     int currentColumn = ui->tableWidget->currentColumn();
     if (currentColumn == -1) {
-        currentColumn = ui->tableWidget->columnCount();
+        currentColumn = 0;
     }
 
     // 保存列数据到剪贴板
@@ -381,10 +415,13 @@ void MainWindow::addColumn()
         QTableWidgetItem* item = new QTableWidgetItem(columnClipboard[row]);
         ui->tableWidget->setItem(row, currentColumn, item);
     }
+    m_fileState = eFile_dirty;
 }
 
 void MainWindow::deleteColumn()
 {
+    if (ui->tableWidget->columnCount() <= 2)
+        return;
     int currentColumn = ui->tableWidget->currentColumn();
     if (currentColumn == -1) {
         QMessageBox::warning(this, "Delete Column", "Please select a column to delete.");
@@ -399,7 +436,10 @@ void MainWindow::deleteColumn()
     //    ui->tableWidget->removeColumn(currentColumn);
     //}
     ui->tableWidget->removeColumn(currentColumn);
+    m_fileState = eFile_dirty;
 }
+
+
 void MainWindow::populateTableFromIESData()
 {
     if (!IESLoader::instance().light.candela_hv.size() > 0) {
@@ -439,6 +479,7 @@ void MainWindow::populateTableFromIESData()
 
     // 调整列宽
     ui->tableWidget->resizeColumnsToContents();
+    m_fileState = eFile_clean;
 }
 
 void MainWindow::moveEvent(QMoveEvent* event)
@@ -470,12 +511,21 @@ void MainWindow::on_actionNew_triggered()
 {
     ui->tableWidget->clear();
 
+    if (m_filepath.isEmpty())
+    {
+        SaveAsFile();
+    }
+    else
+    {
+        SaveFile();
+    }
+
+    m_newFileDialog->init();
+    m_newFileDialog->exec();
 
 
-    addColumn();
-    addColumn();
-    addRow();
-    addRow();
+    m_filepath = "";
+    m_fileState = eFile_clean;
 }
 
 void MainWindow::on_actionLight_triggered()
@@ -494,19 +544,21 @@ void MainWindow::on_actionDark_triggered()
     qApp->setStyleSheet(qss.readAll());
     qss.close();
 }
-void MainWindow::on_actionOpen_triggered()
+
+void MainWindow::fillUI(/*EIESType htype, EIES_VType vtype*/)
 {
-    QString filename;
-    filename = QFileDialog::getOpenFileName(this, QStringLiteral("打开文件"),
-        "./", tr("IES files(*.ies);;All files(*.*)"));
-    QFile file(filename);
-    if (!file.exists())
-        return;
-    IESLoader::instance().loadIES(filename);
-
-    m_filePath = filename;
-
-    ui->textEdit->setText(QString::fromStdString(IESLoader::instance().light.header));
+    std::string header;
+    for (std::map<std::string, std::string>::iterator it = IESLoader::instance().light.properties.begin(); it != IESLoader::instance().light.properties.end(); ++it)
+    {      
+        std::string temp = "[";
+        temp += it->first;
+        temp += "]";
+        temp += " ";
+        temp += it->second;
+        temp += "\n";
+        header += temp;
+    }
+    ui->textEdit->setText(QString::fromStdString(header));
     ui->leNumberOf->setText(QString::number(IESLoader::instance().light.number_lights));
     ui->leLumenPer->setText(QString::number(IESLoader::instance().light.lumens_per_lamp));
     //ui->leCandela->setText(QString::number(IESLoader::instance().light.num));
@@ -518,51 +570,239 @@ void MainWindow::on_actionOpen_triggered()
     ui->leLen->setText(QString::number(IESLoader::instance().light.length));
     ui->leHeight->setText(QString::number(IESLoader::instance().light.height));
 
-    ui->lblTypeA->setEnabled(false);
-    ui->lblTypeB->setEnabled(false);
+    EIESType htype = IESLoader::instance().light.m_IESType;
+    EIES_VType vtype = IESLoader::instance().light.m_vType;
+    switch (htype)
+    {
+    case eC0:
+    {
+        ui->rb0->setEnabled(true);
+        ui->rb0->setChecked(true);
+        ui->rb1->setEnabled(false);
+        ui->rb2->setEnabled(false);
+        ui->rb3->setEnabled(false);
+        ui->rb4->setEnabled(false);
 
-    ui->rb1->setChecked(true);
-    ui->rbV1->setChecked(true);
+        ui->lblTypeC->setEnabled(true);
+        ui->lblTypeA->setEnabled(false);
+        ui->lblTypeB->setEnabled(false);
+
+        ui->stackedWidget->setCurrentWidget(ui->pageC);
+    }
+    break;
+    case eC90:
+    {
+        ui->rb0->setEnabled(false);
+        ui->rb1->setChecked(true);
+        ui->rb1->setEnabled(true);
+        ui->rb2->setEnabled(false);
+        ui->rb3->setEnabled(false);
+        ui->rb4->setEnabled(false);
+
+        ui->lblTypeC->setEnabled(true);
+        ui->lblTypeA->setEnabled(false);
+        ui->lblTypeB->setEnabled(false);
+
+        ui->stackedWidget->setCurrentWidget(ui->pageC);
+    }
+    break;
+    case eC180:
+    {
+        ui->rb0->setEnabled(false);
+        ui->rb1->setEnabled(false);
+        ui->rb2->setEnabled(true);
+        ui->rb2->setChecked(true);
+        ui->rb3->setEnabled(false);
+        ui->rb4->setEnabled(false);
+
+        ui->lblTypeC->setEnabled(true);
+        ui->lblTypeA->setEnabled(false);
+        ui->lblTypeB->setEnabled(false);
+
+        ui->stackedWidget->setCurrentWidget(ui->pageC);
+    }
+    break;
+    case eC270:
+    {
+        ui->rb0->setEnabled(false);
+        ui->rb1->setEnabled(false);
+        ui->rb2->setEnabled(false);
+        ui->rb3->setEnabled(true);
+        ui->rb3->setChecked(true);
+        ui->rb4->setEnabled(false);
+
+        ui->lblTypeC->setEnabled(true);
+        ui->lblTypeA->setEnabled(false);
+        ui->lblTypeB->setEnabled(false);
+
+        ui->stackedWidget->setCurrentWidget(ui->pageC);
+    }
+    break;
+    case eC360:
+    {
+        ui->rb0->setEnabled(false);
+        ui->rb1->setEnabled(false);
+        ui->rb2->setEnabled(false);
+        ui->rb3->setEnabled(false);
+        ui->rb4->setEnabled(true);
+        ui->rb4->setChecked(true);
+
+        ui->lblTypeC->setEnabled(true);
+        ui->lblTypeA->setEnabled(false);
+        ui->lblTypeB->setEnabled(false);
+
+        ui->stackedWidget->setCurrentWidget(ui->pageC);
+    }
+    break;
+    case eB_9090:
+    {
+        ui->lblTypeC->setEnabled(false);
+        ui->lblTypeA->setEnabled(false);
+        ui->lblTypeB->setEnabled(true);
+
+
+        ui->rb0_AB->setEnabled(false);
+        ui->rb1_AB->setChecked(true);
+        ui->rb1_AB->setEnabled(true);
+
+        ui->stackedWidget->setCurrentWidget(ui->page_AB);
+    }
+    break;
+    case eB090:
+    {
+        ui->lblTypeC->setEnabled(false);
+        ui->lblTypeA->setEnabled(false);
+        ui->lblTypeB->setEnabled(true);
+
+        ui->rb1_AB->setEnabled(false);
+        ui->rb0_AB->setChecked(true);
+        ui->rb0_AB->setEnabled(true);
+
+        ui->stackedWidget->setCurrentWidget(ui->page_AB);
+    }
+    break;
+    case eA_9090:
+    {
+        ui->lblTypeC->setEnabled(false);
+        ui->lblTypeA->setEnabled(true);
+        ui->lblTypeB->setEnabled(false);
+
+        ui->rb0_AB->setEnabled(false);
+        ui->rb1_AB->setChecked(true);
+        ui->rb1_AB->setEnabled(true);
+
+        ui->stackedWidget->setCurrentWidget(ui->page_AB);
+    }
+    break;
+    case eA090:
+    {
+        ui->lblTypeC->setEnabled(false);
+        ui->lblTypeA->setEnabled(true);
+        ui->lblTypeB->setEnabled(false);
+
+        ui->rb1_AB->setEnabled(false);
+        ui->rb0_AB->setChecked(true);
+        ui->rb0_AB->setEnabled(true);
+
+        ui->stackedWidget->setCurrentWidget(ui->page_AB);
+    }
+    default:
+        break;
+    }
+    switch (vtype)
+    {
+    case eC_V180:
+    {
+        ui->rbV0->setCheckable(false);
+        ui->rbV2->setCheckable(false);
+        ui->rbV1->setCheckable(true);
+        ui->rbV1->setChecked(true);
+    }
+    break;
+    case eC_V90:
+    {
+        ui->rbV0->setCheckable(true);
+        ui->rbV0->setChecked(true);
+        ui->rbV2->setCheckable(false);
+        ui->rbV1->setCheckable(false);
+    }
+    break;
+    case eC_V90_180:
+    {
+        ui->rbV2->setCheckable(true);
+        ui->rbV2->setChecked(true);
+        ui->rbV0->setCheckable(false);
+        ui->rbV1->setCheckable(false);
+    }
+        break;
+    case eB_V90:
+    case eA_V90:
+    {
+        ui->rbV1_AB->setCheckable(true);
+        ui->rbV1_AB->setChecked(true);
+        ui->rbV0_AB->setChecked(false);
+        ui->rbV0_AB->setCheckable(false);
+    }
+    break;
+    case eB_V_90_90:
+    case eA_V_90_90:
+    {
+        ui->rbV0_AB->setCheckable(true);
+        ui->rbV0_AB->setChecked(true);
+        ui->rbV1_AB->setChecked(false);
+        ui->rbV1_AB->setCheckable(false);
+    }
+        break;
+    }
+
     ui->rbFeet->setChecked(true);
+}
+void MainWindow::on_actionOpen_triggered()
+{
+    QString filename;
+    filename = QFileDialog::getOpenFileName(this, QStringLiteral("打开文件"),
+        "./", tr("IES files(*.ies);;All files(*.*)"));
+    QFile file(filename);
+    if (!file.exists())
+        return;
+    IESLoader::instance().loadIES(filename);
 
-    ui->rb0->setEnabled(false);
-    ui->rb2->setEnabled(false);
-    ui->rb3->setEnabled(false);
-    ui->rb4->setEnabled(false);
 
-    ui->rbV0->setCheckable(false);
-    ui->rbV2->setCheckable(false);
+    fillUI();
 
     populateTableFromIESData();
+
+    m_fileState = eFile_clean;
+    m_filepath = filename;
 }
 void MainWindow::on_actionSave_triggered()
 {
-    tiny_ies<double>::light light =
-        IESLoader::instance().light;
-    // static bool write_ies(const std::string& filename, const light& ies, const uint32_t precision = std::numeric_limits<T>::max_digits10) 
-    sortTable(true);
-    light.candela_hv = getIntensityData();
-    light.horizontal_angles = getHorizontalAngles();
-    light.vertical_angles = getVerticalAngles();
-    light.number_horizontal_angles = light.horizontal_angles.size();
-    light.number_vertical_angles = light.vertical_angles.size();
-    light.candela.clear();
-    for (uint32_t i = 0; i < light.number_horizontal_angles; i++) {
-        for (uint32_t j = 0; j < light.number_vertical_angles; j++)
-        {
-            light.candela.push_back(light.candela_hv[j][i] / light.multiplier);
-        }
-    }
-    QFile file(m_filePath);
+    QFile file(m_filepath);
     if (file.exists())
     {
-        tiny_ies<double>::write_ies(m_filePath.toStdString(), light);
+        tiny_ies<double>::light light =
+            IESLoader::instance().light;
+        // static bool write_ies(const std::string& filename, const light& ies, const uint32_t precision = std::numeric_limits<T>::max_digits10) 
+        sortTable(true);
+        light.candela_hv = getIntensityData();
+        light.horizontal_angles = getHorizontalAngles();
+        light.vertical_angles = getVerticalAngles();
+        light.number_horizontal_angles = light.horizontal_angles.size();
+        light.number_vertical_angles = light.vertical_angles.size();
+        light.candela.clear();
+        for (uint32_t i = 0; i < light.number_horizontal_angles; i++) {
+            for (uint32_t j = 0; j < light.number_vertical_angles; j++)
+            {
+                light.candela.push_back(light.candela_hv[j][i] / light.multiplier);
+            }
+        }
+        tiny_ies<double>::write_ies(m_filepath.toStdString(), light);
     }
     else
     {
         on_actionSave_As_triggered();
     }
-   
+    m_fileState = eFile_clean;
 }
 
 void MainWindow::on_actionSave_As_triggered()
@@ -581,15 +821,88 @@ void MainWindow::on_actionSave_As_triggered()
     light.number_horizontal_angles = light.horizontal_angles.size();
     light.number_vertical_angles = light.vertical_angles.size();
     light.candela.clear();
-    for (uint32_t i = 0; i < light.number_horizontal_angles; i++) {  
+    for (uint32_t i = 0; i < light.number_horizontal_angles; i++) {
         for (uint32_t j = 0; j < light.number_vertical_angles; j++)
         {
             light.candela.push_back(light.candela_hv[j][i] / light.multiplier);
         }
     }
     tiny_ies<double>::write_ies(filepath.toStdString(), light);
+    m_fileState = eFile_clean;
+    m_filepath = filepath;
 }
+void MainWindow::SaveFile()
+{
+    switch (m_fileState)
+    {
+    case eFile_clean:
+    {
+       
+    }
+    break;
+    case eFile_dirty:
+    {
+        if (m_filepath.isEmpty())
+        {
+            QMessageBox::StandardButton reply;
+            reply = QMessageBox::warning(this, "IESNA LM-63", QString("Save changes to %1 ?").arg(m_filepath),
+                QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel,
+                QMessageBox::Yes);
 
+            if (reply == QMessageBox::Yes) {
+                // Handle Save action
+                on_actionSave_triggered();
+            }
+            else if (reply == QMessageBox::No) {
+                // Handle Discard action
+
+            }
+            else if (reply == QMessageBox::Cancel) {
+                // Handle Cancel action
+            }
+        }
+    }
+    break;
+    default:
+        break;
+    }
+}
+void MainWindow::SaveAsFile()
+{
+    switch (m_fileState)
+    {
+    case eFile_clean:
+    {
+       
+    }
+    break;
+    case eFile_dirty:
+    {
+        if (m_filepath.isEmpty())
+        {
+            QMessageBox::StandardButton reply;
+            reply = QMessageBox::warning(this, "IESNA LM-63", "Save changes",
+                QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel,
+                QMessageBox::Yes);
+
+            if (reply == QMessageBox::Yes) {
+                // Handle Save action
+                on_actionSave_As_triggered();
+            }
+            else if (reply == QMessageBox::No) {
+                // Handle Discard action
+
+            }
+            else if (reply == QMessageBox::Cancel) {
+                // Handle Cancel action
+            }
+        }
+    }
+    break;
+    default:
+        break;
+    }
+}
 void MainWindow::on_actionExit_triggered()
 {
     close();
@@ -869,4 +1182,599 @@ void MainWindow::showDistort()
     if (filepath.isEmpty()) {
         return;
     }
+}
+
+
+void MainWindow::slotCreateTypeC_0(QString version, EIES_VType vtype)
+{
+    tiny_ies<double>::light light;
+    light.m_IESType = eC0;
+    light.m_vType = vtype;
+    light.ies_version = version.toStdString();
+    light.photometric_type = 1;
+    light.horizontal_angles.push_back(0);
+    switch (vtype)
+    {
+    case eC_V90:
+    {
+        light.vertical_angles.push_back(0);
+        light.vertical_angles.push_back(90);
+    }
+    break;
+    case eC_V180:
+    {
+        light.vertical_angles.push_back(0);
+        light.vertical_angles.push_back(180);
+    }
+    break;
+    case eC_V90_180:
+    {
+        light.vertical_angles.push_back(90);
+        light.vertical_angles.push_back(180);
+    }
+    break;
+    default:
+        break;
+    }
+    light.number_horizontal_angles = 1;
+    light.number_vertical_angles = 2;
+    light.multiplier = 1;
+    fillLight(light);
+    light.width = 0;
+    light.height = 0;
+    light.length = 0;
+    light.number_lights = 1;
+    light.lumens_per_lamp = 5000;
+    light.ballast_factor = 1;
+    light.input_watts = 1000;
+    light.future_use = 1;
+    NewHeader(light);
+    IESLoader::instance().light = light;
+    fillUI();
+    populateTableFromIESData();
+}
+
+
+void MainWindow::fillLight(tiny_ies<double>::light& ies_out)
+{
+    ies_out.candela_hv.resize(static_cast<uint64_t>(ies_out.number_horizontal_angles));
+    ies_out.candela.resize(static_cast<uint64_t>(ies_out.number_vertical_angles) * static_cast<uint64_t>(ies_out.number_horizontal_angles));
+    ies_out.max_candela = 0.0;
+    for (uint32_t i = 0; i < ies_out.number_vertical_angles * ies_out.number_horizontal_angles; i++) {
+        ies_out.candela[i] = 1000;
+        ies_out.max_candela = std::max(ies_out.max_candela, ies_out.candela[i]);
+    }
+    for (uint32_t i = 0; i < ies_out.number_horizontal_angles; i++) {
+        std::vector<double> h;
+        for (uint32_t j = 0; j < ies_out.number_vertical_angles; j++)
+        {
+            h.push_back(ies_out.candela[i * ies_out.number_vertical_angles + j] * ies_out.multiplier);
+        }
+        ies_out.candela_hv[i] = h;
+    }
+
+    switch (ies_out.photometric_type)
+    {
+    case 1:
+    {
+        if (ies_out.horizontal_angles.size() > 0)
+        {
+            int maxAngle = ies_out.horizontal_angles[ies_out.horizontal_angles.size() - 1];
+            switch (maxAngle)
+            {
+            case 0:
+                ies_out.m_IESType = eC0;
+                break;
+            case 90:
+                ies_out.m_IESType = eC90;
+                break;
+            case 180:
+                ies_out.m_IESType = eC180;
+                break;
+            case 270:
+                ies_out.m_IESType = eC270;
+                break;
+            case 360:
+                ies_out.m_IESType = eC360;
+                break;
+            default:
+                break;
+            }
+
+            int minV = ies_out.vertical_angles[/*ies_out.vertical_angles.size() - 1*/0];
+            int maxV = ies_out.vertical_angles[ies_out.vertical_angles.size() - 1];
+            switch (minV)
+            {
+            case 0:
+            {
+                switch (maxV)
+                {
+                case 90:
+                    ies_out.m_vType = eC_V90;
+                    break;
+                case 180:
+                    ies_out.m_vType = eC_V180;
+                    break;
+                default:
+                    break;
+                }
+            }
+            break;
+            case 90:
+            {
+                switch (maxV)
+                {
+                case 180:
+                    ies_out.m_vType = eC_V90_180;
+                    break;
+                default:
+                    break;
+                }
+            }
+            break;
+            default:
+                break;
+            }
+        }
+    }
+    break;
+    case 2:
+    {
+        if (ies_out.horizontal_angles.size() > 0)
+        {
+            int maxAngle = ies_out.horizontal_angles[ies_out.horizontal_angles.size() - 1];
+            int minAngle = ies_out.horizontal_angles[0];
+            switch (minAngle)
+            {
+            case 0:
+                ies_out.m_IESType = eB090;
+                break;
+            case -90:
+                ies_out.m_IESType = eB_9090;
+                break;
+            default:
+                break;
+            }
+        }
+
+        if (ies_out.vertical_angles.size() > 0)
+        {
+            int minV = ies_out.vertical_angles[/*ies_out.vertical_angles.size() - 1*/0];
+            switch (minV)
+            {
+            case 0:
+            {
+                ies_out.m_vType = eB_V90;
+            }
+            break;
+            case -90:
+            {
+                ies_out.m_vType = eB_V_90_90;
+            }
+            break;
+            default:
+                break;
+            }
+        }
+
+    }
+    break;
+    case 3:
+    {
+        if (ies_out.horizontal_angles.size() > 0)
+        {
+            int maxAngle = ies_out.horizontal_angles[ies_out.horizontal_angles.size() - 1];
+            int minAngle = ies_out.horizontal_angles[0];
+            switch (minAngle)
+            {
+            case 0:
+                ies_out.m_IESType = eA090;
+                break;
+            case -90:
+                ies_out.m_IESType = eA_9090;
+                break;
+            default:
+                break;
+            }
+        }
+
+        if (ies_out.vertical_angles.size() > 0)
+        {
+            int minV = ies_out.vertical_angles[/*ies_out.vertical_angles.size() - 1*/0];
+            switch (minV)
+            {
+            case 0:
+            {
+                ies_out.m_vType = eA_V90;
+            }
+            break;
+            case -90:
+            {
+                ies_out.m_vType = eA_V_90_90;
+            }
+            break;
+            default:
+                break;
+            }
+        }
+    }
+    break;
+    default:
+        break;
+    }
+}
+void MainWindow::slotCreateTypeC_0_90(QString version, EIES_VType vtype)
+{
+    tiny_ies<double>::light light;
+    light.m_IESType = eC90;
+    light.m_vType = vtype;
+    light.horizontal_angles.push_back(0);
+    light.horizontal_angles.push_back(90);
+    light.ies_version = version.toStdString();
+    light.photometric_type = 1;
+    switch (vtype)
+    {
+    case eC_V90:
+    {
+        light.vertical_angles.push_back(0);
+        light.vertical_angles.push_back(90);
+    }
+    break;
+    case eC_V180:
+    {
+        light.vertical_angles.push_back(0);
+        light.vertical_angles.push_back(180);
+    }
+        break;
+    case eC_V90_180:
+    {
+        light.vertical_angles.push_back(90);
+        light.vertical_angles.push_back(180);
+    }
+        break;
+    default:
+        break;
+    }
+    light.number_horizontal_angles = 2;
+    light.number_vertical_angles = 2;
+    light.multiplier = 1;
+    fillLight(light);
+    light.width = 0;
+    light.height = 0;
+    light.length = 0;
+    light.number_lights = 1;
+    light.lumens_per_lamp = 5000;
+    light.ballast_factor = 1;
+    light.input_watts = 1000;
+    light.future_use = 1;
+    NewHeader(light);
+    IESLoader::instance().light = light;
+    fillUI();
+    populateTableFromIESData();
+}
+void MainWindow::slotCreateTypeC_0_180(QString version, EIES_VType vtype)
+{
+    tiny_ies<double>::light light;
+    light.m_IESType = eC180;
+    light.m_vType = vtype;
+    light.ies_version = version.toStdString();
+    light.photometric_type = 1;
+    light.horizontal_angles.push_back(0);
+    light.horizontal_angles.push_back(180);
+    light.ies_version = version.toStdString();
+    switch (vtype)
+    {
+    case eC_V90:
+    {
+        light.vertical_angles.push_back(0);
+        light.vertical_angles.push_back(90);
+    }
+    break;
+    case eC_V180:
+    {
+        light.vertical_angles.push_back(0);
+        light.vertical_angles.push_back(180);
+    }
+    break;
+    case eC_V90_180:
+    {
+        light.vertical_angles.push_back(90);
+        light.vertical_angles.push_back(180);
+    }
+    break;
+    default:
+        break;
+    }
+    light.number_horizontal_angles = 2;
+    light.number_vertical_angles = 2;
+    light.multiplier = 1;
+    fillLight(light);
+    light.width = 0;
+    light.height = 0;
+    light.length = 0;
+    light.number_lights = 1;
+    light.lumens_per_lamp = 5000;
+    light.ballast_factor = 1;
+    light.input_watts = 1000;
+    light.future_use = 1;
+    NewHeader(light);
+    IESLoader::instance().light = light;
+    fillUI();
+    populateTableFromIESData();
+}
+void MainWindow::slotCreateTypeC_90_270(QString version, EIES_VType vtype)
+{
+    tiny_ies<double>::light light;
+    light.m_IESType = eC270;
+    light.m_vType = vtype;
+    light.ies_version = version.toStdString();
+    light.horizontal_angles.push_back(90);
+    light.horizontal_angles.push_back(270);
+    light.ies_version = version.toStdString();
+    light.photometric_type = 1;
+    switch (vtype)
+    {
+    case eC_V90:
+    {
+        light.vertical_angles.push_back(0);
+        light.vertical_angles.push_back(90);
+    }
+    break;
+    case eC_V180:
+    {
+        light.vertical_angles.push_back(0);
+        light.vertical_angles.push_back(180);
+    }
+    break;
+    case eC_V90_180:
+    {
+        light.vertical_angles.push_back(90);
+        light.vertical_angles.push_back(180);
+    }
+    break;
+    default:
+        break;
+    }
+    light.number_horizontal_angles = 2;
+    light.number_vertical_angles = 2;
+    light.multiplier = 1;
+    fillLight(light);
+    light.width = 0;
+    light.height = 0;
+    light.length = 0;
+    light.number_lights = 1;
+    light.lumens_per_lamp = 5000;
+    light.ballast_factor = 1;
+    light.input_watts = 1000;
+    light.future_use = 1;
+    NewHeader(light);
+    IESLoader::instance().light = light;
+    fillUI();
+    populateTableFromIESData();
+}
+void MainWindow::slotCreateTypeC_0_360(QString version, EIES_VType vtype)
+{
+    tiny_ies<double>::light light;
+    light.m_IESType = eC360;
+    light.m_vType = vtype;
+    light.ies_version = version.toStdString();
+    light.horizontal_angles.push_back(0);
+    light.horizontal_angles.push_back(360);
+    light.ies_version = version.toStdString();
+    light.photometric_type = 1;
+    switch (vtype)
+    {
+    case eC_V90:
+    {
+        light.vertical_angles.push_back(0);
+        light.vertical_angles.push_back(90);
+    }
+    break;
+    case eC_V180:
+    {
+        light.vertical_angles.push_back(0);
+        light.vertical_angles.push_back(180);
+    }
+    break;
+    case eC_V90_180:
+    {
+        light.vertical_angles.push_back(90);
+        light.vertical_angles.push_back(180);
+    }
+    break;
+    default:
+        break;
+    }
+    light.number_horizontal_angles = 2;
+    light.number_vertical_angles = 2;
+    light.multiplier = 1;
+    fillLight(light);
+    light.width = 0;
+    light.height = 0;
+    light.length = 0;
+    light.number_lights = 1;
+    light.lumens_per_lamp = 5000;
+    light.ballast_factor = 1;
+    light.input_watts = 1000;
+    light.future_use = 1;
+    NewHeader(light);
+    IESLoader::instance().light = light;
+    fillUI();
+    populateTableFromIESData();
+}
+void MainWindow::slotCreateTypeB_m90_p90(QString version, EIES_VType vtype)
+{
+    tiny_ies<double>::light light;
+    light.m_IESType = eB_9090;
+    light.m_vType = vtype;
+    light.ies_version = version.toStdString();
+    light.photometric_type = 2;
+    light.horizontal_angles.push_back(-90);
+    light.horizontal_angles.push_back(90);
+    light.ies_version = version.toStdString();
+    switch (vtype)
+    {
+    case eB_V90:
+    {
+        light.vertical_angles.push_back(0);
+        light.vertical_angles.push_back(90);
+    }
+    break;
+    case eB_V_90_90:
+    {
+        light.vertical_angles.push_back(-90);
+        light.vertical_angles.push_back(90);
+    }
+    break;
+    default:
+        break;
+    }
+    light.number_horizontal_angles = 2;
+    light.number_vertical_angles = 2;
+    light.multiplier = 1;
+    fillLight(light);
+    light.width = 0;
+    light.height = 0;
+    light.length = 0;
+    light.number_lights = 1;
+    light.lumens_per_lamp = 5000;
+    light.ballast_factor = 1;
+    light.input_watts = 1000;
+    light.future_use = 1;
+    NewHeader(light);
+    IESLoader::instance().light = light;
+    fillUI();
+    populateTableFromIESData();
+}
+void MainWindow::slotCreateTypeB_0_90(QString version, EIES_VType vtype)
+{
+    tiny_ies<double>::light light;
+    light.m_IESType = eB090;
+    light.m_vType = vtype;
+    light.ies_version = version.toStdString();
+    light.photometric_type = 2;
+    light.horizontal_angles.push_back(0);
+    light.horizontal_angles.push_back(90);
+    light.ies_version = version.toStdString();
+    switch (vtype)
+    {
+    case eB_V90:
+    {
+        light.vertical_angles.push_back(0);
+        light.vertical_angles.push_back(90);
+    }
+    break;
+    case eB_V_90_90:
+    {
+        light.vertical_angles.push_back(-90);
+        light.vertical_angles.push_back(90);
+    }
+    break;
+    default:
+        break;
+    }
+    light.number_horizontal_angles = 2;
+    light.number_vertical_angles = 2;
+    light.multiplier = 1;
+    fillLight(light);
+    light.width = 0;
+    light.height = 0;
+    light.length = 0;
+    light.number_lights = 1;
+    light.lumens_per_lamp = 5000;
+    light.ballast_factor = 1;
+    light.input_watts = 1000;
+    light.future_use = 1;
+    NewHeader(light);
+    IESLoader::instance().light = light;
+    fillUI();
+    populateTableFromIESData();
+}
+void MainWindow::slotCreateTypeA_m90_p90(QString version, EIES_VType vtype)
+{
+    tiny_ies<double>::light light;
+    light.m_IESType = eA_9090;
+    light.m_vType = vtype;
+    light.ies_version = version.toStdString();
+    light.photometric_type = 3;
+    light.horizontal_angles.push_back(-90);
+    light.horizontal_angles.push_back(90);
+    light.ies_version = version.toStdString();
+    switch (vtype)
+    {
+    case eA_V90:
+    {
+        light.vertical_angles.push_back(0);
+        light.vertical_angles.push_back(90);
+    }
+    break;
+    case eA_V_90_90:
+    {
+        light.vertical_angles.push_back(-90);
+        light.vertical_angles.push_back(90);
+    }
+    break;
+    default:
+        break;
+    }
+    light.number_horizontal_angles = 2;
+    light.number_vertical_angles = 2;
+    light.multiplier = 1;
+    fillLight(light);
+    light.width = 0;
+    light.height = 0;
+    light.length = 0;
+    light.number_lights = 1;
+    light.lumens_per_lamp = 5000;
+    light.ballast_factor = 1;
+    light.input_watts = 1000;
+    light.future_use = 1;
+    NewHeader(light);
+    IESLoader::instance().light = light;
+    fillUI();
+    populateTableFromIESData();
+}
+void MainWindow::slotCreateTypeA_0_90(QString version , EIES_VType vtype)
+{
+    tiny_ies<double>::light light;
+    light.m_IESType = eA090;
+    light.m_vType = vtype;
+    light.ies_version = version.toStdString();
+    light.photometric_type = 3;
+    light.horizontal_angles.push_back(0);
+    light.horizontal_angles.push_back(90);
+    light.ies_version = version.toStdString();
+    switch (vtype)
+    {
+    case eA_V90:
+    {
+        light.vertical_angles.push_back(0);
+        light.vertical_angles.push_back(90);
+    }
+    break;
+    case eA_V_90_90:
+    {
+        light.vertical_angles.push_back(-90);
+        light.vertical_angles.push_back(90);
+    }
+    break;
+    default:
+        break;
+    }
+    light.number_horizontal_angles = 2;
+    light.number_vertical_angles = 2;
+    light.multiplier = 1;
+    fillLight(light);
+    light.width = 0;
+    light.height = 0;
+    light.length = 0;
+    light.number_lights = 1;
+    light.lumens_per_lamp = 5000;
+    light.ballast_factor = 1;
+    light.input_watts = 1000;
+    light.future_use = 1;
+    NewHeader(light);
+    IESLoader::instance().light = light;
+    fillUI();
+    populateTableFromIESData();
 }

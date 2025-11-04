@@ -350,7 +350,7 @@ void IESLoader::loadIES(QString filename)
 
     switch (light.m_IESType)
     {
-    case tiny_ies<double>::eC90:
+    case eC90:
     {
         QVector<double> phis1;
         QVector<double> phis2;
@@ -393,7 +393,7 @@ void IESLoader::loadIES(QString filename)
         newThetas = linspace(0, m_thetas_size, light.candela_hv[0].size());
     }
     break;
-    case tiny_ies<double>::eC180:
+    case eC180:
     {
         QVector<double> phis1;
         QVector<double> phis2;
@@ -418,7 +418,7 @@ void IESLoader::loadIES(QString filename)
         newThetas = linspace(0, m_thetas_size, light.candela_hv[0].size());
     }
     break;
-    case tiny_ies<double>::eC360:
+    case eC360:
     {
         newPhis = light.horizontal_angles;
         newThetas = light.vertical_angles;

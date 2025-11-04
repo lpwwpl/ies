@@ -5,12 +5,18 @@
 #include <QTranslator>
 
 #include "ui_mainwindow.h"
-
+#include "tiny_ies.hpp"
 
 class ISOLuxDialog;
 class PolarDialog;
 class ThreeDDialog;
+class NewFileDialog;
 
+enum EFileState
+{
+    eFile_clean=0,
+    eFile_dirty,
+};
 QT_BEGIN_NAMESPACE
 namespace Ui
 {
@@ -18,8 +24,8 @@ namespace Ui
 }
 QT_END_NAMESPACE
 
-
-
+enum EIESType;
+enum EIES_VType;
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
@@ -60,7 +66,14 @@ public:
     void sortHorizontalAngles();
     void sortVerticalAngles();
     void rearrangeTableDataAfterVerticalSort(const std::vector<int>& newRowOrder);
+    void SaveAsFile();
+    void SaveFile();
 
+    
+    void NewHeader(tiny_ies<double>::light& light);
+
+    void fillUI(/*EIESType,EIES_VType*/);
+    void fillLight(tiny_ies<double>::light& light);
 public Q_SLOTS:
     void on_actionIsoLuxCurves_triggered();
     void on_actionPolarCurves_triggered();
@@ -83,6 +96,15 @@ public Q_SLOTS:
     void sortTable(bool);
     void showContextMenu(const QPoint& pos);
 
+    void slotCreateTypeC_0(QString, EIES_VType);
+    void slotCreateTypeC_0_90(QString, EIES_VType);
+    void slotCreateTypeC_0_180(QString, EIES_VType);
+    void slotCreateTypeC_90_270(QString, EIES_VType);
+    void slotCreateTypeC_0_360(QString, EIES_VType);
+    void slotCreateTypeB_m90_p90(QString, EIES_VType);
+    void slotCreateTypeB_0_90(QString, EIES_VType);
+    void slotCreateTypeA_m90_p90(QString, EIES_VType);
+    void slotCreateTypeA_0_90(QString, EIES_VType);
 
     void showSpot();
     void showTrace();
@@ -104,16 +126,20 @@ private:
     ISOLuxDialog* m_isoDialog;
     PolarDialog* m_polarDialog;
     ThreeDDialog* m_3dDialog;
+    NewFileDialog* m_newFileDialog;
 
     QLineEdit* m_heditor;
     QLineEdit* m_veditor;
     int logicalIndex;
 
-    QString m_filePath;
+
     QAction* autoSortAction;
     QAction* sortAction;
     bool autoSortEnabled;
     QString m_editor_old_value;
     bool m_editor_focusOut;
+
+    EFileState m_fileState;
+    QString m_filepath;
 };
 #endif // MAINWINDOW_H
