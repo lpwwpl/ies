@@ -78,8 +78,120 @@ bool IESLoader::parseIESFile(const QString& filename)
 
 
 }
+void IESLoader::getBIntensityVectorized(int numThetas , int numPhis )
+{
+    newThetas_all = linspace(-90, 90, numThetas);
+    newPhis_all = linspace(-90, 90, numPhis);
+    newValues_all.resize(newPhis_all.size());
 
-void IESLoader::getIntensityVectorized(int numThetas, int numPhis) {
+
+    std::pair<std::vector<std::vector<double>>, std::vector<std::vector<double>>> p_t = meshgrid(newThetas_all, newPhis_all);
+    auto tgrid = p_t.first;
+    auto pgrid = p_t.second;
+
+    tflat = flatten(tgrid);
+    pflat = flatten(pgrid);
+
+    auto phis_indices = searchsorted(newPhis, pflat, "left");
+    auto theta_indices = searchsorted(newThetas, tflat, "left");
+
+    phis_indices = clip_indices(phis_indices, 1, newPhis.size() - 1);
+    theta_indices = clip_indices(theta_indices, 1, newThetas.size() - 1);
+
+    std::vector<double> phi_weights;
+    std::vector<double> theta_weights;
+    for (long i = 0; i < phis_indices.size(); i++)
+    {
+        double val = (pflat[i] - newPhis[phis_indices[i] - 1]) / (newPhis[phis_indices[i]] - newPhis[phis_indices[i] - 1]);
+        phi_weights.push_back(val);
+    }
+    for (long i = 0; i < theta_indices.size(); i++)
+    {
+        double val = (tflat[i] - newThetas[theta_indices[i] - 1]) / (newThetas[theta_indices[i]] - newThetas[theta_indices[i] - 1]);
+        theta_weights.push_back(val);
+    }
+    std::vector<double> val1;
+    std::vector<double> val2;
+    std::vector<double> finalVal;
+    for (long i = 0; i < phis_indices.size(); i++)
+    {
+        double v1 = newValues[phis_indices[i] - 1][theta_indices[i] - 1] * (1 - phi_weights[i]) + newValues[phis_indices[i]][theta_indices[i] - 1] * phi_weights[i];
+        val1.push_back(v1);
+
+        double v2 = newValues[phis_indices[i] - 1][theta_indices[i]] * (1 - phi_weights[i]) + newValues[phis_indices[i]][theta_indices[i]] * phi_weights[i];
+        val2.push_back(v2);
+    }
+
+    for (long i = 0; i < phis_indices.size(); i++)
+    {
+        double v = val1[i] * (1 - theta_weights[i]) + val2[i] * theta_weights[i];
+        finalVal.push_back(v);
+    }
+    newValues_all = reshape_2d(finalVal, newPhis_all.size(), newThetas_all.size());
+
+    intensity = flatten(newValues_all);
+    get_coords();
+
+
+    for (double theta : newThetas_all) {
+        newThetas_r1.push_back(/*qDegreesToRadians*/(theta));
+    }
+    // 计算theta2: thetas + 180度，转换为弧度，并去掉第一个点
+    if (newThetas_all.size() > 1) {
+        newThetas_r2.reserve(newThetas_all.size() - 1);
+        for (int i = 1; i < newThetas_all.size(); ++i) {
+            newThetas_r2.push_back(/*qDegreesToRadians*/(newThetas_all[i] /*+ 180.0*/));
+        }
+    }
+
+
+    int zeroPhiIndex = findPhiIndex(-90);
+    if (zeroPhiIndex >= 0) {
+        r1 = newValues_all[zeroPhiIndex];
+    }
+    else {
+        qWarning() << "Phi values for 0 degrees not found";
+    }
+
+    // 提取180度方向的光强值，翻转并去掉第一个点
+    int oneEightyPhiIndex = findPhiIndex(90);
+    if (oneEightyPhiIndex >= 0) {
+        r2 = newValues_all[oneEightyPhiIndex];
+        // 翻转数组
+        std::reverse(r2.begin(), r2.end());
+        // 去掉第一个点
+        if (r2.size() > 1) {
+            r2.erase(r2.begin());
+        }
+    }
+    else {
+        qWarning() << "Phi values for 180 degrees not found";
+    }
+
+
+
+    //zeroPhiIndex = findPhiIndex(-90);
+    //if (zeroPhiIndex >= 0) {
+    //    r3 = newValues_all[zeroPhiIndex];
+    //}
+    //else {
+    //    qWarning() << "Phi values for 0 degrees not found";
+    //}
+    //oneEightyPhiIndex = findPhiIndex(90);
+    //if (oneEightyPhiIndex >= 0) {
+    //    r4 = newValues_all[oneEightyPhiIndex];
+    //    // 翻转数组
+    //    std::reverse(r4.begin(), r4.end());
+    //    // 去掉第一个点
+    //    if (r4.size() > 1) {
+    //        r4.erase(r4.begin());
+    //    }
+    //}
+    //else {
+    //    qWarning() << "Phi values for 180 degrees not found";
+    //}
+}
+void IESLoader::getCIntensityVectorized(int numThetas, int numPhis) {
 
     newThetas_all = linspace(0, m_thetas_size, numThetas);
     newPhis_all = linspace(0, m_phis_size, numPhis);
@@ -132,13 +244,76 @@ void IESLoader::getIntensityVectorized(int numThetas, int numPhis) {
 
     intensity = flatten(newValues_all);
     get_coords();
+
+
+
+
+    // c0 - c180
+    for (double theta : newThetas_all) {
+        newThetas_r1.push_back(/*qDegreesToRadians*/(theta));
+    }
+    // 计算theta2: thetas + 180度，转换为弧度，并去掉第一个点
+    if (newThetas_all.size() > 1) {
+        newThetas_r2.reserve(newThetas_all.size() - 1);
+        for (int i = 1; i < newThetas_all.size(); ++i) {
+            newThetas_r2.push_back(/*qDegreesToRadians*/(newThetas_all[i] + 180.0));
+        }
+    }
+
+    // 提取0度方向的光强值
+    int zeroPhiIndex = findPhiIndex(0.0);
+    if (zeroPhiIndex >= 0) {
+        r1 = newValues_all[zeroPhiIndex];
+    }
+    else {
+        qWarning() << "Phi values for 0 degrees not found";
+    }
+
+    // 提取180度方向的光强值，翻转并去掉第一个点
+    int oneEightyPhiIndex = findPhiIndex(180.0);
+    if (oneEightyPhiIndex >= 0) {
+        r2 = newValues_all[oneEightyPhiIndex];
+        // 翻转数组
+        std::reverse(r2.begin(), r2.end());
+        // 去掉第一个点
+        if (r2.size() > 1) {
+            r2.erase(r2.begin());
+        }
+    }
+    else {
+        qWarning() << "Phi values for 180 degrees not found";
+    }
+
+
+    // c90 - c270
+    // 提取0度方向的光强值
+    zeroPhiIndex = findPhiIndex(90);
+    if (zeroPhiIndex >= 0) {
+        r3 = newValues_all[zeroPhiIndex];
+    }
+    else {
+        qWarning() << "Phi values for 0 degrees not found";
+    }
+    oneEightyPhiIndex = findPhiIndex(270);
+    if (oneEightyPhiIndex >= 0) {
+        r4 = newValues_all[oneEightyPhiIndex];
+        // 翻转数组
+        std::reverse(r4.begin(), r4.end());
+        // 去掉第一个点
+        if (r4.size() > 1) {
+            r4.erase(r4.begin());
+        }
+    }
+    else {
+        qWarning() << "Phi values for 180 degrees not found";
+    }
 }
 
 int IESLoader::findThetaIndex(double targetTheta)
 {
     // 规范化phi值到0-360范围
-    targetTheta = std::fmod(targetTheta, 180);
-    if (targetTheta < 0) targetTheta += 180.0;
+    //targetTheta = std::fmod(targetTheta, 180);
+    //if (targetTheta < 0) targetTheta += 180.0;
 
     // 查找最接近的索引
     int closestIndex = -1;
@@ -161,8 +336,8 @@ int IESLoader::findThetaIndex(double targetTheta)
 }
 int IESLoader::findPhiIndex(double targetPhi) {
     // 规范化phi值到0-360范围
-    targetPhi = std::fmod(targetPhi, 360.0);
-    if (targetPhi < 0) targetPhi += 360.0;
+    //targetPhi = std::fmod(targetPhi, 360.0);
+    //if (targetPhi < 0) targetPhi += 360.0;
 
     // 查找最接近的索引
     int closestIndex = -1;
@@ -280,8 +455,8 @@ void IESLoader::get_coords()
 double IESLoader::getCandelaValue(double vertical, double horizontal) 
 {
     // 角度归一化
-    while (horizontal < 0) horizontal += 360;
-    while (horizontal >= 360) horizontal -= 360;
+    //while (horizontal < -90) horizontal += 360;
+    //while (horizontal >= 360) horizontal -= 360;
 
     // 简单的最近邻插值 - 实际应用中应使用双线性插值
     int vIdx = 0, hIdx = 0;
@@ -320,7 +495,7 @@ QVector3D IESLoader::polar_to_cartesian(double theta, double phi,double distance
 
     return QVector3D(x, y, z);
 }
-void IESLoader::loadIES(QString filename)
+void IESLoader::clear()
 {
     newPhis.clear();
     newThetas.clear();
@@ -344,10 +519,26 @@ void IESLoader::loadIES(QString filename)
     r3.clear();
     r4.clear();
 
+    tflat.clear();
+    pflat.clear();
+    coords.clear();
+    intensity.clear();
+}
+void IESLoader::loadIES(QString filename)
+{
+
+    clear();
+
     std::string err_out;
     std::string warn_out;
     tiny_ies<double>::load_ies(filename.toStdString(), err_out, warn_out, light);// ies;
 
+
+    fillData();
+}
+
+void IESLoader::fillData()
+{
     switch (light.m_IESType)
     {
     case eC90:
@@ -391,6 +582,8 @@ void IESLoader::loadIES(QString filename)
         newValues.insert(newValues.end(), vals4.begin(), vals4.end());
 
         newThetas = linspace(0, m_thetas_size, light.candela_hv[0].size());
+
+        getCIntensityVectorized();
     }
     break;
     case eC180:
@@ -416,6 +609,13 @@ void IESLoader::loadIES(QString filename)
         newValues.insert(newValues.end(), vals2.begin(), vals2.end());
 
         newThetas = linspace(0, m_thetas_size, light.candela_hv[0].size());
+
+        getCIntensityVectorized();
+    }
+    break;
+    case eC270:
+    {
+
     }
     break;
     case eC360:
@@ -423,76 +623,106 @@ void IESLoader::loadIES(QString filename)
         newPhis = light.horizontal_angles;
         newThetas = light.vertical_angles;
         newValues = light.candela_hv;
+
+        getCIntensityVectorized();
+    }
+    break;
+    case eB090:
+    {
+        QVector<double> phis1;
+        QVector<double> phis2;
+        for (int i = 0; i < light.horizontal_angles.size(); i++)
+        {
+            phis1.push_back(light.horizontal_angles[i] - 90);
+        }
+        for (int i = 1; i < light.horizontal_angles.size(); i++)
+        {
+            phis2.push_back(light.horizontal_angles[i]);
+        }
+        newPhis.insert(newPhis.end(), phis1.begin(), phis1.end());
+        newPhis.insert(newPhis.end(), phis2.begin(), phis2.end());
+
+        std::vector<std::vector<double>> vals1 = light.candela_hv;
+        std::vector<std::vector<double>> vals2 = light.candela_hv;
+        vals2.pop_back();
+        std::reverse(vals2.begin(), vals2.end()); // 反转整个 vector
+        newValues.insert(newValues.end(), vals1.begin(), vals1.end());
+        newValues.insert(newValues.end(), vals2.begin(), vals2.end());
+
+
+        newThetas = linspace(-90, 90, light.candela_hv[0].size());
+
+        getBIntensityVectorized();
+    }
+    break;
+    case eB_9090:
+    {
+        QVector<double> phis1;
+        //QVector<double> phis2;
+        for (int i = 0; i < light.horizontal_angles.size(); i++)
+        {
+            phis1.push_back(light.horizontal_angles[i]);
+        }
+
+        newPhis.insert(newPhis.end(), phis1.begin(), phis1.end());
+
+        std::vector<std::vector<double>> vals1 = light.candela_hv;
+        newValues.insert(newValues.end(), vals1.begin(), vals1.end());
+        newThetas = linspace(-90, 90, light.candela_hv[0].size());
+
+        getBIntensityVectorized();
+    }
+    break;
+    case eA090:
+    {
+        QVector<double> phis1;
+        //QVector<double> phis2;
+        for (int i = 0; i < light.horizontal_angles.size(); i++)
+        {
+            phis1.push_back(light.horizontal_angles[i]);
+        }
+
+        newPhis.insert(newPhis.end(), phis1.begin(), phis1.end());
+
+        std::vector<std::vector<double>> vals1 = light.candela_hv;
+        newValues.insert(newValues.end(), vals1.begin(), vals1.end());
+        newThetas = linspace(-90, 90, light.candela_hv[0].size());
+
+        getBIntensityVectorized();
+    }
+    break;
+    case eA_9090:
+    {
+        QVector<double> phis1;
+        QVector<double> phis2;
+        for (int i = 0; i < light.horizontal_angles.size(); i++)
+        {
+            phis1.push_back(light.horizontal_angles[i] - 90);
+        }
+        for (int i = 1; i < light.horizontal_angles.size(); i++)
+        {
+            phis2.push_back(light.horizontal_angles[i]);
+        }
+        newPhis.insert(newPhis.end(), phis1.begin(), phis1.end());
+        newPhis.insert(newPhis.end(), phis2.begin(), phis2.end());
+
+        std::vector<std::vector<double>> vals1 = light.candela_hv;
+        std::vector<std::vector<double>> vals2 = light.candela_hv;
+        vals2.pop_back();
+        std::reverse(vals2.begin(), vals2.end()); // 反转整个 vector
+        newValues.insert(newValues.end(), vals1.begin(), vals1.end());
+        newValues.insert(newValues.end(), vals2.begin(), vals2.end());
+
+
+        newThetas = linspace(-90, 90, light.candela_hv[0].size());
+
+        getBIntensityVectorized();
     }
     break;
     default:
         break;
     }
-
-    getIntensityVectorized();
-
-
-    // c0 - c180
-    for (double theta : newThetas_all) {
-        newThetas_r1.push_back(/*qDegreesToRadians*/(theta));
-    }
-    // 计算theta2: thetas + 180度，转换为弧度，并去掉第一个点
-    if (newThetas_all.size() > 1) {
-        newThetas_r2.reserve(newThetas_all.size() - 1);
-        for (int i = 1; i < newThetas_all.size(); ++i) {
-            newThetas_r2.push_back(/*qDegreesToRadians*/(newThetas_all[i] + 180.0));
-        }
-    }
-
-    // 提取0度方向的光强值
-    int zeroPhiIndex = findPhiIndex(0.0);
-    if (zeroPhiIndex >= 0) {
-        r1 = newValues_all[zeroPhiIndex];
-    }
-    else {
-        qWarning() << "Phi values for 0 degrees not found";
-    }
-
-    // 提取180度方向的光强值，翻转并去掉第一个点
-    int oneEightyPhiIndex = findPhiIndex(180.0);
-    if (oneEightyPhiIndex >= 0) {
-        r2 = newValues_all[oneEightyPhiIndex];
-        // 翻转数组
-        std::reverse(r2.begin(), r2.end());
-        // 去掉第一个点
-        if (r2.size() > 1) {
-            r2.erase(r2.begin());
-        }
-    }
-    else {
-        qWarning() << "Phi values for 180 degrees not found";
-    }
-
-
-    // c90 - c270
-    // 提取0度方向的光强值
-    zeroPhiIndex = findPhiIndex(90);
-    if (zeroPhiIndex >= 0) {
-        r3 = newValues_all[zeroPhiIndex];
-    }
-    else {
-        qWarning() << "Phi values for 0 degrees not found";
-    }
-    oneEightyPhiIndex = findPhiIndex(270);
-    if (oneEightyPhiIndex >= 0) {
-        r4 = newValues_all[oneEightyPhiIndex];
-        // 翻转数组
-        std::reverse(r4.begin(), r4.end());
-        // 去掉第一个点
-        if (r4.size() > 1) {
-            r4.erase(r4.begin());
-        }
-    }
-    else {
-        qWarning() << "Phi values for 180 degrees not found";
-    } 
 }
-
 QOpenGLTexture* IESLoader::createTexture()
 {
     if (iesData.isEmpty() || horizontalAngles.isEmpty() || verticalAngles.isEmpty()) {

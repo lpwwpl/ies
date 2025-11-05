@@ -76,9 +76,9 @@ void IESPolarWidget::updateIES()
     graph0_180->data().clear();
     graph90_270->data().clear();
 
+    /// ///////////////////////////////////////////////////////////////
     auto profile0_180 = generateC0C180Profile();
-    // 生成90-270°剖面数据 (C90° - C270°)
-    auto profile90_270 = generateC90C270Profile();
+
 
 
     // 创建0-180°曲线
@@ -92,16 +92,23 @@ void IESPolarWidget::updateIES()
     //graph0_180->setPen(QPen(Qt::red, 2));
     graph0_180->setName("C0° - C180°");
 
-    //// 创建90-270°曲线
-    QVector<double> angles90_270, values90_270;
-    for (const auto& point : profile90_270) {
-        angles90_270.append(point.x());
-        values90_270.append(point.y());
+    // 生成90-270°剖面数据 (C90° - C270°)
+    if (IESLoader::instance().light.m_IESType <= 4)
+    {
+        auto profile90_270 = generateC90C270Profile();
+
+        //// 创建90-270°曲线
+        QVector<double> angles90_270, values90_270;
+        for (const auto& point : profile90_270) {
+            angles90_270.append(point.x());
+            values90_270.append(point.y());
+        }
+        //graph90_270->setBrush(Qt::NoBrush);
+        graph90_270->setData(angles90_270, values90_270);
+        //graph90_270->setPen(QPen(Qt::blue, 2));
+        graph90_270->setName("C90° - C270°");
     }
-    //graph90_270->setBrush(Qt::NoBrush);
-    graph90_270->setData(angles90_270, values90_270);
-    //graph90_270->setPen(QPen(Qt::blue, 2));
-    graph90_270->setName("C90° - C270°");
+
 
 
 

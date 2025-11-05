@@ -431,10 +431,10 @@ struct tiny_ies {
                 switch (minAngle)
                 {
                 case 0:
-                    ies_out.m_IESType = eA090;
+                    ies_out.m_IESType = eB090;
                     break;
                 case -90:
-                    ies_out.m_IESType = eA_9090;
+                    ies_out.m_IESType = eB_9090;
                     break;              
                 default:
                     break;
@@ -472,10 +472,10 @@ struct tiny_ies {
                 switch (minAngle)
                 {
                 case 0:
-                    ies_out.m_IESType = eB090;
+                    ies_out.m_IESType = eA090;
                     break;
                 case -90:
-                    ies_out.m_IESType = eB_9090;
+                    ies_out.m_IESType = eA_9090;
                     break;
                 default:
                     break;

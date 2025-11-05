@@ -411,7 +411,7 @@ double IESIsoWidget::calculateIlluminanceAtPoint(double x, double y, double z)
 
     // 计算水平角度
     double horizontalAngle = atan2(dy, dx) * 180.0 / M_PI;
-    if (horizontalAngle < 0) horizontalAngle += 360;
+    //if (horizontalAngle < 0) horizontalAngle += 360;
 
     // 获取光强值
     double candela = IESLoader::instance().getCandelaValue(verticalAngle, horizontalAngle);
@@ -437,7 +437,7 @@ double IESIsoWidget::calculateIlluminanceAtPoint_(double x, double y, double z)
  
     // 计算水平角度
     double horizontalAngle = atan2(dy, dx) * 180.0 / M_PI;
-    if (horizontalAngle < 0) horizontalAngle += 360;
+    //if (horizontalAngle < 0) horizontalAngle += 360;
 
     // 获取光强值
     double candela = IESLoader::instance().getCandelaValue(verticalAngle, horizontalAngle);

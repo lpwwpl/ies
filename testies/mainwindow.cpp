@@ -355,6 +355,7 @@ void MainWindow::NewHeader(tiny_ies<double>::light& light)
     light.properties.emplace("LUMINAIRE", "Luminaire description");
     light.properties.emplace("LAMPCAT", "Lamp catalogue number");
     light.properties.emplace("LAMP", "Lamp description"); 
+    light.tilt = "NONE";
 }
 void MainWindow::deleteRow()
 {
@@ -1230,6 +1231,8 @@ void MainWindow::slotCreateTypeC_0(QString version, EIES_VType vtype)
     light.future_use = 1;
     NewHeader(light);
     IESLoader::instance().light = light;
+    IESLoader::instance().clear();
+    IESLoader::instance().fillData();
     fillUI();
     populateTableFromIESData();
 }
@@ -1449,6 +1452,8 @@ void MainWindow::slotCreateTypeC_0_90(QString version, EIES_VType vtype)
     light.future_use = 1;
     NewHeader(light);
     IESLoader::instance().light = light;
+    IESLoader::instance().clear();
+    IESLoader::instance().fillData();
     fillUI();
     populateTableFromIESData();
 }
@@ -1499,6 +1504,8 @@ void MainWindow::slotCreateTypeC_0_180(QString version, EIES_VType vtype)
     light.future_use = 1;
     NewHeader(light);
     IESLoader::instance().light = light;
+    IESLoader::instance().clear();
+    IESLoader::instance().fillData();
     fillUI();
     populateTableFromIESData();
 }
@@ -1549,6 +1556,8 @@ void MainWindow::slotCreateTypeC_90_270(QString version, EIES_VType vtype)
     light.future_use = 1;
     NewHeader(light);
     IESLoader::instance().light = light;
+    IESLoader::instance().clear();
+    IESLoader::instance().fillData();
     fillUI();
     populateTableFromIESData();
 }
@@ -1599,6 +1608,8 @@ void MainWindow::slotCreateTypeC_0_360(QString version, EIES_VType vtype)
     light.future_use = 1;
     NewHeader(light);
     IESLoader::instance().light = light;
+    IESLoader::instance().clear();
+    IESLoader::instance().fillData();
     fillUI();
     populateTableFromIESData();
 }
@@ -1643,6 +1654,8 @@ void MainWindow::slotCreateTypeB_m90_p90(QString version, EIES_VType vtype)
     light.future_use = 1;
     NewHeader(light);
     IESLoader::instance().light = light;
+    IESLoader::instance().clear();
+    IESLoader::instance().fillData();
     fillUI();
     populateTableFromIESData();
 }
@@ -1687,6 +1700,8 @@ void MainWindow::slotCreateTypeB_0_90(QString version, EIES_VType vtype)
     light.future_use = 1;
     NewHeader(light);
     IESLoader::instance().light = light;
+    IESLoader::instance().clear();
+    IESLoader::instance().fillData();
     fillUI();
     populateTableFromIESData();
 }
@@ -1731,6 +1746,8 @@ void MainWindow::slotCreateTypeA_m90_p90(QString version, EIES_VType vtype)
     light.future_use = 1;
     NewHeader(light);
     IESLoader::instance().light = light;
+    IESLoader::instance().clear();
+    IESLoader::instance().fillData();
     fillUI();
     populateTableFromIESData();
 }
@@ -1775,6 +1792,8 @@ void MainWindow::slotCreateTypeA_0_90(QString version , EIES_VType vtype)
     light.future_use = 1;
     NewHeader(light);
     IESLoader::instance().light = light;
+    IESLoader::instance().clear();
+    IESLoader::instance().fillData();
     fillUI();
     populateTableFromIESData();
 }

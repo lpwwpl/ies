@@ -26,9 +26,11 @@ public:
 
     // 创建OpenGL纹理
     QOpenGLTexture* createTexture();
-
+    void clear();
+    void fillData();
     void loadIES(QString filename);
-    void getIntensityVectorized(int numThetas = 181, int numPhis = 361);
+    void getCIntensityVectorized(int numThetas = 181, int numPhis = 361);
+    void getBIntensityVectorized(int numThetas = 181, int numPhis = 180);
     int findPhiIndex(double targetPhi);
     int findThetaIndex(double targetTheta);
     std::vector<double> linspace(double start, double end, int num);
