@@ -80,8 +80,8 @@ bool IESLoader::parseIESFile(const QString& filename)
 }
 void IESLoader::getBIntensityVectorized(int numThetas , int numPhis )
 {
-    newThetas_all = linspace(-90, 90, numThetas);
-    newPhis_all = linspace(-90, 90, numPhis);
+    newThetas_all = linspace(0, 180, numThetas);
+    newPhis_all = linspace(0, 180, numPhis);
     newValues_all.resize(newPhis_all.size());
 
 
@@ -145,7 +145,7 @@ void IESLoader::getBIntensityVectorized(int numThetas , int numPhis )
     }
 
 
-    int zeroPhiIndex = findPhiIndex(-90);
+    int zeroPhiIndex = findPhiIndex(0);
     if (zeroPhiIndex >= 0) {
         r1 = newValues_all[zeroPhiIndex];
     }
@@ -154,7 +154,7 @@ void IESLoader::getBIntensityVectorized(int numThetas , int numPhis )
     }
 
     // 提取180度方向的光强值，翻转并去掉第一个点
-    int oneEightyPhiIndex = findPhiIndex(90);
+    int oneEightyPhiIndex = findPhiIndex(180);
     if (oneEightyPhiIndex >= 0) {
         r2 = newValues_all[oneEightyPhiIndex];
         // 翻转数组
@@ -455,8 +455,8 @@ void IESLoader::get_coords()
 double IESLoader::getCandelaValue(double vertical, double horizontal) 
 {
     // 角度归一化
-    //while (horizontal < -90) horizontal += 360;
-    //while (horizontal >= 360) horizontal -= 360;
+    while (horizontal < 0) horizontal += 360;
+    while (horizontal >= 360) horizontal -= 360;
 
     // 简单的最近邻插值 - 实际应用中应使用双线性插值
     int vIdx = 0, hIdx = 0;
@@ -631,92 +631,188 @@ void IESLoader::fillData()
     {
         QVector<double> phis1;
         QVector<double> phis2;
+        QVector<double> phis3;
+        QVector<double> phis4;
         for (int i = 0; i < light.horizontal_angles.size(); i++)
         {
-            phis1.push_back(light.horizontal_angles[i] - 90);
+            phis1.push_back(light.horizontal_angles[i] );
         }
         for (int i = 1; i < light.horizontal_angles.size(); i++)
         {
-            phis2.push_back(light.horizontal_angles[i]);
+            phis2.push_back(light.horizontal_angles[i] + 90);
+            phis3.push_back(light.horizontal_angles[i] + 180);
+            phis4.push_back(light.horizontal_angles[i] + 270);
         }
+       
         newPhis.insert(newPhis.end(), phis1.begin(), phis1.end());
         newPhis.insert(newPhis.end(), phis2.begin(), phis2.end());
+        newPhis.insert(newPhis.end(), phis3.begin(), phis3.end());
+        newPhis.insert(newPhis.end(), phis4.begin(), phis4.end());
 
-        std::vector<std::vector<double>> vals1 = light.candela_hv;
-        std::vector<std::vector<double>> vals2 = light.candela_hv;
-        vals2.pop_back();
-        std::reverse(vals2.begin(), vals2.end()); // 反转整个 vector
-        newValues.insert(newValues.end(), vals1.begin(), vals1.end());
-        newValues.insert(newValues.end(), vals2.begin(), vals2.end());
+        std::vector<std::vector<double>> vals1;
+        std::vector<std::vector<double>> vals2;
+        std::vector<std::vector<double>> vals3;
+        std::vector<std::vector<double>> vals4;
+        for (int i = 0; i < light.candela_hv.size() - 1; i++)
+        {
+            vals1.push_back(light.candela_hv[i]);
+        }
+        vals2.insert(vals2.end(), light.candela_hv.rbegin(), light.candela_hv.rend());
+        vals3.insert(vals3.end(), vals2.begin(), vals2.end());
+        vals3.insert(vals3.end(), vals1.begin(), vals1.end());
 
 
-        newThetas = linspace(-90, 90, light.candela_hv[0].size());
+        vals4.insert(vals4.end(), vals3.begin(), vals3.end());
+        vals4.pop_back();
 
-        getBIntensityVectorized();
+        for (auto& row : vals4) {
+            std::fill(row.begin(), row.end(), 0.0);
+        }
+        newValues.insert(newValues.end(), vals3.begin(), vals3.end());
+        newValues.insert(newValues.end(), vals4.begin(), vals4.end());
+
+        newThetas = linspace(0, m_thetas_size, light.candela_hv[0].size());
+
+        getCIntensityVectorized();
     }
     break;
     case eB_9090:
     {
-        QVector<double> phis1;
-        //QVector<double> phis2;
+        std::vector<double> phis1;
+        std::vector<double> phis2;
+
         for (int i = 0; i < light.horizontal_angles.size(); i++)
         {
-            phis1.push_back(light.horizontal_angles[i]);
+            phis1.push_back(light.horizontal_angles[i]  +90);
         }
 
+        for (int i = 1; i < light.horizontal_angles.size(); i++)
+        {
+            phis2.push_back(light.horizontal_angles[i] + 270);
+        }
+        for (auto& row : phis2) {
+            row = 0;
+        }
+        // /////////////////////////////////
         newPhis.insert(newPhis.end(), phis1.begin(), phis1.end());
+        newPhis.insert(newPhis.end(), phis2.begin(), phis2.end());
 
-        std::vector<std::vector<double>> vals1 = light.candela_hv;
-        newValues.insert(newValues.end(), vals1.begin(), vals1.end());
-        newThetas = linspace(-90, 90, light.candela_hv[0].size());
+        std::vector<std::vector<double>> vals1;
+        std::vector<std::vector<double>> vals2;
+        std::vector<std::vector<double>> vals3;
+        std::vector<std::vector<double>> vals4;
+        for (int i = 0; i < light.candela_hv.size() - 1; i++)
+        {
+            vals1.push_back(light.candela_hv[i]);
+        }
+        vals2.insert(vals2.end(), light.candela_hv.rbegin(), light.candela_hv.rend());
+        vals3.insert(vals3.end(), vals1.begin(), vals1.end());
+        vals3.insert(vals3.end(), vals2.begin(), vals2.end());
 
-        getBIntensityVectorized();
+        vals4 = vals3;
+        for (auto& row : vals4) {
+            std::fill(row.begin(), row.end(), 0.0);
+        }     
+        newValues.insert(newValues.end(), vals3.begin(), vals3.end());
+        newValues.insert(newValues.end(), vals4.begin(), vals4.end());
+
+        newThetas = linspace(0, m_thetas_size, light.candela_hv[0].size());
+
+        getCIntensityVectorized();
     }
     break;
     case eA090:
     {
         QVector<double> phis1;
-        //QVector<double> phis2;
+        QVector<double> phis2;
+        QVector<double> phis3;
+        QVector<double> phis4;
         for (int i = 0; i < light.horizontal_angles.size(); i++)
         {
             phis1.push_back(light.horizontal_angles[i]);
         }
+        for (int i = 1; i < light.horizontal_angles.size(); i++)
+        {
+            phis2.push_back(light.horizontal_angles[i] + 90);
+            phis3.push_back(light.horizontal_angles[i] + 180);
+            phis4.push_back(light.horizontal_angles[i] + 270);
+        }
 
         newPhis.insert(newPhis.end(), phis1.begin(), phis1.end());
+        newPhis.insert(newPhis.end(), phis2.begin(), phis2.end());
+        newPhis.insert(newPhis.end(), phis3.begin(), phis3.end());
+        newPhis.insert(newPhis.end(), phis4.begin(), phis4.end());
 
-        std::vector<std::vector<double>> vals1 = light.candela_hv;
-        newValues.insert(newValues.end(), vals1.begin(), vals1.end());
-        newThetas = linspace(-90, 90, light.candela_hv[0].size());
+        std::vector<std::vector<double>> vals1;
+        std::vector<std::vector<double>> vals2;
+        std::vector<std::vector<double>> vals3;
+        std::vector<std::vector<double>> vals4;
+        for (int i = 0; i < light.candela_hv.size() - 1; i++)
+        {
+            vals1.push_back(light.candela_hv[i]);
+        }
+        vals2.insert(vals2.end(), light.candela_hv.rbegin(), light.candela_hv.rend());
+        vals3.insert(vals3.end(), vals2.begin(), vals2.end());
+        vals3.insert(vals3.end(), vals1.begin(), vals1.end());
 
-        getBIntensityVectorized();
+
+        vals4.insert(vals4.end(), vals3.begin(), vals3.end());
+        vals4.pop_back();
+
+        for (auto& row : vals4) {
+            std::fill(row.begin(), row.end(), 0.0);
+        }
+        newValues.insert(newValues.end(), vals3.begin(), vals3.end());
+        newValues.insert(newValues.end(), vals4.begin(), vals4.end());
+
+        newThetas = linspace(0, m_thetas_size, light.candela_hv[0].size());
+
+        getCIntensityVectorized();
     }
     break;
     case eA_9090:
     {
-        QVector<double> phis1;
-        QVector<double> phis2;
+        std::vector<double> phis1;
+        std::vector<double> phis2;
+
         for (int i = 0; i < light.horizontal_angles.size(); i++)
         {
-            phis1.push_back(light.horizontal_angles[i] - 90);
+            phis1.push_back(light.horizontal_angles[i] + 90);
         }
+
         for (int i = 1; i < light.horizontal_angles.size(); i++)
         {
-            phis2.push_back(light.horizontal_angles[i]);
+            phis2.push_back(light.horizontal_angles[i] + 270);
         }
+        for (auto& row : phis2) {
+            row = 0;
+        }
+        // /////////////////////////////////
         newPhis.insert(newPhis.end(), phis1.begin(), phis1.end());
         newPhis.insert(newPhis.end(), phis2.begin(), phis2.end());
 
-        std::vector<std::vector<double>> vals1 = light.candela_hv;
-        std::vector<std::vector<double>> vals2 = light.candela_hv;
-        vals2.pop_back();
-        std::reverse(vals2.begin(), vals2.end()); // 反转整个 vector
-        newValues.insert(newValues.end(), vals1.begin(), vals1.end());
-        newValues.insert(newValues.end(), vals2.begin(), vals2.end());
+        std::vector<std::vector<double>> vals1;
+        std::vector<std::vector<double>> vals2;
+        std::vector<std::vector<double>> vals3;
+        std::vector<std::vector<double>> vals4;
+        for (int i = 0; i < light.candela_hv.size() - 1; i++)
+        {
+            vals1.push_back(light.candela_hv[i]);
+        }
+        vals2.insert(vals2.end(), light.candela_hv.rbegin(), light.candela_hv.rend());
+        vals3.insert(vals3.end(), vals1.begin(), vals1.end());
+        vals3.insert(vals3.end(), vals2.begin(), vals2.end());
 
+        vals4 = vals3;
+        for (auto& row : vals4) {
+            std::fill(row.begin(), row.end(), 0.0);
+        }
+        newValues.insert(newValues.end(), vals3.begin(), vals3.end());
+        newValues.insert(newValues.end(), vals4.begin(), vals4.end());
 
-        newThetas = linspace(-90, 90, light.candela_hv[0].size());
+        newThetas = linspace(0, m_thetas_size, light.candela_hv[0].size());
 
-        getBIntensityVectorized();
+        getCIntensityVectorized();
     }
     break;
     default:

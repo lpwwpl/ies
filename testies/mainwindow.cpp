@@ -1452,6 +1452,7 @@ void MainWindow::slotCreateTypeC_0_90(QString version, EIES_VType vtype)
     light.future_use = 1;
     NewHeader(light);
     IESLoader::instance().light = light;
+
     IESLoader::instance().clear();
     IESLoader::instance().fillData();
     fillUI();
@@ -1653,6 +1654,8 @@ void MainWindow::slotCreateTypeB_m90_p90(QString version, EIES_VType vtype)
     light.input_watts = 1000;
     light.future_use = 1;
     NewHeader(light);
+    IESLoader::instance().m_thetas_size = 90;
+    IESLoader::instance().m_phis_size = 90;
     IESLoader::instance().light = light;
     IESLoader::instance().clear();
     IESLoader::instance().fillData();
@@ -1700,6 +1703,8 @@ void MainWindow::slotCreateTypeB_0_90(QString version, EIES_VType vtype)
     light.future_use = 1;
     NewHeader(light);
     IESLoader::instance().light = light;
+    IESLoader::instance().m_thetas_size = 90;
+    IESLoader::instance().m_phis_size = 90;
     IESLoader::instance().clear();
     IESLoader::instance().fillData();
     fillUI();
