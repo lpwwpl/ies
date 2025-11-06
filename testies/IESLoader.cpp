@@ -475,11 +475,7 @@ void IESLoader::fillData()
         vals4.pop_back();
         std::reverse(vals4.begin(), vals4.end()); // 反转整个 vector
         newValues.insert(newValues.end(), vals3.begin(), vals3.end());
-        newValues.insert(newValues.end(), vals4.begin(), vals4.end());
-
-        newThetas = linspace(0, m_thetas_size, light.candela_hv[0].size());
-
-        getCIntensityVectorized();
+        newValues.insert(newValues.end(), vals4.begin(), vals4.end());  
     }
     break;
     case eC180:
@@ -503,15 +499,11 @@ void IESLoader::fillData()
         std::reverse(vals2.begin(), vals2.end()); // 反转整个 vector
         newValues.insert(newValues.end(), vals1.begin(), vals1.end());
         newValues.insert(newValues.end(), vals2.begin(), vals2.end());
-
-        newThetas = linspace(0, m_thetas_size, light.candela_hv[0].size());
-
-        getCIntensityVectorized();
     }
     break;
     case eC270:
     {
-
+  
     }
     break;
     case eC360:
@@ -519,8 +511,6 @@ void IESLoader::fillData()
         newPhis = light.horizontal_angles;
         newThetas = light.vertical_angles;
         newValues = light.candela_hv;
-
-        getCIntensityVectorized();
     }
     break;
     case eB090:
@@ -538,6 +528,8 @@ void IESLoader::fillData()
             phis2.push_back(light.horizontal_angles[i] + 90);
             phis3.push_back(0);
             phis4.push_back(0);
+            //phis3.push_back(light.horizontal_angles[i] + 180);
+            //phis4.push_back(light.horizontal_angles[i] + 270);
         }
        
         newPhis.insert(newPhis.end(), phis1.begin(), phis1.end());
@@ -554,13 +546,12 @@ void IESLoader::fillData()
             vals1.push_back(light.candela_hv[i]);
         }
         vals2.insert(vals2.end(), light.candela_hv.rbegin(), light.candela_hv.rend());
-        vals3.insert(vals3.end(), vals2.begin(), vals2.end());
+        vals3.insert(vals3.end(), vals2.begin(), vals2.end());     
         vals3.insert(vals3.end(), vals1.begin(), vals1.end());
-     
 
         vals4.insert(vals4.end(), vals3.begin(), vals3.end());
         vals4.pop_back();
-        //std::reverse(vals4.begin(), vals4.end()); // 反转整个 vector
+        std::reverse(vals4.begin(), vals4.end()); // 反转整个 vector
 
         for (auto& row : vals4) {
             std::fill(row.begin(), row.end(), 0.0);
@@ -568,11 +559,6 @@ void IESLoader::fillData()
 
         newValues.insert(newValues.end(), vals3.begin(), vals3.end());
         newValues.insert(newValues.end(), vals4.begin(), vals4.end());
-
-
-        newThetas = linspace(0, m_thetas_size, light.candela_hv[0].size());
-
-        getCIntensityVectorized();
     }
     break;
     case eB_9090:
@@ -616,9 +602,6 @@ void IESLoader::fillData()
         newValues.insert(newValues.end(), vals3.begin(), vals3.end());
         newValues.insert(newValues.end(), vals4.begin(), vals4.end());
 
-        newThetas = linspace(0, m_thetas_size, light.candela_hv[0].size());
-
-        getCIntensityVectorized();
     }
     break;
     case eA090:
@@ -667,10 +650,6 @@ void IESLoader::fillData()
         newValues.insert(newValues.end(), vals3.begin(), vals3.end());
         newValues.insert(newValues.end(), vals4.begin(), vals4.end());
 
-
-        newThetas = linspace(0, m_thetas_size, light.candela_hv[0].size());
-
-        getCIntensityVectorized();
     }
     break;
     case eA_9090:
@@ -713,15 +692,45 @@ void IESLoader::fillData()
         }
         newValues.insert(newValues.end(), vals3.begin(), vals3.end());
         newValues.insert(newValues.end(), vals4.begin(), vals4.end());
-
-        newThetas = linspace(0, m_thetas_size, light.candela_hv[0].size());
-
-        getCIntensityVectorized();
     }
     break;
     default:
         break;
     }
+    switch (light.m_vType)
+    {
+    case eC_V180:
+    {
+        newThetas = linspace(0, 180, light.candela_hv[0].size());
+    }
+    break;
+    case eC_V90:
+    {
+        newThetas = linspace(0, 90, light.candela_hv[0].size());
+    }
+    break;
+    case eC_V90_180:
+    {
+        newThetas = linspace(90, 180, light.candela_hv[0].size());
+    }
+    break;
+    case eB_V90:
+    case eA_V90:
+    {
+        newThetas = linspace(0, 90, light.candela_hv[0].size());
+    }
+    break;
+    case eB_V_90_90:
+    case eA_V_90_90:
+    {
+        newThetas = linspace(0, 180, light.candela_hv[0].size());
+    }
+    break;
+    default:break;
+    }
+
+
+    getCIntensityVectorized();
 }
 QOpenGLTexture* IESLoader::createTexture()
 {

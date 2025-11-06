@@ -105,7 +105,8 @@ public Q_SLOTS:
     void slotCreateTypeB_0_90(QString, EIES_VType);
     void slotCreateTypeA_m90_p90(QString, EIES_VType);
     void slotCreateTypeA_0_90(QString, EIES_VType);
-
+    void updateVValidator();
+    void updateHValidator();
     void showSpot();
     void showTrace();
     void showMTF();
@@ -142,5 +143,7 @@ private:
     EFileState m_fileState;
     QString m_filepath;
     QString m_filename;
+    QDoubleValidator* hvalidator;
+    QDoubleValidator* vvalidator;
 };
 #endif // MAINWINDOW_H

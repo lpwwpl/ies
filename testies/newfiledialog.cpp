@@ -25,6 +25,7 @@ void NewFileDialog::init()
     ui->rbTypeC->setChecked(true);
 
     ui->rbTypeA->setEnabled(false);
+    ui->rb3->setEnabled(false);
 }
 void NewFileDialog::on_pbOk_clicked()
 {

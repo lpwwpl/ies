@@ -117,12 +117,12 @@ MainWindow::MainWindow(QWidget* parent)
     m_veditor = new QLineEdit(ui->tableWidget->verticalHeader()->viewport());
     m_heditor->installEventFilter(this);
     m_veditor->installEventFilter(this);
-    QDoubleValidator* hvalidator = new QDoubleValidator(m_heditor);
+    hvalidator = new QDoubleValidator(m_heditor);
     hvalidator->setNotation(QDoubleValidator::StandardNotation);
-    hvalidator->setRange(0.0, 90, 2); // 设置范围 0-360，最多6位小数
+    hvalidator->setRange(0.0, 360, 2); // 设置范围 0-360，最多6位小数
     m_heditor->setValidator(hvalidator);
 
-    QDoubleValidator* vvalidator = new QDoubleValidator(m_veditor);
+    vvalidator = new QDoubleValidator(m_veditor);
     vvalidator->setNotation(QDoubleValidator::StandardNotation);
     vvalidator->setRange(0.0, 180, 2); // 设置范围 0-360，最多6位小数
     m_veditor->setValidator(vvalidator);
@@ -137,7 +137,7 @@ MainWindow::MainWindow(QWidget* parent)
     sortAction = new QAction("Sort", this);
     connect(sortAction, &QAction::triggered, this, &MainWindow::sortTable);
 
-    autoSortEnabled = (false);
+    autoSortEnabled = (true);
     autoSortAction = new QAction("Auto-Sort Enabled", this);
     autoSortAction->setCheckable(true);
     autoSortAction->setChecked(autoSortEnabled);
@@ -259,6 +259,9 @@ bool MainWindow::eventFilter(QObject* obj, QEvent* event)
                 m_editor_focusOut = false;
                 m_editor_old_value = ui->tableWidget->horizontalHeaderItem(logicalIndex)->text();
                 m_heditor->selectAll();
+
+                updateHValidator();
+
                 m_heditor->show();
                 m_heditor->setFocus();
                 return true;
@@ -280,6 +283,8 @@ bool MainWindow::eventFilter(QObject* obj, QEvent* event)
                 m_veditor->selectAll();
                 m_veditor->show();
                 m_veditor->setFocus();
+
+                updateVValidator();
                 return true;
             }
         } 
@@ -287,6 +292,94 @@ bool MainWindow::eventFilter(QObject* obj, QEvent* event)
     return QMainWindow::eventFilter(obj, event);
 }
 
+void MainWindow::updateVValidator()
+{
+    EIES_VType vtype = IESLoader::instance().light.m_vType;
+
+    switch (vtype)
+    {
+    case eC_V180:
+    {
+        vvalidator->setRange(0, 180, 2);
+    }
+    break;
+    case eC_V90:
+    {
+        vvalidator->setRange(0, 90, 2);
+    }
+    break;
+    case eC_V90_180:
+    {
+        vvalidator->setRange(90, 180, 2);
+    }
+    break;
+    case eB_V90:
+    case eA_V90:
+    {
+        vvalidator->setRange(0, 90, 2);
+    }
+    break;
+    case eB_V_90_90:
+    case eA_V_90_90:
+    {
+        vvalidator->setRange(-90, 90, 2);
+    }
+    break;
+    }
+}
+void MainWindow::updateHValidator()
+{
+    EIESType htype = IESLoader::instance().light.m_IESType;
+    switch (htype)
+    {
+    case eC0:
+    {
+        hvalidator->setRange(0, 360, 2);
+    }
+    break;
+    case eC90:
+    {
+        hvalidator->setRange(0, 90, 2);
+    }
+    break;
+    case eC180:
+    {
+        hvalidator->setRange(0, 180, 2);
+    }
+    break;
+    case eC270:
+    {
+        hvalidator->setRange(90, 270, 2);
+    }
+    break;
+    case eC360:
+    {
+        hvalidator->setRange(0, 360, 2);
+    }
+    break;
+    case eB_9090:
+    {
+        hvalidator->setRange(-90, 90, 2);
+    }
+    break;
+    case eB090:
+    {
+        hvalidator->setRange(0, 90, 2);
+    }
+    break;
+    case eA_9090:
+    {
+        hvalidator->setRange(-90, 90, 2);
+    }
+    break;
+    case eA090:
+    {
+        hvalidator->setRange(0, 90, 2);
+    }
+    default:
+        break;
+    }
+}
 void MainWindow::slotDoubleValueChanged()
 {
     QModelIndex index = ui->tableWidget->currentIndex();
