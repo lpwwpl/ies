@@ -635,7 +635,7 @@ void MainWindow::on_actionNew_triggered()
 void MainWindow::on_actionLight_triggered()
 {
     QFile qss;
-    qss.setFileName(":/resources/qss/dark_style_sheet/qdarkstyle/lightstyle.qss");
+    qss.setFileName(":/resources/qss/light_style_sheet/qlightstyle/lightstyle.qss");
     qss.open(QFile::ReadOnly);
     qApp->setStyleSheet(qss.readAll());
     qss.close();
