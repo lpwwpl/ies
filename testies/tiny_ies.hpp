@@ -208,7 +208,7 @@ struct tiny_ies {
 
         /* data */
         uint32_t number_lights;
-        int lumens_per_lamp; // in case of absolute photometry the value is -1
+        T lumens_per_lamp; // in case of absolute photometry the value is -1
         T multiplier;
         uint32_t number_vertical_angles;
         uint32_t number_horizontal_angles;
@@ -244,6 +244,18 @@ struct tiny_ies {
         // 使用宽字符路径打开文件
         return std::ifstream(wide_path);
     }
+    //static bool NEXT_VALUE(std::stringstream& stream, std::string name,std:string value)
+    //{
+    //    if (!store_value(stream, value))
+    //    { 
+    //        std::string error_out = "Error reading <";
+    //        error_out += name; 
+    //        error_out += "> property: ";
+    //        error_out += file;
+    //        f.close(); 
+    //        return false; 
+    //    }
+    //}
     static bool load_ies(const std::string& file, std::string& err_out, std::string& warn_out, light& ies_out) {
 
         //std::wstring ws_file = std::wstring(file.begin(), file.end());
@@ -296,7 +308,7 @@ struct tiny_ies {
         std::stringstream stream;
         stream.str(s);
 
-#define NEXT_VALUE(name, var) if (!store_value(stream, var)) { err_out = "Error reading <" name "> property: " + file; f.close(); return false; }
+#define NEXT_VALUE(name, var) if (!store_value(stream, var)) { err_out = "Error reading <" name "> property: " + file; f.close(); std::cout<<err_out<<std::endl;;return false; }
 
         // <lamp to luminaire geometry> <#tilt angles> <angles> <multiplying factors>
         if (ies_out.tilt == "INCLUDE") {

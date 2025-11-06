@@ -6,6 +6,7 @@
 #include <cmath>
 #include "tiny_ies.hpp"
 #include <qmath.h>
+#include <QMessageBox>
 IESLoader::IESLoader()
 {
     m_thetas_size = 180;
@@ -437,6 +438,47 @@ void IESLoader::fillData()
 {
     switch (light.m_IESType)
     {
+    case eC0:
+    {
+        QVector<double> phis1;
+        QVector<double> phis2;
+        QVector<double> phis3;
+        QVector<double> phis4;
+        for (int i = 0; i < light.horizontal_angles.size(); i++)
+        {
+            phis1.push_back(light.horizontal_angles[i]);
+        }
+        //for (int i = 0; i < light.horizontal_angles.size(); i++)
+        //{
+            phis2.push_back(light.horizontal_angles[0] + 90);
+        //    phis3.push_back(light.horizontal_angles[i] + 180);
+        //    phis4.push_back(light.horizontal_angles[i] + 270);
+        //}
+
+        newPhis.insert(newPhis.end(), phis1.begin(), phis1.end());
+        newPhis.insert(newPhis.end(), phis2.begin(), phis2.end());
+        //newPhis.insert(newPhis.end(), phis3.begin(), phis3.end());
+        //newPhis.insert(newPhis.end(), phis4.begin(), phis4.end());
+
+        std::vector<std::vector<double>> vals1;
+        std::vector<std::vector<double>> vals2;
+        std::vector<std::vector<double>> vals3;
+        std::vector<std::vector<double>> vals4;
+        for (int i = 0; i < light.candela_hv.size() ; i++)
+        {
+            vals1.push_back(light.candela_hv[i]);
+        }
+        vals2.insert(vals2.end(), light.candela_hv.rbegin(), light.candela_hv.rend());
+        vals3.insert(vals3.end(), vals1.begin(), vals1.end());
+        vals3.insert(vals3.end(), vals2.begin(), vals2.end());
+
+        //vals4.insert(vals4.end(), vals3.begin(), vals3.end());
+        //vals4.pop_back();
+        //std::reverse(vals4.begin(), vals4.end()); // 反转整个 vector
+        newValues.insert(newValues.end(), vals3.begin(), vals3.end());
+        //newValues.insert(newValues.end(), vals4.begin(), vals4.end());
+    }
+        break;
     case eC90:
     {
         QVector<double> phis1;
@@ -695,6 +737,10 @@ void IESLoader::fillData()
     }
     break;
     default:
+    {
+        //QMessageBox::warning(this, "错误", "软件不支持，待完善.");
+        return;
+    }
         break;
     }
     switch (light.m_vType)
