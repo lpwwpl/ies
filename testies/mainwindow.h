@@ -141,5 +141,6 @@ private:
 
     EFileState m_fileState;
     QString m_filepath;
+    QString m_filename;
 };
 #endif // MAINWINDOW_H

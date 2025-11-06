@@ -122,11 +122,7 @@ void IESPolarWidget::updateIES()
         graph90_270->setData(angles90_270, values90_270);
         //graph90_270->setPen(QPen(Qt::blue, 2));
         graph90_270->setName("C90° - C270°");
-
     }
-
-
-
     rescaleAxes();
     replot();
 }

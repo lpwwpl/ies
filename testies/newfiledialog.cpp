@@ -23,6 +23,8 @@ void NewFileDialog::init()
     ui->rbV0_AB->setChecked(true);
 
     ui->rbTypeC->setChecked(true);
+
+    ui->rbTypeA->setEnabled(false);
 }
 void NewFileDialog::on_pbOk_clicked()
 {
@@ -106,11 +108,11 @@ void NewFileDialog::on_pbOk_clicked()
             signalCreateTypeA_m90_p90(version, vtype); 
         }
     }
-    close();
+    accept();
 }
 void NewFileDialog::on_pbCancel_clicked()
 {
-    close();
+    accept();
 }
 
 void NewFileDialog::on_rbTypeC_toggled()

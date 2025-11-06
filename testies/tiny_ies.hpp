@@ -33,9 +33,8 @@ SOFTWARE.
 #include <cstdint>
 #include <stdio.h>
 #include <iostream>
-
 #include "common.h"
-
+#include <windows.h>
 // 实现meshgrid功能，返回两个矩阵X和Y
 template<typename T>
 void meshgrid(const std::vector<T>& x, const std::vector<T>& y,
@@ -236,9 +235,20 @@ struct tiny_ies {
         T max_candela;
         //std::string header;
     };
+    static std::ifstream openFileWithChinesePath(const std::string& utf8_path) {
+        // 将UTF-8转换为宽字符
+        int wide_size = MultiByteToWideChar(CP_UTF8, 0, utf8_path.c_str(), -1, nullptr, 0);
+        std::wstring wide_path(wide_size, 0);
+        MultiByteToWideChar(CP_UTF8, 0, utf8_path.c_str(), -1, &wide_path[0], wide_size);
 
+        // 使用宽字符路径打开文件
+        return std::ifstream(wide_path);
+    }
     static bool load_ies(const std::string& file, std::string& err_out, std::string& warn_out, light& ies_out) {
-        std::ifstream f(file);
+
+        //std::wstring ws_file = std::wstring(file.begin(), file.end());
+        //std::string utf8FilePath = converter.to_bytes(file);
+        std::ifstream f = openFileWithChinesePath(file);
         if (!f) {
             err_out = "Failed reading file: " + file;
             return false;

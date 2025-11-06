@@ -185,6 +185,7 @@ void MainWindow::slot_heditor()
     {
         ui->tableWidget->setHorizontalHeaderItem(logicalIndex, new QTableWidgetItem(m_heditor->text()));
         m_fileState = eFile_dirty;
+        this->setWindowTitle("[" + m_filename + " *]");
     }
     m_heditor->clearFocus();
     m_heditor->close();
@@ -205,6 +206,7 @@ void MainWindow::slot_veditor()
     {
         ui->tableWidget->setVerticalHeaderItem(logicalIndex, new QTableWidgetItem(m_veditor->text()));
         m_fileState = eFile_dirty;
+        this->setWindowTitle("[" + m_filename + " *]");
     }
     m_veditor->clearFocus();
     m_veditor->close();
@@ -294,6 +296,7 @@ void MainWindow::slotDoubleValueChanged()
     double value = index.data(Qt::DisplayRole).toDouble();
 
     m_fileState = eFile_dirty;
+    this->setWindowTitle("[" + m_filename + " *]");
     //IESLoader::instance().light.candela_hv[col][row] = value;
 }
 void MainWindow::addRow()
@@ -337,6 +340,7 @@ void MainWindow::addRow()
         ui->tableWidget->setItem(currentRow, col, item);
     }
     m_fileState = eFile_dirty;
+    this->setWindowTitle("[" + m_filename + " *]");
     //if (autoSortEnabled) {
     //    sortTableByHorizontalAngle();
     //    sortTableByVerticalAngle();
@@ -376,6 +380,7 @@ void MainWindow::deleteRow()
     //}
     ui->tableWidget->removeRow(currentRow);
     m_fileState = eFile_dirty;
+    this->setWindowTitle("[" + m_filename + " *]");
 }
 
 void MainWindow::addColumn()
@@ -417,6 +422,7 @@ void MainWindow::addColumn()
         ui->tableWidget->setItem(row, currentColumn, item);
     }
     m_fileState = eFile_dirty;
+    this->setWindowTitle("[" + m_filename + " *]");
 }
 
 void MainWindow::deleteColumn()
@@ -438,6 +444,7 @@ void MainWindow::deleteColumn()
     //}
     ui->tableWidget->removeColumn(currentColumn);
     m_fileState = eFile_dirty;
+    this->setWindowTitle("[" + m_filename + " *]");
 }
 
 
@@ -481,6 +488,7 @@ void MainWindow::populateTableFromIESData()
     // 调整列宽
     ui->tableWidget->resizeColumnsToContents();
     m_fileState = eFile_clean;
+    this->setWindowTitle("[" + m_filename + "]");
 }
 
 void MainWindow::moveEvent(QMoveEvent* event)
@@ -510,7 +518,7 @@ void MainWindow::on_action3DCurves_triggered()
 }
 void MainWindow::on_actionNew_triggered()
 {
-    ui->tableWidget->clear();
+    //ui->tableWidget->clear();
 
     if (m_filepath.isEmpty())
     {
@@ -525,8 +533,10 @@ void MainWindow::on_actionNew_triggered()
     m_newFileDialog->exec();
 
 
-    m_filepath = "";
-    m_fileState = eFile_clean;
+    //m_filepath = "";
+    //m_fileState = eFile_clean;
+    //m_filename = "No Name";
+    //this->setWindowTitle("[" + m_filename + "]");
 }
 
 void MainWindow::on_actionLight_triggered()
@@ -775,6 +785,9 @@ void MainWindow::on_actionOpen_triggered()
 
     m_fileState = eFile_clean;
     m_filepath = filename;
+    QFileInfo fileInfo(m_filepath);
+    m_filename = fileInfo.fileName();
+    this->setWindowTitle("[" + m_filename + "]");
 }
 void MainWindow::on_actionSave_triggered()
 {
@@ -804,6 +817,7 @@ void MainWindow::on_actionSave_triggered()
         on_actionSave_As_triggered();
     }
     m_fileState = eFile_clean;
+    this->setWindowTitle("[" + m_filename + "]");
 }
 
 void MainWindow::on_actionSave_As_triggered()
@@ -831,6 +845,9 @@ void MainWindow::on_actionSave_As_triggered()
     tiny_ies<double>::write_ies(filepath.toStdString(), light);
     m_fileState = eFile_clean;
     m_filepath = filepath;
+    QFileInfo fileInfo(m_filepath);
+    m_filename = fileInfo.fileName();
+    this->setWindowTitle("[" + m_filename + "]");
 }
 void MainWindow::SaveFile()
 {
@@ -843,7 +860,7 @@ void MainWindow::SaveFile()
     break;
     case eFile_dirty:
     {
-        if (m_filepath.isEmpty())
+        if (!m_filepath.isEmpty())
         {
             QMessageBox::StandardButton reply;
             reply = QMessageBox::warning(this, "IESNA LM-63", QString("Save changes to %1 ?").arg(m_filepath),
@@ -1457,6 +1474,11 @@ void MainWindow::slotCreateTypeC_0_90(QString version, EIES_VType vtype)
     IESLoader::instance().fillData();
     fillUI();
     populateTableFromIESData();
+
+    m_filepath = "";
+    m_fileState = eFile_clean;
+    m_filename = "No Name";
+    this->setWindowTitle("[" + m_filename + "]");
 }
 void MainWindow::slotCreateTypeC_0_180(QString version, EIES_VType vtype)
 {
@@ -1509,6 +1531,11 @@ void MainWindow::slotCreateTypeC_0_180(QString version, EIES_VType vtype)
     IESLoader::instance().fillData();
     fillUI();
     populateTableFromIESData();
+
+    m_filepath = "";
+    m_fileState = eFile_clean;
+    m_filename = "No Name";
+    this->setWindowTitle("[" + m_filename + "]");
 }
 void MainWindow::slotCreateTypeC_90_270(QString version, EIES_VType vtype)
 {
@@ -1561,6 +1588,11 @@ void MainWindow::slotCreateTypeC_90_270(QString version, EIES_VType vtype)
     IESLoader::instance().fillData();
     fillUI();
     populateTableFromIESData();
+
+    m_filepath = "";
+    m_fileState = eFile_clean;
+    m_filename = "No Name";
+    this->setWindowTitle("[" + m_filename + "]");
 }
 void MainWindow::slotCreateTypeC_0_360(QString version, EIES_VType vtype)
 {
@@ -1613,6 +1645,11 @@ void MainWindow::slotCreateTypeC_0_360(QString version, EIES_VType vtype)
     IESLoader::instance().fillData();
     fillUI();
     populateTableFromIESData();
+
+    m_filepath = "";
+    m_fileState = eFile_clean;
+    m_filename = "No Name";
+    this->setWindowTitle("[" + m_filename + "]");
 }
 void MainWindow::slotCreateTypeB_m90_p90(QString version, EIES_VType vtype)
 {
@@ -1661,6 +1698,11 @@ void MainWindow::slotCreateTypeB_m90_p90(QString version, EIES_VType vtype)
     IESLoader::instance().fillData();
     fillUI();
     populateTableFromIESData();
+
+    m_filepath = "";
+    m_fileState = eFile_clean;
+    m_filename = "No Name";
+    this->setWindowTitle("[" + m_filename + "]");
 }
 void MainWindow::slotCreateTypeB_0_90(QString version, EIES_VType vtype)
 {
@@ -1709,6 +1751,11 @@ void MainWindow::slotCreateTypeB_0_90(QString version, EIES_VType vtype)
     IESLoader::instance().fillData();
     fillUI();
     populateTableFromIESData();
+
+    m_filepath = "";
+    m_fileState = eFile_clean;
+    m_filename = "No Name";
+    this->setWindowTitle("[" + m_filename + "]");
 }
 void MainWindow::slotCreateTypeA_m90_p90(QString version, EIES_VType vtype)
 {
@@ -1755,6 +1802,11 @@ void MainWindow::slotCreateTypeA_m90_p90(QString version, EIES_VType vtype)
     IESLoader::instance().fillData();
     fillUI();
     populateTableFromIESData();
+
+    m_filepath = "";
+    m_fileState = eFile_clean;
+    m_filename = "No Name";
+    this->setWindowTitle("[" + m_filename + "]");
 }
 void MainWindow::slotCreateTypeA_0_90(QString version , EIES_VType vtype)
 {
@@ -1801,4 +1853,9 @@ void MainWindow::slotCreateTypeA_0_90(QString version , EIES_VType vtype)
     IESLoader::instance().fillData();
     fillUI();
     populateTableFromIESData();
+
+    m_filepath = "";
+    m_fileState = eFile_clean;
+    m_filename = "No Name";
+    this->setWindowTitle("[" + m_filename + "]");
 }

@@ -28,9 +28,9 @@ public:
     QOpenGLTexture* createTexture();
     void clear();
     void fillData();
+    void fillData_extend();
     void loadIES(QString filename);
     void getCIntensityVectorized(int numThetas = 181, int numPhis = 361);
-    void getBIntensityVectorized(int numThetas = 181, int numPhis = 180);
     int findPhiIndex(double targetPhi);
     int findThetaIndex(double targetTheta);
     std::vector<double> linspace(double start, double end, int num);
