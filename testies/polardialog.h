@@ -27,6 +27,9 @@ public Q_SLOTS:
     void on_chkFillYellow_stateChanged(int);
     void on_chkViewYellow_stateChanged(int);
 
+    void on_horizontalSlider_valueChanged(int);
+    void on_horizontalSlider_2_valueChanged(int);
+
 private:
     Ui::PolarDialog*ui;
 

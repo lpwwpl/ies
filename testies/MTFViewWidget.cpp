@@ -8,6 +8,7 @@
 #include <QMouseEvent>
 #include <QMenu>
 #include <QAction>
+#include <QNetworkInterface>
 
 MTFViewer::MTFViewer(QWidget* parent)
     : QWidget(parent)

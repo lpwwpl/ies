@@ -2,6 +2,7 @@
 #include "ui_polardialog.h"
 #include "IESPolarWidget.h"
 #include <QHBoxLayout>
+#include "IESLoader.h"
 PolarDialog::PolarDialog(QWidget *parent)
     : QDialog(parent)
     , ui(new Ui::PolarDialog)
@@ -21,6 +22,8 @@ PolarDialog::PolarDialog(QWidget *parent)
      setWindowFlags(flags);
 
 
+     ui->horizontalSlider->setRange(0, 360);
+     //ui->horizontalSlider_2->setRange(0, 360);
      connect(ui->chkFillBlue,SIGNAL(stateChanged(int)), this,SLOT(on_chkFillBlue_stateChanged(int)));
      connect(ui->chkFillRed, SIGNAL(stateChanged(int)), this, SLOT(on_chkFillRed_stateChanged(int)));
      connect(ui->chkViewRed, SIGNAL(stateChanged(int)), this, SLOT(on_chkViewRed_stateChanged(int)));
@@ -43,7 +46,22 @@ PolarDialog::~PolarDialog()
 
 void PolarDialog::updateIES()
 {
-    m_polarWidget->updateIES();
+    if (IESLoader::instance().light.m_IESType > 4)
+    {
+        ui->horizontalSlider->blockSignals(true);
+        ui->horizontalSlider->setRange(0, 180);
+        ui->horizontalSlider->setValue(90);
+        ui->horizontalSlider->blockSignals(false);
+        m_polarWidget->updateIES(90);
+    }
+    else
+    {
+        ui->horizontalSlider->blockSignals(true);
+        ui->horizontalSlider->setRange(0, 360);
+        ui->horizontalSlider->setValue(0);
+        ui->horizontalSlider->blockSignals(false);
+        m_polarWidget->updateIES(0);
+    }
 }
 
 void PolarDialog::on_chkFillBlue_stateChanged(int value)
@@ -91,4 +109,14 @@ void PolarDialog::on_chkViewYellow_stateChanged(int value)
 
     on_chkFillYellow_stateChanged(ui->chkFillYellow->isChecked());
    
+}
+
+void PolarDialog::on_horizontalSlider_valueChanged(int angle)
+{
+    m_polarWidget->on_horizontalSlider_valueChanged(angle);
+}
+
+void PolarDialog::on_horizontalSlider_2_valueChanged(int angle)
+{
+    m_polarWidget->on_horizontalSlider_2_valueChanged(angle);
 }
