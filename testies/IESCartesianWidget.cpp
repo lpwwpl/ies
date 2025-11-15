@@ -1,76 +1,58 @@
-﻿#include "IESPolarWidget.h"
+﻿#include "IESCartesianWidget.h"
 #include "IESLoader.h"
 #include <QDebug>
 
-IESPolarWidget::IESPolarWidget()
+IESCartesianWidget::IESCartesianWidget(QWidget* parent):QCustomPlot(parent)
 {
     Init();
 
 }
 
-IESPolarWidget::~IESPolarWidget()
+IESCartesianWidget::~IESCartesianWidget()
 {
 
 }
 
 
-void IESPolarWidget::Init()
-{
-
+void IESCartesianWidget::Init()
+{    
     QFont font;
     font.setStyleStrategy(QFont::NoAntialias);
     font.setFamily("Microsoft YaHei");
     font.setPixelSize(10);
 
-    //极坐标
-    this->plotLayout()->clear(); // 清空默认布局
-    angularAxis = new QCPPolarAxisAngular(this);
-    this->plotLayout()->addElement(0, 0, angularAxis); // 将角度轴添加到布局中心
+    
+    //this->plotLayout()->clear(); // 清空默认布局
 
-    // 3. 创建径向轴 (从中心向外)
-    radialAxis = angularAxis->radialAxis();
-    angularAxis->setTickLabelFont(font);
-    angularAxis->setLabel(tr("角度轴 (θ)"));
-    angularAxis->setRange(0, 360); // 角度范围 (0-360度)
-    angularAxis->grid()->setVisible(true);
-    angularAxis->setTicks(true);
    
     addLayer("background1", nullptr, QCustomPlot::limBelow);
     addLayer("foreground", nullptr, QCustomPlot::limAbove);
 
 
-    radialAxis->setLabel(tr("径向轴 (r)"));
-    radialAxis->setAngle(0);
 
-    radialAxis->setSubTicks(false);
-    radialAxis->setTickLabelFont(font);
-    graph0_180 = new QCPPolarGraph(angularAxis, radialAxis);
+    graph0_180 = addGraph(xAxis, yAxis);
     graph0_180->setLayer("foreground");
 
     // 8. 设置图形样式 (可选)
-    graph0_180->setLineStyle(QCPPolarGraph::lsLine); // 线型
     graph0_180->setScatterStyle(QCPScatterStyle::ssDot); // 散点样式
     graph0_180->setPen(QPen(Qt::blue, 2)); // 线宽和颜色
     //graph0_180->setBrush(QBrush(QColor(0, 0, 250, 150)));
 
-    graph90_270 = new QCPPolarGraph(angularAxis, radialAxis);
+    graph90_270 = addGraph(xAxis, yAxis);
     graph90_270->setLayer("background1");
     // 8. 设置图形样式 (可选)
-    graph90_270->setLineStyle(QCPPolarGraph::lsLine); // 线型
     graph90_270->setScatterStyle(QCPScatterStyle::ssDot); // 散点样式
     graph90_270->setPen(QPen(Qt::red, 2)); // 线宽和颜色
     //graph90_270->setBrush(QBrush(QColor(255, 0, 0, 150)));
-
 
 
     moveLayer(layer("foreground"), layer("background1"));
 }
 
 
-void IESPolarWidget::updateIES(double angle)
+void IESCartesianWidget::updateIES(double angle)
 {
-    radialAxis->setRange(0, IESLoader::instance().light.max_candela * IESLoader::instance().light.multiplier);
-    clearPlottables();
+    //clearPlottables();
     //clearGraphs();
 
     graph0_180->data().clear();
@@ -110,7 +92,7 @@ void IESPolarWidget::updateIES(double angle)
         //graph0_180->setBrush(Qt::NoBrush);
         graph0_180->setData(angles0_180, values0_180);
         //graph0_180->setPen(QPen(Qt::red, 2));
-        graph0_180->setName("C0° - C180°");
+        //graph0_180->setName("C0° - C180°");
 
         // 生成90-270°剖面数据 (C90° - C270°)
 
@@ -125,7 +107,7 @@ void IESPolarWidget::updateIES(double angle)
         //graph90_270->setBrush(Qt::NoBrush);
         graph90_270->setData(angles90_270, values90_270);
         //graph90_270->setPen(QPen(Qt::blue, 2));
-        graph90_270->setName("C90° - C270°");
+        //graph90_270->setName("C90° - C270°");
     }
     rescaleAxes();
     replot();
@@ -133,7 +115,7 @@ void IESPolarWidget::updateIES(double angle)
 
 
 // 生成0-180°剖面数据
-std::vector<QPointF> IESPolarWidget::generateC0C180Profile(double angle) {
+std::vector<QPointF> IESCartesianWidget::generateC0C180Profile(double angle) {
     std::vector<QPointF> profile;
 
     std::vector<double> r1;
@@ -176,7 +158,7 @@ std::vector<QPointF> IESPolarWidget::generateC0C180Profile(double angle) {
     return profile;
 }
 // 生成90-270°剖面数据
-std::vector<QPointF> IESPolarWidget::generateC90C270Profile(double angle) {
+std::vector<QPointF> IESCartesianWidget::generateC90C270Profile(double angle) {
     std::vector<QPointF> profile;
 
 
@@ -230,7 +212,7 @@ std::vector<QPointF> IESPolarWidget::generateC90C270Profile(double angle) {
 }
 
 
-void IESPolarWidget::on_chkFillBlue_stateChanged(int value)
+void IESCartesianWidget::on_chkFillBlue_stateChanged(int value)
 {
    
     if (value)
@@ -244,7 +226,7 @@ void IESPolarWidget::on_chkFillBlue_stateChanged(int value)
     graph0_180->setPen(QPen(Qt::blue, 2)); // 线宽和颜色
     replot();
 }
-void IESPolarWidget::on_chkFillRed_stateChanged(int value)
+void IESCartesianWidget::on_chkFillRed_stateChanged(int value)
 {
     
     if (value)
@@ -258,7 +240,7 @@ void IESPolarWidget::on_chkFillRed_stateChanged(int value)
     graph90_270->setPen(QPen(Qt::red, 2)); // 线宽和颜色
     replot();
 }
-void IESPolarWidget::on_chkViewRed_stateChanged(int value)
+void IESCartesianWidget::on_chkViewRed_stateChanged(int value)
 {
     
     if (value)
@@ -273,7 +255,7 @@ void IESPolarWidget::on_chkViewRed_stateChanged(int value)
     replot();
 }
 
-void IESPolarWidget::on_chkFillGreen_stateChanged(int value)
+void IESCartesianWidget::on_chkFillGreen_stateChanged(int value)
 {
    
     if (value)
@@ -288,7 +270,7 @@ void IESPolarWidget::on_chkFillGreen_stateChanged(int value)
     replot();
 }
 
-void IESPolarWidget::on_chkFillYellow_stateChanged(int value)
+void IESCartesianWidget::on_chkFillYellow_stateChanged(int value)
 {
    
     if (value)
@@ -303,7 +285,7 @@ void IESPolarWidget::on_chkFillYellow_stateChanged(int value)
     replot();
 }
 
-void IESPolarWidget::on_chkViewYellow_stateChanged(int value)
+void IESCartesianWidget::on_chkViewYellow_stateChanged(int value)
 {
     if (value)
     {
@@ -318,7 +300,7 @@ void IESPolarWidget::on_chkViewYellow_stateChanged(int value)
     replot();
 }
 
-void IESPolarWidget::on_horizontalSlider_valueChanged(int value)
+void IESCartesianWidget::on_horizontalSlider_valueChanged(int value)
 {
     //if (IESLoader::instance().light.m_IESType <= 4)
     //{
@@ -357,7 +339,7 @@ void IESPolarWidget::on_horizontalSlider_valueChanged(int value)
     replot();
 }
 
-void IESPolarWidget::on_horizontalSlider_2_valueChanged(int value)
+void IESCartesianWidget::on_horizontalSlider_2_valueChanged(int value)
 {
     //graph90_270->data()->clear();
 

@@ -4,7 +4,13 @@
 #include <QDialog>
 
 class IESPolarWidget;
+class IESCartesianWidget;
 
+enum ECurveWidget
+{
+    ePolar = 0,
+    eCartesian
+};
 namespace Ui {
 class PolarDialog;
 }
@@ -16,6 +22,8 @@ class PolarDialog : public QDialog
 public:
     explicit PolarDialog(QWidget *parent = nullptr);
     ~PolarDialog();
+    void updatePolarIES();
+    void updateCartesianIES();
     void updateIES();
 
 public Q_SLOTS:
@@ -30,9 +38,11 @@ public Q_SLOTS:
     void on_horizontalSlider_valueChanged(int);
     void on_horizontalSlider_2_valueChanged(int);
 
+    void on_cmbWidget_currentIndexChanged(int);
+
 private:
     Ui::PolarDialog*ui;
-
+    IESCartesianWidget* m_cartesianWidget;
     IESPolarWidget* m_polarWidget;
 };
 
