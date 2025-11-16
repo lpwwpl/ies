@@ -347,10 +347,10 @@ double IESLoader::getCandelaValue(double vertical, double horizontal)
     while (horizontal < 0) horizontal += 360;
     while (horizontal >= 360) horizontal -= 360;
 
-    if (light.m_IESType > 4)
-    {
-        while (horizontal >180) horizontal -= 180;
-    }
+    //if (light.m_IESType > 4)
+    //{
+    //    while (horizontal >180) horizontal -= 180;
+    //}
     // 简单的最近邻插值 - 实际应用中应使用双线性插值
     int vIdx = 0, hIdx = 0;
     double minVDiff = 360, minHDiff = 360;

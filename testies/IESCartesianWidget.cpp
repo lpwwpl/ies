@@ -73,7 +73,7 @@ void IESCartesianWidget::updateIES(double angle)
         //graph0_180->setBrush(Qt::NoBrush);
         graph0_180->setData(angles0_180, values0_180);
         //graph0_180->setPen(QPen(Qt::red, 2));
-        graph0_180->setName("C0° - C180°");
+        //graph0_180->setName("C0° - C180°");
 
 
 
@@ -150,7 +150,7 @@ std::vector<QPointF> IESCartesianWidget::generateC0C180Profile(double angle) {
         std::vector<QPointF> profile2;
         profile2.reserve(IESLoader::instance().newThetas_r2.size());
         for (int i = 0; i < IESLoader::instance().newThetas_r2.size(); ++i) {
-            profile2.push_back(QPointF(IESLoader::instance().newThetas_r2[i], r2[i]));
+            profile2.push_back(QPointF(IESLoader::instance().newThetas_r2[i]-360, r2[i]));
         }
         profile.insert(profile.end(), profile2.begin(), profile2.end());
     }
@@ -160,8 +160,6 @@ std::vector<QPointF> IESCartesianWidget::generateC0C180Profile(double angle) {
 // 生成90-270°剖面数据
 std::vector<QPointF> IESCartesianWidget::generateC90C270Profile(double angle) {
     std::vector<QPointF> profile;
-
-
 
     std::vector<double> r3;
     std::vector<double> r4;
@@ -203,7 +201,7 @@ std::vector<QPointF> IESCartesianWidget::generateC90C270Profile(double angle) {
             if (std::isnan(r4[i]))
                 ;
             else
-                profile2.push_back(QPointF(IESLoader::instance().newThetas_r2[i], r4[i]));
+                profile2.push_back(QPointF(IESLoader::instance().newThetas_r2[i] - 360, r4[i]));
         }
 
         profile.insert(profile.end(), profile2.begin(), profile2.end());
@@ -318,8 +316,6 @@ void IESCartesianWidget::on_horizontalSlider_valueChanged(int value)
     //graph0_180->setBrush(Qt::NoBrush);
     graph0_180->setData(angles0_180, values0_180);
 
-
-
     graph90_270->data()->clear();
 
     auto profile90_270 = generateC90C270Profile(value);
@@ -333,7 +329,7 @@ void IESCartesianWidget::on_horizontalSlider_valueChanged(int value)
     //graph90_270->setBrush(Qt::NoBrush);
     graph90_270->setData(angles90_270, values90_270);
     //graph90_270->setPen(QPen(Qt::blue, 2));
-    graph90_270->setName("C90° - C270°");
+    //graph90_270->setName("C90° - C270°");
 
     rescaleAxes();
     replot();
