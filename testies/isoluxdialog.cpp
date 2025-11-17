@@ -49,6 +49,7 @@ ISOLuxPlot::ISOLuxPlot()/*:vtx(nullptr),itx(nullptr)*/
     m_polyData = vtkSmartPointer<vtkPolyData>::New();
     m_glyphFilter = vtkSmartPointer<vtkVertexGlyphFilter>::New();
     surfaceFilter = vtkSmartPointer<vtkDataSetSurfaceFilter>::New();
+    lines = vtkSmartPointer<vtkCellArray>::New();
     // 初始化边界
     for (int i = 0; i < 6; ++i) {
         bounds[i] = 0.0;
@@ -351,7 +352,7 @@ void ISOLuxDialog::on_cmbPlane_currentIndexChanged(int plane)
         {
             m_3dplot->m_levelSize = ui->spinLevels->value();
             m_isoWidget->m_numOfPoints = ui->spinNbOfPoints->value();
-            m_3dplot->updateIESXZ(distance, halfMap);
+            m_3dplot->updateIESXZ_(distance, halfMap);
         }
     }
         break;
@@ -473,7 +474,8 @@ void ISOLuxPlot::updateIESXY(double distance, double halfmap)
     fixtureZ = distance;
 
     double radio = calculationWidth / m_size;
-    zmax = 0;
+    zmax = -INFINITY;
+    zmin = INFINITY;
     for (int i = 0; i < gridSize; ++i) {
         std::vector<double> oneLine;
         double x = -halfWidth + i * gridSpacing;
@@ -481,10 +483,12 @@ void ISOLuxPlot::updateIESXY(double distance, double halfmap)
             double y = -halfWidth + j * gridSpacing;
             float intensity = calculateIlluminanceAtPoint(x, y, 0);
             if (intensity > zmax)zmax = intensity;
+            if (intensity < zmin)zmin = intensity;
             m_intensities->InsertNextValue(intensity);
         }
     }
     double z_radio = zmax / m_size;
+    if (z_radio == 0)z_radio = 1;
     for (int i = 0; i < gridSize; ++i) {
         std::vector<double> oneLine;
         double x = -halfWidth + i * gridSpacing;
@@ -496,8 +500,6 @@ void ISOLuxPlot::updateIESXY(double distance, double halfmap)
             m_points->InsertNextPoint(x_scale, y_scale, intensity / z_radio);
         }
     }
-
-    vtkSmartPointer<vtkCellArray> lines = vtkSmartPointer<vtkCellArray>::New();
 
     // 添加水平线
     for (int i = 0; i < gridSize; ++i) {
@@ -584,18 +586,21 @@ void ISOLuxPlot::updateIESYZ(double distance, double halfmap)
     fixtureY = 0;
     fixtureZ = 0;
     double radio =  calculationWidth/ m_size;
-    zmax = 0;
+    zmax = -INFINITY;
+    zmin = INFINITY;
     for (int i = 0; i < gridSize; ++i) {
         std::vector<double> oneLine;
         double y = -halfWidth + i * gridSpacing;
         for (int j = 0; j < gridSize; ++j) {
             double z = -halfWidth + j * gridSpacing;         
-            float intensity = calculateIlluminanceAtPoint(0, y, z);
+            float intensity = calculateIlluminanceAtPoint_(0, y, z);
             if (intensity > zmax)zmax = intensity;
+            if (intensity < zmin)zmin = intensity;
             m_intensities->InsertNextValue(intensity);
         }
     }
     double z_radio = zmax / m_size;
+    if (z_radio == 0)z_radio = 1;
     for (int i = 0; i < gridSize; ++i) {
         std::vector<double> oneLine;
         double y = -halfWidth + i * gridSpacing;
@@ -603,12 +608,11 @@ void ISOLuxPlot::updateIESYZ(double distance, double halfmap)
         for (int j = 0; j < gridSize; ++j) {
             double z = -halfWidth + j * gridSpacing;
             double z_scale = z / radio;
-            float intensity = calculateIlluminanceAtPoint(0, y, z);
+            float intensity = calculateIlluminanceAtPoint_(0, y, z);
             m_points->InsertNextPoint(y_scale, z_scale,intensity / z_radio);
         }
     }
 
-    vtkSmartPointer<vtkCellArray> lines = vtkSmartPointer<vtkCellArray>::New();
 
     // 添加水平线
     for (int i = 0; i < gridSize; ++i) {
@@ -696,7 +700,8 @@ void ISOLuxPlot::updateIESXY_(double distance, double halfmap)
     fixtureZ = distance;
 
     double radio = calculationWidth / m_size;
-    zmax = 0;
+    zmax = -INFINITY;
+    zmin = INFINITY;
     for (int i = 0; i < gridSize; ++i) {
         std::vector<double> oneLine;
         double x = -halfWidth + i * gridSpacing;
@@ -704,10 +709,12 @@ void ISOLuxPlot::updateIESXY_(double distance, double halfmap)
             double y = -halfWidth + j * gridSpacing;
             float intensity = calculateIlluminanceAtPoint_(x, y, 0);
             if (intensity > zmax)zmax = intensity;
+            if (intensity < zmin)zmin = intensity;
             m_intensities->InsertNextValue(intensity);
         }
     }
     double z_radio = zmax / m_size;
+    if (z_radio == 0)z_radio = 1;
     for (int i = 0; i < gridSize; ++i) {
         std::vector<double> oneLine;
         double x = -halfWidth + i * gridSpacing;
@@ -720,7 +727,6 @@ void ISOLuxPlot::updateIESXY_(double distance, double halfmap)
         }
     }
 
-    vtkSmartPointer<vtkCellArray> lines = vtkSmartPointer<vtkCellArray>::New();
 
     // 添加水平线
     for (int i = 0; i < gridSize; ++i) {
@@ -807,18 +813,21 @@ void ISOLuxPlot::updateIESYZ_(double distance, double halfmap)
     fixtureY = 0;
     fixtureZ = 0;
     double radio = calculationWidth / m_size;
-    zmax = 0;
+    zmax = -INFINITY;
+    zmin = INFINITY;
     for (int i = 0; i < gridSize; ++i) {
         std::vector<double> oneLine;
         double y = -halfWidth + i * gridSpacing;
         for (int j = 0; j < gridSize; ++j) {
             double z = -halfWidth + j * gridSpacing;
-            float intensity = calculateIlluminanceAtPoint(0, y, z);
+            float intensity = calculateIlluminanceAtPoint_(0, y, z);
             if (intensity > zmax)zmax = intensity;
+            if (intensity < zmin)zmin = intensity;
             m_intensities->InsertNextValue(intensity);
         }
     }
     double z_radio = zmax / m_size;
+    if (z_radio == 0)z_radio = 1;
     for (int i = 0; i < gridSize; ++i) {
         std::vector<double> oneLine;
         double y = -halfWidth + i * gridSpacing;
@@ -826,12 +835,11 @@ void ISOLuxPlot::updateIESYZ_(double distance, double halfmap)
         for (int j = 0; j < gridSize; ++j) {
             double z = -halfWidth + j * gridSpacing;
             double z_scale = z / radio;
-            float intensity = calculateIlluminanceAtPoint(0, y, z);
+            float intensity = calculateIlluminanceAtPoint_(0, y, z);
             m_points->InsertNextPoint(y_scale, z_scale, intensity / z_radio);
         }
     }
 
-    vtkSmartPointer<vtkCellArray> lines = vtkSmartPointer<vtkCellArray>::New();
 
     // 添加水平线
     for (int i = 0; i < gridSize; ++i) {
@@ -918,13 +926,14 @@ void ISOLuxPlot::updateIESXZ_(double distance, double halfmap)
     fixtureZ = 0;
 
     double radio = calculationWidth / m_size;
-    zmax = 0;
+    zmax = -INFINITY;
+    zmin = INFINITY;
 
     for (int i = 0; i < gridSize; ++i) {
         const double x = -halfWidth + i * gridSpacing;
         for (int j = 0; j < gridSize; ++j) {
             const double z = -halfWidth + j * gridSpacing;
-            const float intensity = calculateIlluminanceAtPoint(x, 0, z);
+            const float intensity = calculateIlluminanceAtPoint_(x, 0, z);
 
             if (intensity > zmax)zmax = intensity;
             m_intensities->InsertNextValue(intensity);
@@ -932,7 +941,7 @@ void ISOLuxPlot::updateIESXZ_(double distance, double halfmap)
     }
 
     double z_radio = zmax / m_size;
-
+    if (z_radio == 0)z_radio = 1;
     for (int i = 0; i < gridSize; ++i) {
         const double x = -halfWidth + i * gridSpacing;
         const double x_scale = x / radio;
@@ -940,13 +949,12 @@ void ISOLuxPlot::updateIESXZ_(double distance, double halfmap)
         for (int j = 0; j < gridSize; ++j) {
             const double z = -halfWidth + j * gridSpacing;
             const double z_scale = z / radio;
-            const float intensity = calculateIlluminanceAtPoint(x, 0, z);
+            const float intensity = calculateIlluminanceAtPoint_(x, 0, z);
 
             m_points->InsertNextPoint(x_scale, z_scale, intensity / z_radio);
         }
     }
 
-    vtkSmartPointer<vtkCellArray> lines = vtkSmartPointer<vtkCellArray>::New();
 
     // 添加水平线
     for (int i = 0; i < gridSize; ++i) {
@@ -1053,6 +1061,8 @@ vtkSmartPointer<vtkLookupTable> ISOLuxPlot::createColorLookupTable()
 }
 void ISOLuxPlot::clearPoints()
 {
+    m_polyData->Reset();
+    lines->Reset();
     m_points->Reset();
     m_intensities->Reset();
 }
@@ -1231,21 +1241,23 @@ void ISOLuxPlot::updateIESXZ(double distance, double halfmap)
     fixtureZ = 0;
 
     double radio = calculationWidth/ m_size;
-    zmax = 0;
+    zmax = -INFINITY;
+    zmin = INFINITY;
 
     for (int i = 0; i < gridSize; ++i) {
         const double x = -halfWidth + i * gridSpacing;
         for (int j = 0; j < gridSize; ++j) {
             const double z = -halfWidth + j * gridSpacing;
-            const float intensity = calculateIlluminanceAtPoint(x, 0, z);
+            const float intensity = calculateIlluminanceAtPoint_(x, 0, z);
 
             if (intensity > zmax)zmax = intensity;
+            if (intensity < zmin)zmin = intensity;
             m_intensities->InsertNextValue(intensity);
         }
     }
 
     double z_radio = zmax / m_size;
-
+    if (z_radio == 0)z_radio = 1;
     for (int i = 0; i < gridSize; ++i) {
         const double x = -halfWidth + i * gridSpacing;
         const double x_scale = x / radio;
@@ -1253,13 +1265,12 @@ void ISOLuxPlot::updateIESXZ(double distance, double halfmap)
         for (int j = 0; j < gridSize; ++j) {
             const double z = -halfWidth + j * gridSpacing;
             const double z_scale = z / radio;
-            const float intensity = calculateIlluminanceAtPoint(x, 0, z);
+            const float intensity = calculateIlluminanceAtPoint_(x, 0, z);
 
             m_points->InsertNextPoint(x_scale, z_scale, intensity / z_radio);
         }
     }
 
-    vtkSmartPointer<vtkCellArray> lines = vtkSmartPointer<vtkCellArray>::New();
 
     // 添加水平线
     for (int i = 0; i < gridSize; ++i) {
@@ -1339,6 +1350,7 @@ void ISOLuxPlot::updateIESXZ(double distance, double halfmap)
     surfaceMapper->Update();
 
     updateCubeAxesBounds();
+
     contourFilter->GenerateValues(m_levelSize, zmin, zmax);
     contourFilter->Update();
 

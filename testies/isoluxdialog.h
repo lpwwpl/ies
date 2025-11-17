@@ -36,7 +36,7 @@ class vtkSmoothPolyDataFilter;
 class vtkVertexGlyphFilter;
 //using namespace Qwt3D;
 class vtkExtractSurface;
-
+class vtkCellArray;
 enum EPlaneType
 {
     ePlaneX=0,
@@ -122,7 +122,7 @@ public:
     vtkSmartPointer<vtkContourFilter> contourFilter;
     vtkSmartPointer<vtkActor> contourActor;
     vtkSmartPointer<vtkPolyDataMapper> contourMapper;
-
+    vtkSmartPointer<vtkCellArray> lines;
 
 
     vtkSmartPointer<vtkDelaunay2D> delaunay;
