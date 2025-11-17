@@ -30,6 +30,9 @@
 #include <vtkFollower.h>
 #include <vtkArrowSource.h>
 #include <vtkTransformPolyDataFilter.h>
+#include <vtkDelaunay3D.h>
+#include <vtkSmoothPolyDataFilter.h>
+#include <vtkStructuredGridGeometryFilter.h>
 //#include "dislin.h"
 ThreeDDialog::ThreeDDialog(QWidget *parent)
     : QDialog(parent)
@@ -43,9 +46,9 @@ ThreeDDialog::ThreeDDialog(QWidget *parent)
     ui->widgetThreeD->setLayout(hLayout);
     hLayout->addWidget(m_iesWidget);
 
-    ui->rbViewShading->setChecked(true);
-    ui->rbColor->setChecked(true);
-    
+
+
+
 
     Qt::WindowFlags flags = Qt::Dialog;
     // 添加最大化和最小化按钮
@@ -63,6 +66,22 @@ ThreeDDialog::ThreeDDialog(QWidget *parent)
     connect(ui->rbViewShading, SIGNAL(toggled(bool)), this, SLOT(updateIESDataShading(bool)));
     connect(ui->rbColor, SIGNAL(toggled(bool)), this, SLOT(updateIESDataColor(bool)));
     connect(ui->rbShape, SIGNAL(toggled(bool)), this, SLOT(updateIESDataShape(bool)));
+
+    ui->rbViewShading->blockSignals(true);
+    ui->rbColor->blockSignals(true);
+    ui->rbViewMesh->blockSignals(true);
+    ui->rbShape->blockSignals(true);
+
+    //ui->rbViewShading->setChecked(true);
+    ui->rbColor->setChecked(true);
+
+    ui->rbViewShading->blockSignals(false);
+    ui->rbColor->blockSignals(false);
+    ui->rbViewMesh->blockSignals(false);
+    ui->rbShape->blockSignals(false);
+
+    updateIESDataShape(true);
+ 
 }
 
 ThreeDDialog::~ThreeDDialog()
@@ -79,7 +98,14 @@ void ThreeDDialog::updateIESDataColor(bool value)
 }
 void ThreeDDialog::updateIESDataShape(bool value)
 {
-    m_iesWidget->updateIESDataShape(value);
+    if (ui->rbViewMesh->isChecked())
+    {
+        m_iesWidget->updateIESDataMesh(value);
+    }
+    else
+    {
+        m_iesWidget->updateIESDataShading(value);
+    }
     m_iesWidget->on_chkOYZ_stateChanged(ui->chkOYZ->isChecked());
     m_iesWidget->on_chkOXZ_stateChanged(ui->chkOXZ->isChecked());
     m_iesWidget->on_chkOXY_stateChanged(ui->chkOXY->isChecked());
@@ -111,12 +137,7 @@ void ThreeDDialog::updateIES()
     {
         m_iesWidget->updateIESDataColor(true);
     }
-    else if (ui->rbShape->isChecked())
-    {
-        m_iesWidget->updateIESDataShape(true);
-    }
-
-    if (ui->rbViewMesh->isChecked())
+    else if (ui->rbViewMesh->isChecked())
     {
         m_iesWidget->updateIESDataMesh(true);
     }
@@ -140,17 +161,20 @@ IESPointCloudWidget::IESPointCloudWidget(QWidget* parent)
     m_intensities = vtkSmartPointer<vtkFloatArray>::New();
     m_polyData = vtkSmartPointer<vtkPolyData>::New();
     m_glyphFilter = vtkSmartPointer<vtkVertexGlyphFilter>::New();
+    m_delaunay = vtkSmartPointer<vtkDelaunay3D>::New();
+    m_smoothFilter = vtkSmartPointer<vtkSmoothPolyDataFilter>::New();
+    m_geometryFilter = vtkSmartPointer<vtkStructuredGridGeometryFilter>::New();
     m_mapper = vtkSmartPointer<vtkPolyDataMapper>::New();
     structuredGrid = vtkSmartPointer<vtkStructuredGrid>::New();
     m_actor = vtkSmartPointer<vtkActor>::New();
     m_colorTransferFunction = vtkSmartPointer<vtkColorTransferFunction>::New();
-    surfaceFilter = vtkSmartPointer<vtkDataSetSurfaceFilter>::New();
+    m_surfaceFilter = vtkSmartPointer<vtkDataSetSurfaceFilter>::New();
     // 设置强度值数组名
     m_intensities->SetName("Intensity");
 
     // 组装PolyData
     m_polyData->SetPoints(m_points);
-    //m_polyData->GetPointData()->SetScalars(m_intensities);// ->SetScalars(m_intensities); // 设置强度值用于颜色映射
+    m_polyData->GetPointData()->SetScalars(m_intensities);// ->SetScalars(m_intensities); // 设置强度值用于颜色映射
 
 
     structuredGrid->SetPoints(m_points);
@@ -158,13 +182,19 @@ IESPointCloudWidget::IESPointCloudWidget(QWidget* parent)
 
     // 设置GlyphFilter
     m_glyphFilter->SetInputData(m_polyData);
-    surfaceFilter->SetInputData(structuredGrid);
-
+    m_surfaceFilter->SetInputData(structuredGrid);
+    m_geometryFilter->SetInputData(structuredGrid);
+    //m_surfaceFilter->SetInputConnection(m_delaunay->GetOutputPort());
+    //m_delaunay->SetInputData(m_polyData);
+    //m_delaunay->SetAlpha(0.1); // 控制网格密度
+    m_smoothFilter->SetInputConnection(m_surfaceFilter->GetOutputPort());
+    m_smoothFilter->SetNumberOfIterations(15);
     //////////////
     //addCoordinateAxes();
 
     m_mapper->SetScalarModeToUsePointData(); // 使用点数据中的标量
     m_mapper->SetLookupTable(m_colorTransferFunction); // 设置颜色查找表
+    //m_mapper->SetInputConnection(m_geometryFilter->GetOutputPort());
 
     // 设置Actor
     m_actor->SetMapper(m_mapper);
@@ -207,17 +237,32 @@ void IESPointCloudWidget::updateIESDataShape(bool value)
 {
     if (IESLoader::instance().light.candela.size() < 1)return;
     if (!value)return;
-    m_fillStyle = eShape;
+
     FillShapeData();
     // 设置Mapper
-    m_mapper->SetInputConnection(m_glyphFilter->GetOutputPort());
 
-    // 通知组件数据已更新
     m_polyData->Modified();
-    //structuredGrid->Modified();
+    structuredGrid->Modified();
     m_points->Modified();
-    m_intensities->Modified();
+    //m_intensities->Modified();
     m_mapper->Modified();
+
+    switch(m_fillStyle)
+    {
+    case eShading:
+    {
+        m_mapper->SetInputConnection(m_geometryFilter->GetOutputPort());//m_glyphFilter
+    }
+    break;
+    case eMesh:
+    {
+        m_mapper->SetInputConnection(m_glyphFilter->GetOutputPort());//
+    }
+    break;
+    default:
+        break;
+    }
+
     // 重置相机以显示所有点:cite[8]
     m_renderer->ResetCamera();
 
@@ -232,12 +277,14 @@ void IESPointCloudWidget::updateIESDataColor(bool value)
     m_fillStyle = eColor;
 
     FillColorData();
-    m_mapper->SetInputConnection(surfaceFilter->GetOutputPort());
+    m_mapper->SetInputConnection(m_surfaceFilter->GetOutputPort());
 
     // 通知组件数据已更新
     //m_polyData->Modified();
-    structuredGrid->Modified();
+
     m_points->Modified();
+    m_polyData->Modified(); 
+    structuredGrid->Modified();
     m_intensities->Modified();
     m_mapper->Modified();
     // 重置相机以显示所有点:cite[8]
@@ -252,14 +299,12 @@ void IESPointCloudWidget::clearPoints()
 {
     m_points->Reset();
     m_intensities->Reset();
-
 }
 void IESPointCloudWidget::updateIESDataShading(bool value)
 {
     if (!value)return;
-
-
-    //////////////////////////////
+    m_fillStyle = eShading;
+    updateIESDataShape(value);
 }
 
 // 添加径向刻度线（在径向线上添加短刻度标记）
@@ -1197,6 +1242,8 @@ void IESPointCloudWidget::FillShapeData()
 void IESPointCloudWidget::updateIESDataMesh(bool value)
 {
     if (!value)return;
+    m_fillStyle = eMesh;
+    updateIESDataShape(value);
 }
 
 void IESPointCloudWidget::on_chkOXY_stateChanged(int value)

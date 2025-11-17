@@ -32,10 +32,14 @@ class vtkTransformFilter;
 class vtkTransform;
 class vtkVectorText;
 class vtkFollower;
+class vtkDelaunay3D;
+class vtkSmoothPolyDataFilter;
+class vtkStructuredGridGeometryFilter;
 
 enum eFillStyle
 {
-    eShape=0,
+    eShading=0,
+    eMesh,
     eColor
 };
 class IESPointCloudWidget : public QVTKOpenGLNativeWidget
@@ -118,7 +122,10 @@ private:
     vtkSmartPointer<vtkFloatArray> m_intensities;     // 强度值
     vtkSmartPointer<vtkPolyData> m_polyData;          // 点云数据
     vtkSmartPointer<vtkVertexGlyphFilter> m_glyphFilter; // 将点显示为顶点
-    vtkSmartPointer<vtkDataSetSurfaceFilter> surfaceFilter;
+    vtkSmartPointer<vtkDelaunay3D> m_delaunay;
+    vtkSmartPointer<vtkSmoothPolyDataFilter> m_smoothFilter;
+    vtkSmartPointer<vtkDataSetSurfaceFilter> m_surfaceFilter;
+    vtkSmartPointer<vtkStructuredGridGeometryFilter> m_geometryFilter;
     vtkSmartPointer<vtkPolyDataMapper> m_mapper;      // 数据映射器
     vtkSmartPointer<vtkActor> m_actor;                // 场景中的演员
     vtkSmartPointer<vtkColorTransferFunction> m_colorTransferFunction; // 颜色映射函数
