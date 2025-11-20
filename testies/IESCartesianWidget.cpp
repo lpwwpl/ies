@@ -23,6 +23,14 @@ void IESCartesianWidget::Init()
 
     
     //this->plotLayout()->clear(); // 清空默认布局
+        // 设置图例
+    legend->setVisible(true);
+    //legend->setPositionStyle(QCPLegend::psTopRight);
+
+    // 图例样式
+    legend->setBrush(QBrush(QColor(255, 255, 255, 230)));
+    legend->setBorderPen(QPen(Qt::darkGray));
+    legend->setFont(QFont("Arial", 9));
 
    
     addLayer("background1", nullptr, QCustomPlot::limBelow);
@@ -70,15 +78,17 @@ void IESCartesianWidget::updateIES(double angle)
             angles0_180.append(point.x());
             values0_180.append(point.y());
         }
-        //graph0_180->setBrush(Qt::NoBrush);
         graph0_180->setData(angles0_180, values0_180);
-        //graph0_180->setPen(QPen(Qt::red, 2));
-        //graph0_180->setName("C0° - C180°");
+        QString cname = QString("C%1").arg(angle);
+        graph0_180->setName(cname);
 
 
-
+        double graph90_270_angle = 90 + angle;
+        if (graph90_270_angle > 360)graph90_270_angle -= 360;
+        cname = QString("C%1").arg(graph90_270_angle);
         QVector<double> angles90_270, values90_270;
         graph90_270->setData(angles90_270, values90_270);
+        graph90_270->setName(cname);
     }
     else
     {
@@ -89,15 +99,13 @@ void IESCartesianWidget::updateIES(double angle)
             angles0_180.append(point.x());
             values0_180.append(point.y());
         }
-        //graph0_180->setBrush(Qt::NoBrush);
+   
         graph0_180->setData(angles0_180, values0_180);
-        //graph0_180->setPen(QPen(Qt::red, 2));
-        //graph0_180->setName("C0° - C180°");
+        QString cname = QString("C%1").arg(angle);
+        graph0_180->setName(cname);
 
         // 生成90-270°剖面数据 (C90° - C270°)
-
         auto profile90_270 = generateC90C270Profile(angle);
-
         //// 创建90-270°曲线
         QVector<double> angles90_270, values90_270;
         for (const auto& point : profile90_270) {
@@ -106,8 +114,10 @@ void IESCartesianWidget::updateIES(double angle)
         }
         //graph90_270->setBrush(Qt::NoBrush);
         graph90_270->setData(angles90_270, values90_270);
-        //graph90_270->setPen(QPen(Qt::blue, 2));
-        //graph90_270->setName("C90° - C270°");
+        double graph90_270_angle = 90 + angle;
+        if (graph90_270_angle > 360)graph90_270_angle -= 360;
+        cname = QString("C%1").arg(graph90_270_angle);
+        graph90_270->setName(cname);
     }
     rescaleAxes();
     replot();
@@ -315,6 +325,8 @@ void IESCartesianWidget::on_horizontalSlider_valueChanged(int value)
     }
     //graph0_180->setBrush(Qt::NoBrush);
     graph0_180->setData(angles0_180, values0_180);
+    QString cname = QString("C%1").arg(value);
+    graph0_180->setName(cname);
 
     graph90_270->data()->clear();
 
@@ -328,8 +340,11 @@ void IESCartesianWidget::on_horizontalSlider_valueChanged(int value)
     }
     //graph90_270->setBrush(Qt::NoBrush);
     graph90_270->setData(angles90_270, values90_270);
-    //graph90_270->setPen(QPen(Qt::blue, 2));
-    //graph90_270->setName("C90° - C270°");
+
+    double graph90_270_angle = 90 + value;
+    if (graph90_270_angle > 360)graph90_270_angle -= 360;
+    cname = QString("C%1").arg(graph90_270_angle);
+    graph90_270->setName(cname);
 
     rescaleAxes();
     replot();

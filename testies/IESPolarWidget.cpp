@@ -17,6 +17,14 @@ IESPolarWidget::~IESPolarWidget()
 void IESPolarWidget::Init()
 {
 
+    legend->setVisible(true);
+    //legend->setPositionStyle(QCPLegend::psTopRight);
+
+    // 图例样式
+    legend->setBrush(QBrush(QColor(255, 255, 255, 230)));
+    legend->setBorderPen(QPen(Qt::darkGray));
+    legend->setFont(QFont("Arial", 9));
+
     QFont font;
     font.setStyleStrategy(QFont::NoAntialias);
     font.setFamily("Microsoft YaHei");
@@ -88,11 +96,10 @@ void IESPolarWidget::updateIES(double angle)
             angles0_180.append(point.x());
             values0_180.append(point.y());
         }
-        //graph0_180->setBrush(Qt::NoBrush);
-        graph0_180->setData(angles0_180, values0_180);
-        //graph0_180->setPen(QPen(Qt::red, 2));
-        graph0_180->setName("C0° - C180°");
 
+        graph0_180->setData(angles0_180, values0_180);
+        graph0_180->setName("C0° - C180°");
+   
 
 
         QVector<double> angles90_270, values90_270;
@@ -109,7 +116,6 @@ void IESPolarWidget::updateIES(double angle)
         }
         //graph0_180->setBrush(Qt::NoBrush);
         graph0_180->setData(angles0_180, values0_180);
-        //graph0_180->setPen(QPen(Qt::red, 2));
         graph0_180->setName("C0° - C180°");
 
         // 生成90-270°剖面数据 (C90° - C270°)
@@ -122,9 +128,7 @@ void IESPolarWidget::updateIES(double angle)
             angles90_270.append(point.x());
             values90_270.append(point.y());
         }
-        //graph90_270->setBrush(Qt::NoBrush);
         graph90_270->setData(angles90_270, values90_270);
-        //graph90_270->setPen(QPen(Qt::blue, 2));
         graph90_270->setName("C90° - C270°");
     }
     rescaleAxes();

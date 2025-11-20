@@ -129,6 +129,7 @@ private:
     ThreeDDialog* m_3dDialog;
     NewFileDialog* m_newFileDialog;
 
+
     QLineEdit* m_heditor;
     QLineEdit* m_veditor;
     int logicalIndex;

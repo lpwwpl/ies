@@ -80,6 +80,9 @@
     <ClCompile Include="IESCartesianWidget.cpp">
       <Filter>widgets</Filter>
     </ClCompile>
+    <ClCompile Include="DistortionWidget.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="tiny_ies.hpp">
@@ -140,6 +143,9 @@
     </QtMoc>
     <QtMoc Include="IESCartesianWidget.h">
       <Filter>widgets</Filter>
+    </QtMoc>
+    <QtMoc Include="DistortionWidget.h">
+      <Filter>Header Files</Filter>
     </QtMoc>
   </ItemGroup>
   <ItemGroup>

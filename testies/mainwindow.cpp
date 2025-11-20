@@ -18,6 +18,7 @@
 #include "FootprintWidget.h"
 #include "IESLoader.h"
 #include "newfiledialog.h"
+#include "DistortionWidget.h"
 
 MainWindow::MainWindow(QWidget* parent)
     : QMainWindow(parent),
@@ -1293,6 +1294,10 @@ void MainWindow::showDistort()
     if (filepath.isEmpty()) {
         return;
     }
+
+    DistortionGridWidget* distortionWidget = new DistortionGridWidget();
+    distortionWidget->show();
+     distortionWidget->loadDistortionData(filepath);
 }
 
 
