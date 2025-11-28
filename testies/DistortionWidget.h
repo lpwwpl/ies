@@ -42,6 +42,16 @@ private:
 
     double m_maxRadialDistortion = 0.0;
     double m_maxTangentialDistortion = 0.0;
+
+    double xMin = INFINITY;
+    double yMin = INFINITY;
+    double xMax = -INFINITY;
+    double yMax = -INFINITY;
+
+    double xRange = 0;
+    double yRange = 0;
+    double marginX = 0;
+    double marginY = 0;
 };
 
 #endif // DISTORTIONGRIDWIDGET_H

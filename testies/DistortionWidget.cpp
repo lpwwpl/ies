@@ -52,7 +52,8 @@ void DistortionGridWidget::setupPlot()
     m_customPlot->yAxis->setTickPen(QPen(Qt::black, 1));
     m_customPlot->xAxis->setSubTickPen(QPen(Qt::black, 1));
     m_customPlot->yAxis->setSubTickPen(QPen(Qt::black, 1));
-
+    // 设置交互功能
+    m_customPlot->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectPlottables);
     resize(QSize(640, 640));
     // 设置等比例缩放
     //m_customPlot->setAspectRatio(1.0);
@@ -162,16 +163,20 @@ void DistortionGridWidget::plotGrids()
     // 绘制畸变网格
     plotDistortedGrid();
 
+    // 设置坐标范围 - 根据数据范围调整
+    m_customPlot->xAxis->setRange(xMin - marginX, xMax + marginX);
+    m_customPlot->yAxis->setRange(yMin - marginY, yMax + marginY);
+    m_customPlot->rescaleAxes();
     //updateInfoText();
     m_customPlot->replot();
 }
 
 void DistortionGridWidget::plotIdealGrid()
 {
-    double xMin = INFINITY;
-    double yMin = INFINITY;
-    double xMax = -INFINITY;
-    double yMax = -INFINITY;
+     xMin = INFINITY;
+     yMin = INFINITY;
+     xMax = -INFINITY;
+     yMax = -INFINITY;
     // 绘制理想网格的水平线
     for (int x = 0; x < 11; ++x) {
         QVector<double> xCoords, yCoords;
@@ -205,11 +210,11 @@ void DistortionGridWidget::plotIdealGrid()
         graph->setLineStyle(QCPGraph::lsLine);
         graph->setPen(QPen(QColor(0, 0, 255, 180), 1.5, Qt::SolidLine));
     }
+    xRange = (xMax - xMin) / 2;
+    yRange = (yMax - yMin) / 2;
+    marginX = xRange * 0.1;
+    marginY = yRange * 0.1;
 
-    // 设置坐标范围 - 根据数据范围调整
-    m_customPlot->xAxis->setRange(xMin-1, xMax+1);
-    m_customPlot->yAxis->setRange(yMin-1, yMax+1);
-    m_customPlot->rescaleAxes();
 
 }
 

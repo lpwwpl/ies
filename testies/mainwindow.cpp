@@ -19,6 +19,7 @@
 #include "IESLoader.h"
 #include "newfiledialog.h"
 #include "DistortionWidget.h"
+#include "AberrationWidget.h"
 
 MainWindow::MainWindow(QWidget* parent)
     : QMainWindow(parent),
@@ -157,6 +158,7 @@ MainWindow::MainWindow(QWidget* parent)
     connect(ui->actionTrace, &QAction::triggered, this, &MainWindow::showTrace);
     connect(ui->actionMTF, &QAction::triggered, this, &MainWindow::showMTF);
 
+    connect(ui->actionaberration, &QAction::triggered, this, &MainWindow::showAberration);
 
     connect(m_newFileDialog, SIGNAL(signalCreateTypeC_0(QString,EIES_VType)), this, SLOT(slotCreateTypeC_0(QString, EIES_VType)));
     connect(m_newFileDialog, SIGNAL(signalCreateTypeC_0_90(QString, EIES_VType)), this, SLOT(slotCreateTypeC_0_90(QString, EIES_VType)));
@@ -1261,6 +1263,17 @@ void MainWindow::showTrace()
     footprint->loadDataFromFile(filepath);
     footprint->plotFootprints();
     footprint->show();
+}
+void MainWindow::showAberration()
+{
+    auto filepath = QFileDialog::getOpenFileName(
+        this, tr("Open txt"), "", tr("txt File(*.txt);;All Files(*)"));
+    if (filepath.isEmpty()) {
+        return;
+    }
+    AberrationWidget* w = new AberrationWidget();
+    w->loadDataFromFile(filepath);
+    w->show();
 }
 void MainWindow::showMTF()
 {

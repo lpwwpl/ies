@@ -109,6 +109,7 @@ public Q_SLOTS:
     void updateHValidator();
     void showSpot();
     void showTrace();
+    void showAberration();
     void showMTF();
     void showFov();
     void showDistort();

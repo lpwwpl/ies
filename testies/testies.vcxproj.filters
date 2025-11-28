@@ -83,6 +83,9 @@
     <ClCompile Include="DistortionWidget.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="AberrationWidget.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="tiny_ies.hpp">
@@ -145,6 +148,9 @@
       <Filter>widgets</Filter>
     </QtMoc>
     <QtMoc Include="DistortionWidget.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+    <QtMoc Include="AberrationWidget.h">
       <Filter>Header Files</Filter>
     </QtMoc>
   </ItemGroup>
