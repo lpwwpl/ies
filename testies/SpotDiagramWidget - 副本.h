@@ -38,15 +38,22 @@ public:
     // 绘制点列图
     void plotSpotDiagrams();
 
+protected:
+    // 右键菜单事件
+    void contextMenuEvent(QContextMenuEvent* event) override;
 
 private slots:
     // 处理缩放事件
     void onRangeChanged();
 
+    // 处理鼠标选择事件
+    void onMousePress(QMouseEvent* event);
+    void onMouseMove(QMouseEvent* event);
+    void onMouseRelease(QMouseEvent* event);
 
     // 右键菜单动作
     void resetView();
-
+    void zoomToSelection();
 
 private:
     // 设置图表
@@ -65,8 +72,11 @@ private:
     // 计算点列中心
     void calculateSpotCenter(const QVector<SpotData>& data, double& centerX, double& centerY);
 
-    // 添加信息到刻度
-    void addInfoToTicks();
+    // 添加RMS信息到图表
+    void addRMSInfoToPlot();
+
+    // 添加中心坐标信息到图表左侧
+    void addCenterInfoToPlot(const QMap<int, QPair<double, double>>& spotCenters);
 
     // 更新点列位置
     void updateSpotPositions();
@@ -74,6 +84,8 @@ private:
     // 重新计算垂直偏移
     QMap<int, double> calculateVerticalOffsets();
 
+    // 绘制选择矩形
+    void drawSelectionRect(const QRect& rect);
 
     // 保存和恢复初始视图
     void saveInitialView();
@@ -90,17 +102,20 @@ private:
     QMap<int, QPair<double, double>> m_spotCenters; // 点列中心坐标
     QMap<int, QVector<QCPGraph*>> m_fieldGraphs;    // 每个视场的图形对象
     QMap<int, QCPItemText*> m_fieldLabels;          // 视场标签
-
+    QCPItemText* m_rmsInfoText;                     // RMS信息文本
+    QCPItemText* m_centerInfoText;                  // 中心坐标信息文本
+    QCPItemRect* m_selectionRect;                   // 选择矩形
+    QMenu* m_contextMenu;                           // 右键菜单
+    QAction* m_resetViewAction;                     // 重置视图动作
+    QAction* m_zoomToSelectionAction;               // 放大到选择区域动作
     double m_dataScale;                             // 数据缩放比例
     bool m_isInitialPlot;                           // 是否是初始绘制
     QMap<int, QVector<SpotData>> m_fieldData;       // 按视场分组的数据
+    QPoint m_selectionStart;                        // 选择开始位置
+    QPoint m_selectionEnd;                          // 选择结束位置
+    bool m_isSelecting;                             // 是否正在选择
     QCPRange m_initialXRange;                       // 初始X轴范围
     QCPRange m_initialYRange;                       // 初始Y轴范围
-
-
-    double xRange;
-    double yMin;
-    double yMax;
 };
 
 #endif // SPOTDIAGRAMWIDGET_H

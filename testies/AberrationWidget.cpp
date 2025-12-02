@@ -124,9 +124,6 @@ bool AberrationWidget::loadDataFromFile(const QString& filename)
             QCustomPlot* customPlot = new QCustomPlot();
             customPlot->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectPlottables | QCP::iSelectLegend);
 
-            // 添加图例
-            customPlot->legend->setVisible(true);
-            customPlot->legend->setFont(QFont("Helvetica", 9));
 
             QVector<AberrationData> grp = chartName_grps.value(key);
             for (auto& wave : grp)
@@ -134,10 +131,10 @@ bool AberrationWidget::loadDataFromFile(const QString& filename)
                 QCPGraph* graph = customPlot->addGraph();
                 graph->setData(wave.normalizedAperture, wave.aberration);
 
-                QString legendName = QString("λ=%1nm").arg(wave.waveLength);
+                QString legendName = QString("%1nm").arg(wave.waveLength);//λ=
                 graph->setName(legendName);
-                graph->setPen(QPen(getColorFromString(wave.lineColor), 2));
-                graph->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssCircle, 4));
+                graph->setPen(QPen(getColorFromString(wave.lineColor), 1));
+                graph->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssCircle, 2));
             }
 
             customPlot->xAxis->setLabel("归一化光阑");
@@ -148,11 +145,24 @@ bool AberrationWidget::loadDataFromFile(const QString& filename)
             customPlot->rescaleAxes();
 
             // 添加标题
-            QString title = QString("视场索引: %1 - %2").arg(fieldIndex)
-                .arg(fieldData.first().chartName);
+            QString title = QString("%1").arg(key);
             customPlot->plotLayout()->insertRow(0);
             customPlot->plotLayout()->addElement(0, 0,
                 new QCPTextElement(customPlot, title, QFont("sans", 12, QFont::Bold)));
+            customPlot->plotLayout()->insertRow(1);
+            customPlot->plotLayout()->addElement(1, 0, customPlot->legend);
+            //customPlot->plotLayout()->addElement(2, 2, customPlot->axisRect());
+            
+
+            customPlot->legend->setWrap(5); // 每行最多6个图例项
+            customPlot->legend->setFillOrder(QCPLegend::foColumnsFirst);
+            //// 添加图例
+            customPlot->legend->setVisible(true);
+            customPlot->legend->setFont(QFont("Helvetica", 8));
+            customPlot->legend->setMinimumSize(0, 15);   // 最小高度30
+            customPlot->legend->setMaximumSize(10000, 15); // 最大高度30
+            //customPlot->legend->setRowStretchFactor(1, 0);
+
 
             customPlot->replot();
 
