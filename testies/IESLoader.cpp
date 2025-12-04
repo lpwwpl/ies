@@ -760,7 +760,7 @@ void IESLoader::fillData()
         std::vector<double> vals1;
         std::vector<double> vals2;
         vals1.insert(vals1.end(), light.vertical_angles.begin(), light.vertical_angles.end());
-        for (double val = light.vertical_angles[vertical_size - 1]; val < 180; val+=step)
+        for (double val = light.vertical_angles[vertical_size - 1]+step; val <= 180; val+=step)
         {
             vals2.push_back(val);
         }
@@ -794,6 +794,34 @@ void IESLoader::fillData()
     case eA_V90:
     {
         newThetas = linspace(0, 90, light.candela_hv[0].size());
+        //double vertical_size = light.number_vertical_angles;
+        //double step = light.vertical_angles[vertical_size - 1] - light.vertical_angles[vertical_size - 2];
+        //std::vector<double> vals1;
+        //std::vector<double> vals2;
+        //vals1.insert(vals1.end(), light.vertical_angles.begin(), light.vertical_angles.end());
+        //for (double val = light.vertical_angles[vertical_size - 1]+step; val <= 180; val += step)
+        //{
+        //    vals2.push_back(val);
+        //}
+        //newThetas.insert(newThetas.end(), vals1.begin(), vals1.end());
+        //newThetas.insert(newThetas.end(), vals2.begin(), vals2.end());
+        //std::vector<std::vector<double>> extravals;
+        //for (int i = 0; i < newValues.size(); i++)
+        //{
+        //    std::vector<double> one;
+        //    one.resize(vals2.size());
+        //    for (auto& row : one) {
+        //        row = 0;
+        //    }
+        //    extravals.push_back(one);
+
+        //}
+        //for (int i = 0; i < newValues.size(); i++)
+        //{
+        //    std::vector<double>& v = newValues[i];
+        //    std::vector<double> extra = extravals[i];
+        //    v.insert(v.end(), extra.begin(), extra.end());
+        //}
     }
     break;
     case eB_V_90_90:
