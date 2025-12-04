@@ -535,10 +535,13 @@ void IESLoader::fillData()
         newPhis.insert(newPhis.end(), phis1.begin(), phis1.end());
         newPhis.insert(newPhis.end(), phis2.begin(), phis2.end());
 
-        std::vector<std::vector<double>> vals1 = light.candela_hv;
-        std::vector<std::vector<double>> vals2 = light.candela_hv;
-        vals2.pop_back();
-        std::reverse(vals2.begin(), vals2.end()); // 反转整个 vector
+        std::vector<std::vector<double>> vals1;// = light.candela_hv;
+        std::vector<std::vector<double>> vals2;// = light.candela_hv;
+        for (int i = 0; i < light.candela_hv.size() - 1; i++)
+        {
+            vals1.push_back(light.candela_hv[i]);
+        }
+        vals2.insert(vals2.end(), light.candela_hv.rbegin(), light.candela_hv.rend());
         newValues.insert(newValues.end(), vals1.begin(), vals1.end());
         newValues.insert(newValues.end(), vals2.begin(), vals2.end());
     }
@@ -752,7 +755,34 @@ void IESLoader::fillData()
     break;
     case eC_V90:
     {
-        newThetas = linspace(0, 90, light.candela_hv[0].size());
+        double vertical_size = light.number_vertical_angles;
+        double step = light.vertical_angles[vertical_size - 1] - light.vertical_angles[vertical_size - 2];
+        std::vector<double> vals1;
+        std::vector<double> vals2;
+        vals1.insert(vals1.end(), light.vertical_angles.begin(), light.vertical_angles.end());
+        for (double val = light.vertical_angles[vertical_size - 1]; val < 180; val+=step)
+        {
+            vals2.push_back(val);
+        }
+        newThetas.insert(newThetas.end(), vals1.begin(), vals1.end());
+        newThetas.insert(newThetas.end(), vals2.begin(), vals2.end());
+        std::vector<std::vector<double>> extravals;
+        for (int i = 0; i < newValues.size(); i++)
+        {
+            std::vector<double> one; 
+            one.resize(vals2.size());
+            for (auto& row : one) {
+                row = 0;
+            }
+            extravals.push_back(one);
+          
+        }
+        for (int i = 0; i < newValues.size(); i++)
+        {
+            std::vector<double>& v = newValues[i];
+            std::vector<double> extra = extravals[i];
+            v.insert(v.end(), extra.begin(), extra.end());
+        }
     }
     break;
     case eC_V90_180:
