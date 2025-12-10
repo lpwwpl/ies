@@ -37,6 +37,7 @@ public:
     void get_coords();
     QVector3D polar_to_cartesian(double theta,double phi,double distance =1);
     double getCandelaValue(double vertical, double horizontal) ;
+    int findClosestIndex(const std::vector<double>& array, double value);
     //double interpolateCandela(double vertical, double horizontal);
     //double getCandelaValue(double vertical, double horizontal) const;
 private:
