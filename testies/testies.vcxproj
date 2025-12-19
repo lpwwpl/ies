@@ -66,7 +66,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>QUARTER_DLL;COIN_DLL;USE_QT;NOMINMAX;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>QUARTER_DLL;COIN_DLL;USE_QT;NOMINMAX;QWT_DLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(SolutionDir)\3rdparty\qwt;$(SolutionDir)\3rdparty\;$(SolutionDir)\3rdparty\qwt3d;$(SolutionDir)\3rdparty\vtk</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <LanguageStandard_C>stdc17</LanguageStandard_C>
@@ -117,7 +117,12 @@
     <ClCompile Include="IESglwidget.cpp" />
     <ClCompile Include="IESIsoWidget.cpp" />
     <ClCompile Include="IESLoader.cpp" />
-    <ClCompile Include="IESPolarWidget.cpp" />
+    <ClCompile Include="IESPolarWidget.cpp">
+      <DynamicSource Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">input</DynamicSource>
+      <QtMocFileName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(Filename).moc</QtMocFileName>
+      <DynamicSource Condition="'$(Configuration)|$(Platform)'=='Release|x64'">input</DynamicSource>
+      <QtMocFileName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">%(Filename).moc</QtMocFileName>
+    </ClCompile>
     <ClCompile Include="isoluxdialog.cpp" />
     <ClCompile Include="main.cpp">
       <DynamicSource Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">input</DynamicSource>
@@ -129,13 +134,11 @@
     <ClCompile Include="MTFViewWidget.cpp" />
     <ClCompile Include="newfiledialog.cpp" />
     <ClCompile Include="polardialog.cpp" />
-    <ClCompile Include="QCustomPlot.cpp" />
     <ClCompile Include="SpotDiagramWidget.cpp" />
     <ClCompile Include="TableItemDelegate.cpp" />
     <ClCompile Include="threeDdialog.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <QtMoc Include="QCustomPlot.h" />
     <QtMoc Include="AberrationWidget.h" />
     <ClInclude Include="common.h" />
     <ClInclude Include="contours.h" />
@@ -144,7 +147,7 @@
     <QtMoc Include="FootprintWidget.h" />
     <QtMoc Include="IESCartesianWidget.h" />
     <QtMoc Include="DistortionWidget.h" />
-    <ClInclude Include="IESIsoWidget.h" />
+    <QtMoc Include="IESIsoWidget.h" />
     <QtMoc Include="mainwindow.h" />
     <ClInclude Include="IESLoader.h" />
     <QtMoc Include="IESPolarWidget.h" />

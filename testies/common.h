@@ -26,4 +26,5 @@ enum EIES_VType
     eVNotSupoort,
 };
 
+#define M_PI 3.14159265358979323846
 #endif // ISOLUXDIALOG_H

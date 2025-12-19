@@ -20,7 +20,7 @@
 #include "newfiledialog.h"
 #include "DistortionWidget.h"
 #include "AberrationWidget.h"
-
+#include <QMouseEvent>
 MainWindow::MainWindow(QWidget* parent)
     : QMainWindow(parent),
     ui(new Ui::MainWindow),

@@ -26,9 +26,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="QCustomPlot.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="mainwindow.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -48,9 +45,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="IESIsoWidget.cpp">
-      <Filter>widgets</Filter>
-    </ClCompile>
-    <ClCompile Include="IESPolarWidget.cpp">
       <Filter>widgets</Filter>
     </ClCompile>
     <ClCompile Include="contours.cpp">
@@ -86,6 +80,9 @@
     <ClCompile Include="AberrationWidget.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="IESPolarWidget.cpp">
+      <Filter>widgets</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="tiny_ies.hpp">
@@ -97,17 +94,11 @@
     <ClInclude Include="contours.h">
       <Filter>widgets</Filter>
     </ClInclude>
-    <ClInclude Include="IESIsoWidget.h">
-      <Filter>widgets</Filter>
-    </ClInclude>
     <ClInclude Include="common.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <QtMoc Include="QCustomPlot.h">
-      <Filter>Header Files</Filter>
-    </QtMoc>
     <QtMoc Include="mainwindow.h">
       <Filter>Header Files</Filter>
     </QtMoc>
@@ -129,13 +120,7 @@
     <QtMoc Include="TableItemDelegate.h">
       <Filter>Header Files</Filter>
     </QtMoc>
-    <QtMoc Include="SpotDiagramWidget.h">
-      <Filter>Header Files</Filter>
-    </QtMoc>
     <QtMoc Include="FieldViewWidget.h">
-      <Filter>Header Files</Filter>
-    </QtMoc>
-    <QtMoc Include="MTFViewWidget.h">
       <Filter>Header Files</Filter>
     </QtMoc>
     <QtMoc Include="FootprintWidget.h">
@@ -144,13 +129,22 @@
     <QtMoc Include="newfiledialog.h">
       <Filter>Header Files</Filter>
     </QtMoc>
-    <QtMoc Include="IESCartesianWidget.h">
-      <Filter>widgets</Filter>
+    <QtMoc Include="AberrationWidget.h">
+      <Filter>Header Files</Filter>
     </QtMoc>
     <QtMoc Include="DistortionWidget.h">
       <Filter>Header Files</Filter>
     </QtMoc>
-    <QtMoc Include="AberrationWidget.h">
+    <QtMoc Include="MTFViewWidget.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+    <QtMoc Include="IESCartesianWidget.h">
+      <Filter>widgets</Filter>
+    </QtMoc>
+    <QtMoc Include="IESIsoWidget.h">
+      <Filter>widgets</Filter>
+    </QtMoc>
+    <QtMoc Include="SpotDiagramWidget.h">
       <Filter>Header Files</Filter>
     </QtMoc>
   </ItemGroup>
