@@ -56,9 +56,6 @@
     <ClCompile Include="TableItemDelegate.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="SpotDiagramWidget.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="FieldViewWidget.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -82,6 +79,9 @@
     </ClCompile>
     <ClCompile Include="IESPolarWidget.cpp">
       <Filter>widgets</Filter>
+    </ClCompile>
+    <ClCompile Include="SpotDiagramWidget.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

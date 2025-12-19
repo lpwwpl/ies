@@ -540,12 +540,26 @@
 //}
 
 
+
+
 #include "SpotDiagramWidget.h"
+#include <qwt_plot_renderer.h>
+#include <qwt_legend.h>
+#include <qwt_plot_layout.h>
+#include <qwt_scale_engine.h>
+#include <qwt_plot_canvas.h>
 #include <cmath>
-#include <QResizeEvent>
+#include <algorithm>
+#include <limits>
+
+// 初始化静态成员变量
+constexpr double SpotDiagramPlotter::FIELD_SPACING;
+constexpr double SpotDiagramPlotter::LEFT_AXIS_OFFSET;
 
 SpotDiagramPlotter::SpotDiagramPlotter(QWidget* parent)
-    : QWidget(parent), m_dataScale(20.0)
+    : QWidget(parent), m_dataScale(20.0), m_isInitialPlot(true),
+    m_maxSpotXRange(0.0), m_maxSpotYRange(0.0),
+    m_leftScaleDraw(nullptr), m_rightScaleDraw(nullptr)
 {
     // 初始化颜色映射
     m_colorMap["RGBOrange"] = QColor(255, 165, 0);
@@ -555,86 +569,35 @@ SpotDiagramPlotter::SpotDiagramPlotter(QWidget* parent)
 
     // 创建界面
     QVBoxLayout* mainLayout = new QVBoxLayout(this);
-    mainLayout->setContentsMargins(0, 0, 0, 0);
-
     m_plot = new QwtPlot(this);
     m_plot->setCanvasBackground(Qt::white);
-    m_plot->setContextMenuPolicy(Qt::CustomContextMenu);
-    connect(m_plot, &QwtPlot::customContextMenuRequested,
-        this, &SpotDiagramPlotter::showContextMenu);
+
+    // 设置右键菜单策略
+    setContextMenuPolicy(Qt::CustomContextMenu);
+    connect(this, &QWidget::customContextMenuRequested, this, [this](const QPoint& pos) {
+        QMenu menu(this);
+        QAction* resetAction = menu.addAction("重置视图");
+        QAction* selectedAction = menu.exec(mapToGlobal(pos));
+
+        if (selectedAction == resetAction) {
+            resetView();
+        }
+        });
 
     mainLayout->addWidget(m_plot);
+
+    // 设置初始大小
     resize(QSize(640, 480));
 
+    // 设置图表
     setupPlot();
 }
 
 SpotDiagramPlotter::~SpotDiagramPlotter()
 {
-    clearPlot();
-}
-
-void SpotDiagramPlotter::setupPlot()
-{
-    // 设置标题
-    QwtText title("光学系统点列图分析");
-    title.setFont(QFont("sans", 14, QFont::Bold));
-    m_plot->setTitle(title);
-
-    // 设置坐标轴标签
-    m_plot->setAxisTitle(QwtPlot::xBottom, "X (mm)");
-    m_plot->setAxisTitle(QwtPlot::yLeft, "Field Position");
-
-    // 启用右侧坐标轴
-    m_plot->enableAxis(QwtPlot::yRight);
-    m_plot->setAxisTitle(QwtPlot::yRight, "RMS Diameter");
-
-    // 设置坐标轴字体
-    QFont axisFont("Arial", 10);
-    m_plot->setAxisFont(QwtPlot::xBottom, axisFont);
-    m_plot->setAxisFont(QwtPlot::yLeft, axisFont);
-    m_plot->setAxisFont(QwtPlot::yRight, axisFont);
-
-    // 添加网格
-    m_grid = new QwtPlotGrid();
-    m_grid->enableXMin(true);
-    m_grid->enableYMin(true);
-    m_grid->setMajorPen(QPen(Qt::gray, 0, Qt::DotLine));
-    m_grid->setMinorPen(QPen(Qt::lightGray, 0, Qt::DotLine));
-    m_grid->attach(m_plot);
-
-    // 创建缩放器
-    m_zoomer = new QwtPlotZoomer(m_plot->canvas());
-    m_zoomer->setRubberBandPen(QPen(Qt::blue));
-    m_zoomer->setTrackerPen(QPen(Qt::blue));
-    m_zoomer->setMousePattern(QwtEventPattern::MouseSelect2,
-        Qt::RightButton, Qt::ControlModifier);
-    m_zoomer->setMousePattern(QwtEventPattern::MouseSelect3,
-        Qt::RightButton);
-
-    // 创建平移器
-    m_panner = new QwtPlotPanner(m_plot->canvas());
-    m_panner->setMouseButton(Qt::MiddleButton);
-
-    // 设置图例
-    setupLegend();
-}
-
-void SpotDiagramPlotter::setupLegend()
-{
-    QwtLegend* legend = new QwtLegend();
-    legend->setDefaultItemMode(QwtLegendData::Checkable);
-    m_plot->insertLegend(legend, QwtPlot::RightLegend);
-
-    // 连接图例选中事件
-    connect(legend, &QwtLegend::checked,
-        [this](const QVariant& itemInfo, bool on, int index) {
-            QwtPlotItem* plotItem = m_plot->infoToItem(itemInfo);
-            if (plotItem) {
-                plotItem->setVisible(on);
-                m_plot->replot();
-            }
-        });
+    clearAllCurves();
+    if (m_leftScaleDraw) delete m_leftScaleDraw;
+    if (m_rightScaleDraw) delete m_rightScaleDraw;
 }
 
 bool SpotDiagramPlotter::loadDataFromFile(const QString& filename)
@@ -644,17 +607,15 @@ bool SpotDiagramPlotter::loadDataFromFile(const QString& filename)
         return false;
     }
 
-    clearPlot();
+    // 清除现有数据
     m_spotData.clear();
     m_fieldRMS.clear();
     m_field100.clear();
     m_airyX.clear();
     m_airyY.clear();
     m_spotCenters.clear();
-    m_fieldMarkers.clear();
-    m_fieldLabels.clear();
+    clearAllCurves();
     m_fieldData.clear();
-    m_originalData.clear();
 
     QTextStream in(&file);
     bool inDataSection = false;
@@ -718,6 +679,7 @@ bool SpotDiagramPlotter::loadDataFromFile(const QString& filename)
 
 void SpotDiagramPlotter::parseRMSData(QTextStream& in)
 {
+    // 读取接下来的三行RMS值
     for (int i = 0; i < 3; i++) {
         QString line = in.readLine().trimmed();
         bool ok;
@@ -730,6 +692,7 @@ void SpotDiagramPlotter::parseRMSData(QTextStream& in)
 
 void SpotDiagramPlotter::parse100PercentData(QTextStream& in)
 {
+    // 读取接下来的三行100%直径值
     for (int i = 0; i < 3; i++) {
         QString line = in.readLine().trimmed();
         bool ok;
@@ -745,6 +708,7 @@ void SpotDiagramPlotter::parseAiryData(QTextStream& in)
     // 跳过RX RY标题行
     in.readLine();
 
+    // 读取三行Airy直径数据
     for (int i = 0; i < 3; i++) {
         QString line = in.readLine().trimmed();
         QStringList parts = line.split(QRegExp("\\s+"), Qt::SkipEmptyParts);
@@ -791,9 +755,113 @@ void SpotDiagramPlotter::parseDataLine(const QString& line)
     m_spotData.append(data);
 }
 
+void SpotDiagramPlotter::setupPlot()
+{
+    // 启用右侧坐标轴
+    m_plot->enableAxis(QwtPlot::yRight, true);
+
+    // 设置网格
+    m_grid = new QwtPlotGrid();
+    m_grid->setPen(QPen(Qt::gray, 0, Qt::DotLine));
+    m_grid->attach(m_plot);
+
+    // 添加缩放功能 - 右键拖拽矩形放大
+    m_zoomer = new QwtPlotZoomer(QwtPlot::xBottom, QwtPlot::yLeft,
+        m_plot->canvas());
+    m_zoomer->setRubberBandPen(QPen(Qt::darkBlue, 2, Qt::SolidLine));
+    m_zoomer->setTrackerPen(QPen(Qt::darkBlue));
+    m_zoomer->setRubberBand(QwtPicker::RectRubberBand);
+    m_zoomer->setTrackerMode(QwtPicker::ActiveOnly);
+
+    // 设置鼠标模式：右键用于拖拽矩形放大
+    m_zoomer->setMousePattern(QwtEventPattern::MouseSelect1, Qt::RightButton);
+    m_zoomer->setMousePattern(QwtEventPattern::MouseSelect2, Qt::RightButton, Qt::ControlModifier);
+    m_zoomer->setMousePattern(QwtEventPattern::MouseSelect3, Qt::RightButton, Qt::AltModifier);
+
+    // 连接缩放信号
+    connect(m_zoomer, &QwtPlotZoomer::zoomed, this, &SpotDiagramPlotter::handleZoomed);
+
+    // 设置缩放器的缩放栈最大深度
+    m_zoomer->setMaxStackDepth(10);
+
+    // 添加平移功能 - 左键移动
+    m_panner = new QwtPlotPanner(m_plot->canvas());
+    // 设置左键为平移
+    m_panner->setMouseButton(Qt::LeftButton);
+
+    // 设置自动重绘
+    m_plot->setAutoReplot(true);
+}
+
+QString SpotDiagramPlotter::getFieldName(int fieldIndex) const
+{
+    switch (fieldIndex) {
+    case 0: return "F1";
+    case 1: return "F2";
+    case 2: return "F3";
+    default: return QString("视场%1").arg(fieldIndex + 1);
+    }
+}
+
+void SpotDiagramPlotter::clearAllCurves()
+{
+    // 清除所有曲线
+    for (auto it = m_fieldCurves.begin(); it != m_fieldCurves.end(); ++it) {
+        for (QwtPlotCurve* curve : it.value()) {
+            curve->detach();
+            delete curve;
+        }
+    }
+    m_fieldCurves.clear();
+
+    // 清除所有标记
+    for (auto it = m_fieldMarkers.begin(); it != m_fieldMarkers.end(); ++it) {
+        for (QwtPlotMarker* marker : it.value()) {
+            marker->detach();
+            delete marker;
+        }
+    }
+    m_fieldMarkers.clear();
+}
+
+void SpotDiagramPlotter::calculateSpotDataRange()
+{
+    m_maxSpotXRange = 0.0;
+    m_maxSpotYRange = 0.0;
+
+    // 对于每个视场，计算其点列相对于中心的最大X和Y偏离
+    for (auto it = m_fieldData.begin(); it != m_fieldData.end(); ++it) {
+        const QVector<SpotData>& data = it.value();
+        if (data.isEmpty()) continue;
+
+        // 计算该视场的中心
+        double centerX, centerY;
+        calculateSpotCenter(data, centerX, centerY);
+
+        // 计算该视场点列的最大X和Y偏离
+        double maxXRangeForField = 0.0;
+        double maxYRangeForField = 0.0;
+        for (const SpotData& spot : data) {
+            double dx = fabs(spot.x - centerX);
+            double dy = fabs(spot.y - centerY);
+            maxXRangeForField = qMax(maxXRangeForField, dx);
+            maxYRangeForField = qMax(maxYRangeForField, dy);
+        }
+
+        // 更新全局最大范围
+        m_maxSpotXRange = qMax(m_maxSpotXRange, maxXRangeForField);
+        m_maxSpotYRange = qMax(m_maxSpotYRange, maxYRangeForField);
+    }
+
+    // 如果没有数据，设置一个默认范围
+    if (m_maxSpotXRange <= 0) m_maxSpotXRange = 1.0;
+    if (m_maxSpotYRange <= 0) m_maxSpotYRange = 1.0;
+}
+
 void SpotDiagramPlotter::plotSpotDiagrams()
 {
-    clearPlot();
+    // 清除现有图形
+    clearAllCurves();
 
     // 获取视场索引并排序
     QList<int> fieldIndices = m_fieldData.keys();
@@ -802,51 +870,52 @@ void SpotDiagramPlotter::plotSpotDiagrams()
     // 只取前3个视场
     int maxFields = qMin(3, fieldIndices.size());
 
-    // 设置X轴范围 - 根据数据范围自适应，并扩大20倍
-    double xMin = 0, xMax = 0;
-    for (const SpotData& data : m_spotData) {
-        xMin = qMin(xMin, data.x);
-        xMax = qMax(xMax, data.x);
-    }
-    xRange = qMax(fabs(xMin), fabs(xMax)) * m_dataScale;
+    // 计算点列的实际范围
+    calculateSpotDataRange();
 
-    // 设置Y轴范围 - Y轴范围是X轴范围的3倍
-    double yRange = xRange * 3;
-    yMin = -yRange / 2;
-    yMax = yRange / 2;
+    // 设置坐标轴范围
+    // 每个点列在Y方向上的范围（从中心到边缘）
+    double singleSpotYRange = m_maxSpotYRange * m_dataScale;
 
-    // 计算垂直偏移
-    QMap<int, double> verticalOffsets = calculateVerticalOffsets();
+    // 每个点列在X方向上的范围
+    double singleSpotXRange = m_maxSpotXRange * m_dataScale;
 
-    // 存储原始数据（用于动态更新）
-    m_originalData.clear();
+    // Y轴：3组点列，每组Y中心间隔3.4
+    // 第一个点列中心在Y=0，第二个在Y=3.4，第三个在Y=6.8
+    // Y轴范围需要包含所有点列
+    double yMin = -singleSpotYRange;  // 第一个点列的最低点
+    double yMax = (maxFields - 1) * FIELD_SPACING + singleSpotYRange;  // 最后一个点列的最高点
+
+    // X轴：为Y轴范围的1/3
+    double totalYRange = yMax - yMin;
+    double totalXRange = totalYRange / 3.0;
+    double xMin = -totalXRange / 2.0;
+    double xMax = totalXRange / 2.0;
+
+    // 存储点列中心坐标
+    m_spotCenters.clear();
 
     // 为每个视场创建图形
     for (int i = 0; i < maxFields; i++) {
         int fieldIndex = fieldIndices[i];
-        QString fieldName = QString("F%1").arg(fieldIndex + 1);
+        QString fieldName = getFieldName(fieldIndex);
 
-        // 获取垂直偏移
-        double verticalOffset = verticalOffsets[fieldIndex];
+        // 计算垂直偏移：每个点列的Y中心位置
+        double verticalOffset = i * FIELD_SPACING;
 
-        // 计算点列中心
+        // 计算点列中心（原始中心坐标）
         double centerX, centerY;
         calculateSpotCenter(m_fieldData[fieldIndex], centerX, centerY);
-        m_spotCenters[fieldIndex] = qMakePair(centerX * m_dataScale, centerY * m_dataScale);
+        m_spotCenters[fieldIndex] = qMakePair(centerX * m_dataScale, centerY * m_dataScale); // 中心坐标扩大
 
-        // 存储原始数据
-        for (const SpotData& spot : m_fieldData[fieldIndex]) {
-            QPointF point(spot.x, spot.y);
-            m_originalData[fieldIndex][spot.colorName].append(point);
-        }
-
-        // 添加点数据到图表
-        addSpotDataToPlot(m_fieldData[fieldIndex], verticalOffset, fieldName, fieldIndex);
+        // 添加点数据到图表（数据扩大并居中）
+        addSpotDataToPlot(m_fieldData[fieldIndex], verticalOffset, fieldName, fieldIndex, centerX, centerY);
     }
 
     // 设置坐标轴范围
-    m_plot->setAxisScale(QwtPlot::xBottom, -xRange, xRange);
+    m_plot->setAxisScale(QwtPlot::xBottom, xMin, xMax);
     m_plot->setAxisScale(QwtPlot::yLeft, yMin, yMax);
+    m_plot->setAxisScale(QwtPlot::yRight, yMin, yMax);
 
     // 保存初始视图范围
     saveInitialView();
@@ -854,12 +923,18 @@ void SpotDiagramPlotter::plotSpotDiagrams()
     // 添加信息到刻度
     addInfoToTicks();
 
+    // 同步左右Y轴刻度
+    synchronizeAxisTicks();
+
+    // 标记初始绘制完成
+    m_isInitialPlot = false;
+
     // 重新绘制
     m_plot->replot();
 }
 
 void SpotDiagramPlotter::addSpotDataToPlot(const QVector<SpotData>& data, double verticalOffset,
-    const QString& fieldName, int fieldIndex)
+    const QString& fieldName, int fieldIndex, double centerX, double centerY)
 {
     if (data.isEmpty()) return;
 
@@ -868,8 +943,10 @@ void SpotDiagramPlotter::addSpotDataToPlot(const QVector<SpotData>& data, double
 
     for (const SpotData& spot : data) {
         QPointF point;
-        point.setX(spot.x * m_dataScale);
-        point.setY(spot.y * m_dataScale + verticalOffset);
+        // 点列居中：将每个点减去其视场中心
+        point.setX((spot.x - centerX) * m_dataScale); // X坐标减去中心并扩大
+        // Y坐标减去中心并扩大，然后添加垂直偏移
+        point.setY((spot.y - centerY) * m_dataScale + verticalOffset);
         colorData[spot.colorName].append(point);
     }
 
@@ -878,31 +955,28 @@ void SpotDiagramPlotter::addSpotDataToPlot(const QVector<SpotData>& data, double
         const QString& colorName = it.key();
         const QVector<QPointF>& points = it.value();
 
-        // 创建曲线
         QwtPlotCurve* curve = new QwtPlotCurve(fieldName + " - " + colorName);
-        curve->setRenderHint(QwtPlotItem::RenderAntialiased);
-        curve->setStyle(QwtPlotCurve::NoCurve);
-        // 设置颜色
-        QColor color = m_colorMap.value(colorName, Qt::black);
-        curve->setPen(QPen(color));
-
-        // 设置符号（点）
-        QwtSymbol* symbol = new QwtSymbol(QwtSymbol::Ellipse,
-            QBrush(color),
-            QPen(color, 1),
-            QSize(6, 6));
-        curve->setSymbol(symbol);
 
         // 设置数据
-        QVector<QPointF> plotPoints;
+        QPolygonF polygon;
         for (const QPointF& point : points) {
-            plotPoints.append(point);
+            polygon.append(point);
         }
-        curve->setSamples(plotPoints);
+        curve->setSamples(polygon);
+
+        // 设置颜色和样式
+        QColor color = m_colorMap.value(colorName, Qt::black);
+        curve->setPen(QPen(color, 0, Qt::NoPen)); // 无连线
+        curve->setSymbol(new QwtSymbol(QwtSymbol::Ellipse,
+            QBrush(color),
+            QPen(color, 1),
+            QSize(4, 4)));
 
         // 附加到图表
         curve->attach(m_plot);
-        m_curves.append(curve);
+
+        // 存储曲线对象
+        m_fieldCurves[fieldIndex].append(curve);
     }
 }
 
@@ -933,209 +1007,273 @@ void SpotDiagramPlotter::addInfoToTicks()
     // 只取前3个视场
     int maxFields = qMin(3, fieldIndices.size());
 
-    // 计算垂直偏移
-    QMap<int, double> verticalOffsets = calculateVerticalOffsets();
+    // 准备左侧刻度位置和标签
+    m_currentLeftTickLabels.clear();
+    m_currentRightTickLabels.clear();
 
-    // 清除旧标签
-    for (auto marker : m_markers) {
-        delete marker;
-    }
-    m_markers.clear();
-
-    // 添加左侧标签
     for (int i = 0; i < maxFields; i++) {
         int fieldIndex = fieldIndices[i];
-        double verticalOffset = verticalOffsets[fieldIndex];
+        double verticalOffset = i * FIELD_SPACING;  // 每个点列的Y中心位置
         QPair<double, double> center = m_spotCenters[fieldIndex];
 
-        QString label = QString("F%1\nX:%2\nY:%3")
-            .arg(fieldIndex + 1)
+        // 左侧刻度标签 - 显示视场名称和原始中心坐标（加上偏移量）
+        // 左侧Y坐标加上偏移量 LEFT_AXIS_OFFSET
+        QString leftLabel = QString("%1\nX:%2\nY:%3")
+            .arg(getFieldName(fieldIndex))
             .arg(center.first, 0, 'f', 4)
-            .arg(center.second, 0, 'f', 4);
+            .arg(center.second + LEFT_AXIS_OFFSET, 0, 'f', 4); // Y坐标加上偏移量
+        m_currentLeftTickLabels[verticalOffset] = leftLabel;
 
-        // 创建文本标记
-        QwtPlotMarker* marker = new QwtPlotMarker();
-        marker->setLabelAlignment(Qt::AlignRight | Qt::AlignVCenter);
+        // 右侧刻度标签 - 显示RMS和100%直径
+        if (fieldIndex < m_fieldRMS.size() && fieldIndex < m_field100.size()) {
+            QString rightLabel = QString("%1\nRMS:%2\n100%:%3")
+                .arg(getFieldName(fieldIndex))
+                .arg(m_fieldRMS[fieldIndex] * m_dataScale, 0, 'f', 4)
+                .arg(m_field100[fieldIndex] * m_dataScale, 0, 'f', 4);
+            m_currentRightTickLabels[verticalOffset] = rightLabel;
+        }
+    }
+}
 
-        QwtText text(label);
-        text.setFont(QFont("Arial", 8));
-        marker->setLabel(text);
-
-        marker->setValue(0, verticalOffset);
-        marker->setSpacing(5);
-
-        marker->attach(m_plot);
-        m_markers.append(marker);
+void SpotDiagramPlotter::synchronizeAxisTicks()
+{
+    // 删除旧的刻度绘制器
+    if (m_leftScaleDraw) {
+        delete m_leftScaleDraw;
+        m_leftScaleDraw = nullptr;
+    }
+    if (m_rightScaleDraw) {
+        delete m_rightScaleDraw;
+        m_rightScaleDraw = nullptr;
     }
 
-    // 添加右侧标签
-    //for (int i = 0; i < maxFields; i++) {
-    //    int fieldIndex = fieldIndices[i];
-    //    double verticalOffset = verticalOffsets[fieldIndex];
+    // 创建新的刻度绘制器
+    m_leftScaleDraw = new MultiLineScaleDraw(m_currentLeftTickLabels);
+    m_rightScaleDraw = new MultiLineScaleDraw(m_currentRightTickLabels);
 
-    //    if (fieldIndex < m_fieldRMS.size() && fieldIndex < m_field100.size()) {
-    //        QString label = QString("F%1\nRMS:%2\n100%:%3")
-    //            .arg(fieldIndex + 1)
-    //            .arg(m_fieldRMS[fieldIndex] * m_dataScale, 0, 'f', 4)
-    //            .arg(m_field100[fieldIndex] * m_dataScale, 0, 'f', 4);
+    // 设置刻度绘制器
+    m_plot->setAxisScaleDraw(QwtPlot::yLeft, m_leftScaleDraw);
+    m_plot->setAxisScaleDraw(QwtPlot::yRight, m_rightScaleDraw);
 
-    //        // 创建文本标记
-    //        QwtPlotMarker* marker = new QwtPlotMarker();
-    //        marker->setLabelAlignment(Qt::AlignLeft | Qt::AlignVCenter);
+    // 设置刻度标签样式
+    m_plot->axisWidget(QwtPlot::yLeft)->setFont(QFont("Arial", 8));
+    m_plot->axisWidget(QwtPlot::yRight)->setFont(QFont("Arial", 8));
 
-    //        QwtText text(label);
-    //        text.setFont(QFont("Arial", 8));
-    //        marker->setLabel(text);
+    // 设置刻度对齐方式
+    m_leftScaleDraw->setLabelAlignment(Qt::AlignLeft | Qt::AlignVCenter);
+    m_rightScaleDraw->setLabelAlignment(Qt::AlignRight | Qt::AlignVCenter);
 
-    //        marker->setValue(0, verticalOffset);
-    //        marker->setSpacing(5);
+    // 创建只包含点列中心位置的刻度划分
+    QList<double> majorTicks;
+    QList<double> minorTicks; // 空列表，不显示次要刻度
 
-    //        marker->attach(m_plot);
-    //        m_markers.append(marker);
-    //    }
-    //}
+    // 只添加点列中心位置作为主刻度
+    for (double tickPos : m_currentLeftTickLabels.keys()) {
+        majorTicks.append(tickPos);
+    }
+
+    // 设置刻度划分
+    double yMin = m_plot->axisScaleDiv(QwtPlot::yLeft).lowerBound();
+    double yMax = m_plot->axisScaleDiv(QwtPlot::yLeft).upperBound();
+
+    QwtScaleDiv yScaleDiv(yMin, yMax,  minorTicks,minorTicks, majorTicks);
+
+    m_plot->setAxisScaleDiv(QwtPlot::yLeft, yScaleDiv);
+    m_plot->setAxisScaleDiv(QwtPlot::yRight, yScaleDiv);
+}
+
+void SpotDiagramPlotter::reapplyScaleDraws()
+{
+    // 重新应用自定义刻度绘制
+    if (m_leftScaleDraw && m_rightScaleDraw) {
+        m_plot->setAxisScaleDraw(QwtPlot::yLeft, m_leftScaleDraw);
+        m_plot->setAxisScaleDraw(QwtPlot::yRight, m_rightScaleDraw);
+        m_plot->replot();
+    }
+}
+
+void SpotDiagramPlotter::updateAxisTicks()
+{
+    // 获取当前Y轴范围
+    double yMin = m_plot->axisScaleDiv(QwtPlot::yLeft).lowerBound();
+    double yMax = m_plot->axisScaleDiv(QwtPlot::yLeft).upperBound();
+
+    // 创建只包含点列中心位置的刻度划分
+    QList<double> majorTicks;
+    QList<double> minorTicks; // 空列表，不显示次要刻度
+
+    // 只添加在范围内的点列中心位置作为主刻度
+    for (double tickPos : m_currentLeftTickLabels.keys()) {
+        if (tickPos >= yMin && tickPos <= yMax) {
+            majorTicks.append(tickPos);
+        }
+    }
+
+    // 设置刻度划分
+    QwtScaleDiv yScaleDiv(yMin, yMax, minorTicks, minorTicks, majorTicks);
+
+    m_plot->setAxisScaleDiv(QwtPlot::yLeft, yScaleDiv);
+    m_plot->setAxisScaleDiv(QwtPlot::yRight, yScaleDiv);
+
+    // 重新应用自定义刻度绘制
+    reapplyScaleDraws();
+}
+
+void SpotDiagramPlotter::handleZoomed(const QRectF&)
+{
+    // 缩放完成后更新刻度显示
+    updateAxisTicks();
 }
 
 void SpotDiagramPlotter::updateSpotPositions()
 {
-    // 计算新的垂直偏移
-    QMap<int, double> verticalOffsets = calculateVerticalOffsets();
-
-    // 更新每个视场的点列位置
-    for (auto it = m_originalData.begin(); it != m_originalData.end(); ++it) {
-        int fieldIndex = it.key();
-        double verticalOffset = verticalOffsets[fieldIndex];
-
-        // 遍历该视场下的所有颜色组
-        for (auto colorIt = it.value().begin(); colorIt != it.value().end(); ++colorIt) {
-            const QString& colorName = colorIt.key();
-            const QVector<QPointF>& originalPoints = colorIt.value();
-
-            // 创建新的点集
-            QVector<QPointF> newPoints;
-            for (const QPointF& point : originalPoints) {
-                QPointF newPoint;
-                newPoint.setX(point.x() * m_dataScale);
-                newPoint.setY(point.y() * m_dataScale + verticalOffset);
-                newPoints.append(newPoint);
-            }
-
-            // 更新对应的曲线
-            for (QwtPlotCurve* curve : m_curves) {
-                if (curve->title().text().contains(QString("F%1").arg(fieldIndex + 1)) &&
-                    curve->title().text().contains(colorName)) {
-                    curve->setSamples(newPoints);
-                    break;
-                }
-            }
-        }
-    }
-
-    // 更新标签位置
-    addInfoToTicks();
-
-    // 重新绘制
-    m_plot->replot();
-}
-
-QMap<int, double> SpotDiagramPlotter::calculateVerticalOffsets()
-{
-    QMap<int, double> verticalOffsets;
-
     // 获取当前Y轴范围
-    yMin = m_plot->axisScaleDiv(QwtPlot::yLeft).lowerBound();
-    yMax = m_plot->axisScaleDiv(QwtPlot::yLeft).upperBound();
-    double yRange = yMax - yMin;
+    double currentYMin = m_plot->axisScaleDiv(QwtPlot::yLeft).lowerBound();
+    double currentYMax = m_plot->axisScaleDiv(QwtPlot::yLeft).upperBound();
+    double currentYRange = currentYMax - currentYMin;
 
     // 获取视场索引并排序
-    QList<int> fieldIndices = m_fieldData.keys();
+    QList<int> fieldIndices = m_fieldCurves.keys();
     std::sort(fieldIndices.begin(), fieldIndices.end());
 
     int maxFields = qMin(3, fieldIndices.size());
 
-    if (maxFields == 0) return verticalOffsets;
+    // 计算原始的Y轴总范围
+    double singleSpotYRange = m_maxSpotYRange * m_dataScale;
+    double originalYMin = -singleSpotYRange;
+    double originalYMax = (maxFields - 1) * FIELD_SPACING + singleSpotYRange;
+    double originalYRange = originalYMax - originalYMin;
 
-    // 专门为三个点列设计的分布算法
-    if (maxFields == 3) {
-        double segmentHeight = yRange / 4.0;
-        verticalOffsets[fieldIndices[0]] = yMin + segmentHeight;
-        verticalOffsets[fieldIndices[1]] = yMin + 2 * segmentHeight;
-        verticalOffsets[fieldIndices[2]] = yMin + 3 * segmentHeight;
-    }
-    else if (maxFields == 2) {
-        double segmentHeight = yRange / 3.0;
-        verticalOffsets[fieldIndices[0]] = yMin + segmentHeight;
-        verticalOffsets[fieldIndices[1]] = yMin + 2 * segmentHeight;
-    }
-    else if (maxFields == 1) {
-        verticalOffsets[fieldIndices[0]] = (yMin + yMax) / 2.0;
+    // 计算缩放因子
+    double yScaleFactor = currentYRange / originalYRange;
+
+    // 计算垂直偏移（考虑当前缩放因子）
+    QMap<int, double> verticalOffsets;
+    for (int i = 0; i < maxFields; i++) {
+        int fieldIndex = fieldIndices[i];
+        double originalOffset = i * FIELD_SPACING;
+        verticalOffsets[fieldIndex] = currentYMin + (originalOffset - originalYMin) * yScaleFactor;
     }
 
-    return verticalOffsets;
+    // 更新每个视场的点列位置
+    for (auto it = m_fieldCurves.begin(); it != m_fieldCurves.end(); ++it) {
+        int fieldIndex = it.key();
+        double verticalOffset = verticalOffsets[fieldIndex];
+
+        // 获取该视场的原始数据
+        const QVector<SpotData>& fieldSpotData = m_fieldData[fieldIndex];
+
+        // 计算该视场的中心
+        double centerX, centerY;
+        calculateSpotCenter(fieldSpotData, centerX, centerY);
+
+        // 重新计算该视场下所有曲线的数据
+        for (QwtPlotCurve* curve : it.value()) {
+            // 按颜色重新分组数据
+            QMap<QString, QVector<QPointF>> colorData;
+
+            for (const SpotData& spot : fieldSpotData) {
+                QPointF point;
+                // 点列居中：将每个点减去其视场中心
+                point.setX((spot.x - centerX) * m_dataScale); // X坐标减去中心并扩大
+                point.setY((spot.y - centerY) * m_dataScale + verticalOffset); // Y坐标减去中心并扩大，然后添加新的垂直偏移
+
+                // 根据曲线名称判断颜色
+                if (curve->title().text().contains(spot.colorName)) {
+                    colorData[spot.colorName].append(point);
+                }
+            }
+
+            // 更新曲线数据
+            for (auto colorIt = colorData.begin(); colorIt != colorData.end(); ++colorIt) {
+                QPolygonF polygon;
+                for (const QPointF& point : colorIt.value()) {
+                    polygon.append(point);
+                }
+                curve->setSamples(polygon);
+            }
+        }
+    }
+
+    // 更新刻度信息（使用新的垂直偏移）
+    // 先更新m_currentLeftTickLabels中的位置
+    QMap<double, QString> newLeftTickLabels;
+    QMap<double, QString> newRightTickLabels;
+
+    for (int i = 0; i < maxFields; i++) {
+        int fieldIndex = fieldIndices[i];
+        if (verticalOffsets.contains(fieldIndex)) {
+            double newPos = verticalOffsets[fieldIndex];
+            QPair<double, double> center = m_spotCenters[fieldIndex];
+
+            // 更新左侧标签
+            QString leftLabel = QString("%1\nX:%2\nY:%3")
+                .arg(getFieldName(fieldIndex))
+                .arg(center.first, 0, 'f', 4)
+                .arg(center.second + LEFT_AXIS_OFFSET, 0, 'f', 4);
+            newLeftTickLabels[newPos] = leftLabel;
+
+            // 更新右侧标签
+            if (fieldIndex < m_fieldRMS.size() && fieldIndex < m_field100.size()) {
+                QString rightLabel = QString("%1\nRMS:%2\n100%:%3")
+                    .arg(getFieldName(fieldIndex))
+                    .arg(m_fieldRMS[fieldIndex] * m_dataScale, 0, 'f', 4)
+                    .arg(m_field100[fieldIndex] * m_dataScale, 0, 'f', 4);
+                newRightTickLabels[newPos] = rightLabel;
+            }
+        }
+    }
+
+    m_currentLeftTickLabels = newLeftTickLabels;
+    m_currentRightTickLabels = newRightTickLabels;
+
+    // 更新刻度线显示
+    updateAxisTicks();
 }
 
-void SpotDiagramPlotter::resetView()
-{
-    restoreInitialView();
-}
-
-void SpotDiagramPlotter::showContextMenu(const QPoint& pos)
+void SpotDiagramPlotter::contextMenuEvent(QContextMenuEvent* event)
 {
     QMenu menu(this);
     QAction* resetAction = menu.addAction("重置视图");
 
-    QAction* selectedAction = menu.exec(m_plot->mapToGlobal(pos));
+    QAction* selectedAction = menu.exec(event->globalPos());
 
     if (selectedAction == resetAction) {
         resetView();
     }
 }
 
+void SpotDiagramPlotter::resetView()
+{
+    // 重置到初始视图
+    restoreInitialView();
+
+    // 重新应用自定义刻度绘制
+    reapplyScaleDraws();
+}
+
 void SpotDiagramPlotter::saveInitialView()
 {
-    double xMin = m_plot->axisScaleDiv(QwtPlot::xBottom).lowerBound();
-    double xMax = m_plot->axisScaleDiv(QwtPlot::xBottom).upperBound();
-    double yMin = m_plot->axisScaleDiv(QwtPlot::yLeft).lowerBound();
-    double yMax = m_plot->axisScaleDiv(QwtPlot::yLeft).upperBound();
+    // 保存初始视图范围
+    QwtScaleDiv xScaleDiv = m_plot->axisScaleDiv(QwtPlot::xBottom);
+    QwtScaleDiv yScaleDiv = m_plot->axisScaleDiv(QwtPlot::yLeft);
 
-    m_initialView = QRectF(xMin, yMin, xMax - xMin, yMax - yMin);
+    m_initialXMin = xScaleDiv.lowerBound();
+    m_initialXMax = xScaleDiv.upperBound();
+    m_initialYMin = yScaleDiv.lowerBound();
+    m_initialYMax = yScaleDiv.upperBound();
 }
 
 void SpotDiagramPlotter::restoreInitialView()
 {
-    if (!m_initialView.isEmpty()) {
-        m_plot->setAxisScale(QwtPlot::xBottom,
-            m_initialView.left(),
-            m_initialView.left() + m_initialView.width());
-        m_plot->setAxisScale(QwtPlot::yLeft,
-            m_initialView.top(),
-            m_initialView.top() + m_initialView.height());
+    // 恢复初始视图范围
+    m_plot->setAxisScale(QwtPlot::xBottom, m_initialXMin, m_initialXMax);
+    m_plot->setAxisScale(QwtPlot::yLeft, m_initialYMin, m_initialYMax);
+    m_plot->setAxisScale(QwtPlot::yRight, m_initialYMin, m_initialYMax);
 
-        // 更新点列位置
-        updateSpotPositions();
+    // 更新点列位置
+    updateSpotPositions();
 
-        // 重新绘制
-        m_plot->replot();
-    }
-}
-
-void SpotDiagramPlotter::clearPlot()
-{
-    // 清除曲线
-    for (QwtPlotCurve* curve : m_curves) {
-        curve->detach();
-        delete curve;
-    }
-    m_curves.clear();
-
-    // 清除标记
-    for (QwtPlotMarker* marker : m_markers) {
-        marker->detach();
-        delete marker;
-    }
-    m_markers.clear();
-
-    // 清除其他项目
-    m_fieldMarkers.clear();
-    m_fieldLabels.clear();
+    // 重新绘制
+    m_plot->replot();
 }

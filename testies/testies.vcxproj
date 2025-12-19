@@ -134,7 +134,12 @@
     <ClCompile Include="MTFViewWidget.cpp" />
     <ClCompile Include="newfiledialog.cpp" />
     <ClCompile Include="polardialog.cpp" />
-    <ClCompile Include="SpotDiagramWidget.cpp" />
+    <ClCompile Include="SpotDiagramWidget.cpp">
+      <DynamicSource Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">input</DynamicSource>
+      <QtMocFileName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(Filename).moc</QtMocFileName>
+      <DynamicSource Condition="'$(Configuration)|$(Platform)'=='Release|x64'">input</DynamicSource>
+      <QtMocFileName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">%(Filename).moc</QtMocFileName>
+    </ClCompile>
     <ClCompile Include="TableItemDelegate.cpp" />
     <ClCompile Include="threeDdialog.cpp" />
   </ItemGroup>
