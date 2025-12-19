@@ -161,6 +161,11 @@ public:
         return QwtText(); // 返回空文本，不显示其他位置的标签
     }
 
+    // 更新刻度标签
+    void updateTickLabels(const QMap<double, QString>& tickLabels) {
+        m_tickLabels = tickLabels;
+    }
+
 private:
     QMap<double, QString> m_tickLabels;
 };
@@ -184,10 +189,14 @@ private slots:
     void resetView();
     // 缩放完成后的处理
     void handleZoomed(const QRectF&);
+    // 平移完成后的处理
+    void handlePanned(int dx, int dy);
 
 protected:
     // 重写上下文菜单事件
     void contextMenuEvent(QContextMenuEvent* event) override;
+    // 重写事件过滤器
+    bool eventFilter(QObject* watched, QEvent* event) override;
 
 private:
     // 设置图表
@@ -234,6 +243,12 @@ private:
     // 重新应用自定义刻度绘制
     void reapplyScaleDraws();
 
+    // 更新刻度标签位置
+    void updateTickLabelPositions();
+
+    // 根据当前Y轴位置更新标签
+    void updateLabelsForCurrentView();
+
 private:
     QwtPlot* m_plot;                            // 图表控件
     QVector<SpotData> m_spotData;               // 点列图数据
@@ -271,11 +286,15 @@ private:
     QMap<double, QString> m_currentLeftTickLabels;
     QMap<double, QString> m_currentRightTickLabels;
 
+    // 原始的点列中心位置（数据坐标系）
+    QMap<int, double> m_originalFieldCenters;
+
     // 固定参数
     static constexpr double FIELD_SPACING = 3.4;  // 点列间距
 
     // 左侧Y轴偏移量
     static constexpr double LEFT_AXIS_OFFSET = 0.5; // 左侧Y坐标偏移量
 };
+
 
 #endif

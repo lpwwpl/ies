@@ -428,7 +428,7 @@ void IESCartesianWidget::initPlot()
     m_curve0_180->setSymbol(new QwtSymbol(QwtSymbol::Ellipse,
         QBrush(Qt::blue),
         QPen(Qt::blue, 1),
-        QSize(3, 3)));
+        QSize(2, 2)));
     m_brush0_180 = QBrush(Qt::NoBrush);
     m_curve0_180->setFillBrush(m_brush0_180);
     m_curve0_180->attach(this);
@@ -441,7 +441,7 @@ void IESCartesianWidget::initPlot()
     m_curve90_270->setSymbol(new QwtSymbol(QwtSymbol::Ellipse,
         QBrush(Qt::red),
         QPen(Qt::red, 1),
-        QSize(3, 3)));
+        QSize(2, 2)));
     m_brush90_270 = QBrush(Qt::NoBrush);
     m_curve90_270->setFillBrush(m_brush90_270);
     m_curve90_270->attach(this);

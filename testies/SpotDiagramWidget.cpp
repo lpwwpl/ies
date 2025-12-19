@@ -551,7 +551,7 @@
 #include <cmath>
 #include <algorithm>
 #include <limits>
-
+#include <QTimer>
 // 初始化静态成员变量
 constexpr double SpotDiagramPlotter::FIELD_SPACING;
 constexpr double SpotDiagramPlotter::LEFT_AXIS_OFFSET;
@@ -616,6 +616,7 @@ bool SpotDiagramPlotter::loadDataFromFile(const QString& filename)
     m_spotCenters.clear();
     clearAllCurves();
     m_fieldData.clear();
+    m_originalFieldCenters.clear();
 
     QTextStream in(&file);
     bool inDataSection = false;
@@ -661,17 +662,6 @@ bool SpotDiagramPlotter::loadDataFromFile(const QString& filename)
     // 按视场索引分组存储数据
     for (const SpotData& data : m_spotData) {
         m_fieldData[data.fieldIndex].append(data);
-    }
-
-    // 输出解析结果用于调试
-    qDebug() << "Loaded RMS values:" << m_fieldRMS;
-    qDebug() << "Loaded 100% values:" << m_field100;
-    qDebug() << "Loaded Airy X values:" << m_airyX;
-    qDebug() << "Loaded Airy Y values:" << m_airyY;
-    qDebug() << "Loaded spot data points:" << m_spotData.size();
-    qDebug() << "Field data counts:";
-    for (auto it = m_fieldData.begin(); it != m_fieldData.end(); ++it) {
-        qDebug() << "Field" << it.key() << ":" << it.value().size() << "points";
     }
 
     return true;
@@ -789,16 +779,22 @@ void SpotDiagramPlotter::setupPlot()
     // 设置左键为平移
     m_panner->setMouseButton(Qt::LeftButton);
 
+    // 连接平移信号
+    connect(m_panner, &QwtPlotPanner::panned, this, &SpotDiagramPlotter::handlePanned);
+
     // 设置自动重绘
     m_plot->setAutoReplot(true);
+
+    // 安装事件过滤器
+    m_plot->canvas()->installEventFilter(this);
 }
 
 QString SpotDiagramPlotter::getFieldName(int fieldIndex) const
 {
     switch (fieldIndex) {
     case 0: return "F1";
-    case 1: return "F2";
-    case 2: return "F3";
+    case 1: return "F1";
+    case 2: return "F2";
     default: return QString("视场%1").arg(fieldIndex + 1);
     }
 }
@@ -894,6 +890,7 @@ void SpotDiagramPlotter::plotSpotDiagrams()
 
     // 存储点列中心坐标
     m_spotCenters.clear();
+    m_originalFieldCenters.clear();
 
     // 为每个视场创建图形
     for (int i = 0; i < maxFields; i++) {
@@ -902,6 +899,9 @@ void SpotDiagramPlotter::plotSpotDiagrams()
 
         // 计算垂直偏移：每个点列的Y中心位置
         double verticalOffset = i * FIELD_SPACING;
+
+        // 保存原始的中心位置
+        m_originalFieldCenters[fieldIndex] = verticalOffset;
 
         // 计算点列中心（原始中心坐标）
         double centerX, centerY;
@@ -1076,7 +1076,7 @@ void SpotDiagramPlotter::synchronizeAxisTicks()
     double yMin = m_plot->axisScaleDiv(QwtPlot::yLeft).lowerBound();
     double yMax = m_plot->axisScaleDiv(QwtPlot::yLeft).upperBound();
 
-    QwtScaleDiv yScaleDiv(yMin, yMax,  minorTicks,minorTicks, majorTicks);
+    QwtScaleDiv yScaleDiv(yMin, yMax, minorTicks, minorTicks, majorTicks);
 
     m_plot->setAxisScaleDiv(QwtPlot::yLeft, yScaleDiv);
     m_plot->setAxisScaleDiv(QwtPlot::yRight, yScaleDiv);
@@ -1122,7 +1122,80 @@ void SpotDiagramPlotter::updateAxisTicks()
 void SpotDiagramPlotter::handleZoomed(const QRectF&)
 {
     // 缩放完成后更新刻度显示
+    updateLabelsForCurrentView();
+}
+
+void SpotDiagramPlotter::handlePanned(int dx, int dy)
+{
+    Q_UNUSED(dx);
+    Q_UNUSED(dy);
+
+    // 平移完成后更新刻度显示
+    updateLabelsForCurrentView();
+}
+
+void SpotDiagramPlotter::updateTickLabelPositions()
+{
+    // 获取当前Y轴范围
+    double currentYMin = m_plot->axisScaleDiv(QwtPlot::yLeft).lowerBound();
+    double currentYMax = m_plot->axisScaleDiv(QwtPlot::yLeft).upperBound();
+
+    // 获取视场索引并排序
+    QList<int> fieldIndices = m_fieldData.keys();
+    std::sort(fieldIndices.begin(), fieldIndices.end());
+
+    int maxFields = qMin(3, fieldIndices.size());
+
+    // 计算当前Y轴的中点位置，用于确定哪些标签应该显示
+    double currentYCenter = (currentYMin + currentYMax) / 2.0;
+
+    // 更新标签位置
+    QMap<double, QString> newLeftTickLabels;
+    QMap<double, QString> newRightTickLabels;
+
+    for (int i = 0; i < maxFields; i++) {
+        int fieldIndex = fieldIndices[i];
+
+        // 原始中心位置
+        double originalCenter = m_originalFieldCenters[fieldIndex];
+
+        // 计算当前视场中心应该显示的位置
+        // 如果视场中心在当前可见范围内，就显示该标签
+        if (originalCenter >= currentYMin && originalCenter <= currentYMax) {
+            QPair<double, double> center = m_spotCenters[fieldIndex];
+
+            // 左侧标签
+            QString leftLabel = QString("%1\nX:%2\nY:%3")
+                .arg(getFieldName(fieldIndex))
+                .arg(center.first, 0, 'f', 4)
+                .arg(center.second + LEFT_AXIS_OFFSET, 0, 'f', 4);
+            newLeftTickLabels[originalCenter] = leftLabel;
+
+            // 右侧标签
+            if (fieldIndex < m_fieldRMS.size() && fieldIndex < m_field100.size()) {
+                QString rightLabel = QString("%1\nRMS:%2\n100%:%3")
+                    .arg(getFieldName(fieldIndex))
+                    .arg(m_fieldRMS[fieldIndex] * m_dataScale, 0, 'f', 4)
+                    .arg(m_field100[fieldIndex] * m_dataScale, 0, 'f', 4);
+                newRightTickLabels[originalCenter] = rightLabel;
+            }
+        }
+    }
+
+    m_currentLeftTickLabels = newLeftTickLabels;
+    m_currentRightTickLabels = newRightTickLabels;
+}
+
+void SpotDiagramPlotter::updateLabelsForCurrentView()
+{
+    // 更新标签位置
+    updateTickLabelPositions();
+
+    // 更新刻度显示
     updateAxisTicks();
+
+    // 重新绘制
+    m_plot->replot();
 }
 
 void SpotDiagramPlotter::updateSpotPositions()
@@ -1195,40 +1268,26 @@ void SpotDiagramPlotter::updateSpotPositions()
         }
     }
 
-    // 更新刻度信息（使用新的垂直偏移）
-    // 先更新m_currentLeftTickLabels中的位置
-    QMap<double, QString> newLeftTickLabels;
-    QMap<double, QString> newRightTickLabels;
+    // 更新标签位置
+    updateTickLabelPositions();
 
-    for (int i = 0; i < maxFields; i++) {
-        int fieldIndex = fieldIndices[i];
-        if (verticalOffsets.contains(fieldIndex)) {
-            double newPos = verticalOffsets[fieldIndex];
-            QPair<double, double> center = m_spotCenters[fieldIndex];
+    // 更新刻度显示
+    updateAxisTicks();
+}
 
-            // 更新左侧标签
-            QString leftLabel = QString("%1\nX:%2\nY:%3")
-                .arg(getFieldName(fieldIndex))
-                .arg(center.first, 0, 'f', 4)
-                .arg(center.second + LEFT_AXIS_OFFSET, 0, 'f', 4);
-            newLeftTickLabels[newPos] = leftLabel;
-
-            // 更新右侧标签
-            if (fieldIndex < m_fieldRMS.size() && fieldIndex < m_field100.size()) {
-                QString rightLabel = QString("%1\nRMS:%2\n100%:%3")
-                    .arg(getFieldName(fieldIndex))
-                    .arg(m_fieldRMS[fieldIndex] * m_dataScale, 0, 'f', 4)
-                    .arg(m_field100[fieldIndex] * m_dataScale, 0, 'f', 4);
-                newRightTickLabels[newPos] = rightLabel;
+bool SpotDiagramPlotter::eventFilter(QObject* watched, QEvent* event)
+{
+    if (watched == m_plot->canvas()) {
+        // 处理鼠标释放事件，确保平移完成后更新标签
+        if (event->type() == QEvent::MouseButtonRelease) {
+            QMouseEvent* mouseEvent = static_cast<QMouseEvent*>(event);
+            if (mouseEvent->button() == Qt::LeftButton) {
+                // 左键释放，可能是平移结束
+                QTimer::singleShot(50, this, &SpotDiagramPlotter::updateLabelsForCurrentView);
             }
         }
     }
-
-    m_currentLeftTickLabels = newLeftTickLabels;
-    m_currentRightTickLabels = newRightTickLabels;
-
-    // 更新刻度线显示
-    updateAxisTicks();
+    return QWidget::eventFilter(watched, event);
 }
 
 void SpotDiagramPlotter::contextMenuEvent(QContextMenuEvent* event)
