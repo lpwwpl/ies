@@ -793,8 +793,8 @@ QString SpotDiagramPlotter::getFieldName(int fieldIndex) const
 {
     switch (fieldIndex) {
     case 0: return "F1";
-    case 1: return "F1";
-    case 2: return "F2";
+    case 1: return "F2";
+    case 2: return "F3";
     default: return QString("视场%1").arg(fieldIndex + 1);
     }
 }
@@ -884,7 +884,7 @@ void SpotDiagramPlotter::plotSpotDiagrams()
 
     // X轴：为Y轴范围的1/3
     double totalYRange = yMax - yMin;
-    double totalXRange = totalYRange / 3.0;
+    double totalXRange = totalYRange / 2.0;
     double xMin = -totalXRange / 2.0;
     double xMax = totalXRange / 2.0;
 
@@ -906,7 +906,7 @@ void SpotDiagramPlotter::plotSpotDiagrams()
         // 计算点列中心（原始中心坐标）
         double centerX, centerY;
         calculateSpotCenter(m_fieldData[fieldIndex], centerX, centerY);
-        m_spotCenters[fieldIndex] = qMakePair(centerX * m_dataScale, centerY * m_dataScale); // 中心坐标扩大
+        m_spotCenters[fieldIndex] = qMakePair(centerX /** m_dataScale*/, centerY /** m_dataScale*/); // 中心坐标扩大
 
         // 添加点数据到图表（数据扩大并居中）
         addSpotDataToPlot(m_fieldData[fieldIndex], verticalOffset, fieldName, fieldIndex, centerX, centerY);
@@ -1021,15 +1021,15 @@ void SpotDiagramPlotter::addInfoToTicks()
         QString leftLabel = QString("%1\nX:%2\nY:%3")
             .arg(getFieldName(fieldIndex))
             .arg(center.first, 0, 'f', 4)
-            .arg(center.second + LEFT_AXIS_OFFSET, 0, 'f', 4); // Y坐标加上偏移量
+            .arg(center.second + i* FIELD_SPACING /*LEFT_AXIS_OFFSET*/, 0, 'f', 4); // Y坐标加上偏移量
         m_currentLeftTickLabels[verticalOffset] = leftLabel;
 
         // 右侧刻度标签 - 显示RMS和100%直径
         if (fieldIndex < m_fieldRMS.size() && fieldIndex < m_field100.size()) {
             QString rightLabel = QString("%1\nRMS:%2\n100%:%3")
                 .arg(getFieldName(fieldIndex))
-                .arg(m_fieldRMS[fieldIndex] * m_dataScale, 0, 'f', 4)
-                .arg(m_field100[fieldIndex] * m_dataScale, 0, 'f', 4);
+                .arg(m_fieldRMS[fieldIndex] /** m_dataScale*/, 0, 'f', 4)
+                .arg(m_field100[fieldIndex] /** m_dataScale*/, 0, 'f', 4);
             m_currentRightTickLabels[verticalOffset] = rightLabel;
         }
     }
@@ -1168,15 +1168,15 @@ void SpotDiagramPlotter::updateTickLabelPositions()
             QString leftLabel = QString("%1\nX:%2\nY:%3")
                 .arg(getFieldName(fieldIndex))
                 .arg(center.first, 0, 'f', 4)
-                .arg(center.second + LEFT_AXIS_OFFSET, 0, 'f', 4);
+                .arg(center.second + FIELD_SPACING*i /*LEFT_AXIS_OFFSET*/, 0, 'f', 4);
             newLeftTickLabels[originalCenter] = leftLabel;
 
             // 右侧标签
             if (fieldIndex < m_fieldRMS.size() && fieldIndex < m_field100.size()) {
                 QString rightLabel = QString("%1\nRMS:%2\n100%:%3")
                     .arg(getFieldName(fieldIndex))
-                    .arg(m_fieldRMS[fieldIndex] * m_dataScale, 0, 'f', 4)
-                    .arg(m_field100[fieldIndex] * m_dataScale, 0, 'f', 4);
+                    .arg(m_fieldRMS[fieldIndex] /** m_dataScale*/, 0, 'f', 4)
+                    .arg(m_field100[fieldIndex] /** m_dataScale*/, 0, 'f', 4);
                 newRightTickLabels[originalCenter] = rightLabel;
             }
         }

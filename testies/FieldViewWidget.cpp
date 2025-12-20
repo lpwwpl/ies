@@ -655,7 +655,7 @@ double FieldViewWidget::getArrowLength(double magnitude)
     double normalized = (magnitude - minMagnitude) / (maxMagnitude - minMagnitude);
 
     // 长度在0.5到2.0之间线性变化
-    return 0.5 + normalized * 1.5;
+    return 0.0 + normalized * 1.2;
 }
 
 QPen FieldViewWidget::getArrowPen(double magnitude)
