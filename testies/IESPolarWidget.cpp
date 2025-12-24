@@ -953,9 +953,9 @@ void IESPolarWidget::initPlot()
     m_curve90_270->attach(this);
 
     // 显示图例
-    QwtLegend* legend = new QwtLegend();
-    legend->setFrameStyle(QFrame::Box | QFrame::Sunken);
-    insertLegend(legend, QwtPolarPlot::RightLegend);
+    m_legend = new QwtLegend();
+    m_legend->setFrameStyle(QFrame::Box | QFrame::Sunken);
+    insertLegend(m_legend, QwtPolarPlot::RightLegend);
 
     // 设置画布背景
     //setCanvasBackground(QBrush(Qt::white));
@@ -975,21 +975,38 @@ void IESPolarWidget::updateIES(double angle)
     {
         // 类型大于4：只显示C0-C180剖面
         auto profile0_180 = generateC0C180Profile(angle);
+        auto profile90_270 = generateC90C270Profile(angle);
 
         // 创建数据对象
         PolarSeriesData* data0_180 = new PolarSeriesData(profile0_180);
-        m_curve0_180->setData(data0_180);
+        PolarSeriesData* data90_270 = new PolarSeriesData(profile90_270);
 
+
+        m_curve0_180->setData(data0_180);
+        m_curve90_270->setData(data90_270);
         m_curve0_180->setVisible(true);
-        m_curve90_270->setVisible(false);
+        m_curve90_270->setVisible(true);
+
+
+        int oneEightyPhiIndex = angle;
+        if (oneEightyPhiIndex >= 180) {
+            oneEightyPhiIndex -= 360;
+        }
+        m_curve0_180->setTitle(QString("B %1 deg").arg(oneEightyPhiIndex));
+        m_curve0_180->legendChanged();
+
+
+        int twoEightyPhiIndex = angle + 90;
+        if (twoEightyPhiIndex >= 180) {
+            twoEightyPhiIndex -= 360;
+        }
+        m_curve90_270->setTitle(QString("B %1 deg").arg(twoEightyPhiIndex));
+        m_curve90_270->legendChanged();
 
         static_cast<FilledPolarCurve*>(m_curve0_180)->m_type = eB_9090;
         static_cast<FilledPolarCurve*>(m_curve0_180)->m_angle = M_PI ;
-        // 清除另一条曲线的数据
-        //if (m_curve90_270->data()) {
-        //    delete m_curve90_270->data();
-        //    m_curve90_270->setData(nullptr);
-        //}
+        static_cast<FilledPolarCurve*>(m_curve90_270)->m_type = eB_9090;
+        static_cast<FilledPolarCurve*>(m_curve90_270)->m_angle = M_PI ;
     }
     else
     {
@@ -1007,6 +1024,19 @@ void IESPolarWidget::updateIES(double angle)
         m_curve0_180->setVisible(true);
         m_curve90_270->setVisible(true);
 
+     
+        m_curve0_180->setTitle(QString("C %1 deg").arg(angle));
+        m_curve0_180->legendChanged();
+
+
+        int twoEightyPhiIndex = angle + 90;
+        if (twoEightyPhiIndex >= 360) {
+            twoEightyPhiIndex -= 360;
+        }
+        m_curve90_270->setTitle(QString("C %1 deg").arg(twoEightyPhiIndex));
+        m_curve90_270->legendChanged();
+
+        static_cast<FilledPolarCurve*>(m_curve0_180)->m_type = eC0;
         static_cast<FilledPolarCurve*>(m_curve0_180)->m_angle = M_PI / 2;
         static_cast<FilledPolarCurve*>(m_curve90_270)->m_angle = M_PI / 2;
     }
@@ -1035,7 +1065,8 @@ QVector<QwtPointPolar> IESPolarWidget::generateC0C180Profile(double angle)
     }
 
     // 如果是类型1-4，添加第二部分数据
-    if (IESLoader::instance().light.m_IESType <= 4) {
+    //if (IESLoader::instance().light.m_IESType <= 4) 
+    {
         int twoEightyPhiIndex = angle + 180;
         if (twoEightyPhiIndex >= 360) {
             twoEightyPhiIndex -= 360;
@@ -1064,7 +1095,8 @@ QVector<QwtPointPolar> IESPolarWidget::generateC90C270Profile(double angle)
 {
     QVector<QwtPointPolar> profile;
 
-    if (IESLoader::instance().light.m_IESType <= 4) {
+    //if (IESLoader::instance().light.m_IESType <= 4) 
+    {
         std::vector<double> r3;
         std::vector<double> r4;
 

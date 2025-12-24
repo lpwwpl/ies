@@ -304,6 +304,7 @@ private:
     QwtPolarCurve* m_curve90_270 = nullptr;
     QwtPolarGrid* m_grid = nullptr;
 
+    QwtLegend* m_legend = nullptr;
     QPen m_pen0_180;
     QPen m_pen90_270;
     QBrush m_brush0_180;

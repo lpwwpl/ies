@@ -771,12 +771,12 @@ void IESLoader::fillData()
             vals4.push_back(row);
         }
 
-        //for (auto& row : vals1) {
-        //    std::fill(row.begin(), row.end(), 0.0);
-        //}
-        //for (auto& row : vals4) {
-        //    std::fill(row.begin(), row.end(), 0.0);
-        //}
+        for (auto& row : vals1) {
+            std::fill(row.begin(), row.end(), 0.0);
+        }
+        for (auto& row : vals4) {
+            std::fill(row.begin(), row.end(), 0.0);
+        }
         // 合并所有象限的数据
         newValues.insert(newValues.end(), vals1.begin(), vals1.end());
         newValues.insert(newValues.end(), vals2.begin(), vals2.end());
@@ -875,9 +875,9 @@ void IESLoader::fillData()
 
         vals4 = vals3;
         vals4.pop_back();
-        //for (auto& row : vals4) {
-        //    std::fill(row.begin(), row.end(), 0.0);
-        //}     
+        for (auto& row : vals4) {
+            std::fill(row.begin(), row.end(), 0.0);
+        }     
         newValues.insert(newValues.end(), vals3.begin(), vals3.end());
         newValues.insert(newValues.end(), vals4.begin(), vals4.end());
     }

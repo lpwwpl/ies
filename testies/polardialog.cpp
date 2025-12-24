@@ -77,7 +77,7 @@ void PolarDialog::updatePolarIES()
     if (IESLoader::instance().light.m_IESType > 4)
     {
         ui->horizontalSlider->blockSignals(true);
-        ui->horizontalSlider->setRange(0, 180);
+        ui->horizontalSlider->setRange(0, 360);
         ui->horizontalSlider->setValue(90);
         ui->horizontalSlider->blockSignals(false);
         m_polarWidget->updateIES(90);
