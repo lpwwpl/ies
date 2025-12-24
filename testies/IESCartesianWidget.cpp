@@ -480,25 +480,36 @@ void IESCartesianWidget::updateIES(double angle)
     {
         // 类型大于4：只显示C0-C180剖面
         auto profile0_180 = generateC0C180Profile(angle);
-
+        auto profile90_270 = generateC90C270Profile(angle);
         // 准备数据
         QVector<QPointF> points0_180;
+        QVector<QPointF> points90_270;
+
         points0_180.reserve(profile0_180.size());
         for (const auto& point : profile0_180) {
             points0_180.append(point);
         }
-
+        for (const auto& point : profile90_270) {
+            points90_270.append(point);
+        }
         m_curve0_180->setSamples(points0_180);
-        QString cname = QString("C%1").arg(angle);
-        m_curve0_180->setTitle(cname);
+        m_curve90_270->setSamples(points90_270);
 
-        // 隐藏第二条曲线
-        m_curve90_270->setSamples(QVector<QPointF>());
-        double graph90_270_angle = 90 + angle;
-        if (graph90_270_angle > 360) graph90_270_angle -= 360;
-        cname = QString("C%1").arg(graph90_270_angle);
-        m_curve90_270->setTitle(cname);
-        m_curve90_270->setVisible(false);
+        int oneEightyPhiIndex = angle;
+        if (oneEightyPhiIndex >= 180) {
+            oneEightyPhiIndex -= 360;
+        }
+        m_curve0_180->setTitle(QString("B %1 deg").arg(oneEightyPhiIndex));
+        m_curve0_180->legendChanged();
+
+
+        int twoEightyPhiIndex = angle + 90;
+        if (twoEightyPhiIndex >= 180) {
+            twoEightyPhiIndex -= 360;
+        }
+        m_curve90_270->setTitle(QString("B %1 deg").arg(twoEightyPhiIndex));
+        m_curve90_270->legendChanged();
+
     }
     else
     {
@@ -521,15 +532,29 @@ void IESCartesianWidget::updateIES(double angle)
         }
 
         m_curve0_180->setSamples(points0_180);
-        QString cname = QString("C%1").arg(angle);
-        m_curve0_180->setTitle(cname);
-
         m_curve90_270->setSamples(points90_270);
-        double graph90_270_angle = 90 + angle;
-        if (graph90_270_angle > 360) graph90_270_angle -= 360;
-        cname = QString("C%1").arg(graph90_270_angle);
-        m_curve90_270->setTitle(cname);
-        m_curve90_270->setVisible(true);
+
+        m_curve0_180->setTitle(QString("C %1 deg").arg(angle));
+        m_curve0_180->legendChanged();
+
+
+        int twoEightyPhiIndex = angle + 90;
+        if (twoEightyPhiIndex >= 360) {
+            twoEightyPhiIndex -= 360;
+        }
+        m_curve90_270->setTitle(QString("C %1 deg").arg(twoEightyPhiIndex));
+        m_curve90_270->legendChanged();
+
+        //m_curve0_180->setSamples(points0_180);
+        //QString cname = QString("C%1").arg(angle);
+        //m_curve0_180->setTitle(cname);
+
+        //m_curve90_270->setSamples(points90_270);
+        //double graph90_270_angle = 90 + angle;
+        //if (graph90_270_angle > 360) graph90_270_angle -= 360;
+        //cname = QString("C%1").arg(graph90_270_angle);
+        //m_curve90_270->setTitle(cname);
+        //m_curve90_270->setVisible(true);
     }
 
     // 自动调整坐标轴范围
@@ -556,7 +581,7 @@ std::vector<QPointF> IESCartesianWidget::generateC0C180Profile(double angle)
     }
     profile.insert(profile.end(), profile1.begin(), profile1.end());
 
-    if (IESLoader::instance().light.m_IESType <= 4)
+    //if (IESLoader::instance().light.m_IESType <= 4)
     {
         int twoEightyPhiIndex = static_cast<int>(angle + 180);
         if (twoEightyPhiIndex >= 360) twoEightyPhiIndex -= 360;
@@ -589,7 +614,7 @@ std::vector<QPointF> IESCartesianWidget::generateC90C270Profile(double angle)
     std::vector<double> r3;
     std::vector<double> r4;
 
-    if (IESLoader::instance().light.m_IESType <= 4)
+    //if (IESLoader::instance().light.m_IESType <= 4)
     {
         int oneEightyPhiIndex = static_cast<int>(90 + angle);
         if (oneEightyPhiIndex >= 360) oneEightyPhiIndex -= 360;

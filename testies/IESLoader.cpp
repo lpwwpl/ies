@@ -862,6 +862,9 @@ void IESLoader::fillData()
         std::vector<std::vector<double>> vals2;
         std::vector<std::vector<double>> vals3;
         std::vector<std::vector<double>> vals4;
+        int h_size = light.horizontal_angles.size();
+        int v_size = light.vertical_angles.size();
+
         for (int i = 0; i < light.candela_hv.size(); i++)
         {
             vals1.push_back(light.candela_hv[i]);
@@ -870,14 +873,42 @@ void IESLoader::fillData()
         {
             vals2.push_back(vals1[i]);
         }
-        vals3.insert(vals3.end(), vals1.begin(), vals1.end());
-        vals3.insert(vals3.end(), vals2.begin(), vals2.end());
+        for (int i = 1; i < h_size; i++)
+        {
+            std::vector<double> row;
+            for (int j = 0; j < v_size; j++)
+            {
+                row.push_back(light.candela_hv[i][j]);
+            }
+            vals3.push_back(row);
+        }
+        for (int i = h_size - 1; i > 0; i--)
+        {
+            std::vector<double> row;
+            for (int j = 0; j < v_size; j++)
+            {
+                row.push_back(light.candela_hv[i][j]);
+            }
+            vals4.push_back(row);
+        }
+        //vals3.insert(vals3.end(), vals1.begin(), vals1.end());
+        //vals3.insert(vals3.end(), vals2.begin(), vals2.end());
+        //vals4 = vals3;
+        //vals4.pop_back();
+        //for (auto& row : vals4) {
+        //    std::fill(row.begin(), row.end(), 0.0);
+        //}
 
-        vals4 = vals3;
-        vals4.pop_back();
+        for (auto& row : vals1) {
+            std::fill(row.begin(), row.end(), 0.0);
+        }
         for (auto& row : vals4) {
             std::fill(row.begin(), row.end(), 0.0);
-        }     
+        }
+
+ 
+        newValues.insert(newValues.end(), vals1.begin(), vals1.end());
+        newValues.insert(newValues.end(), vals2.begin(), vals2.end());
         newValues.insert(newValues.end(), vals3.begin(), vals3.end());
         newValues.insert(newValues.end(), vals4.begin(), vals4.end());
     }

@@ -1038,6 +1038,7 @@ void IESPolarWidget::updateIES(double angle)
 
         static_cast<FilledPolarCurve*>(m_curve0_180)->m_type = eC0;
         static_cast<FilledPolarCurve*>(m_curve0_180)->m_angle = M_PI / 2;
+        static_cast<FilledPolarCurve*>(m_curve90_270)->m_type = eC0;
         static_cast<FilledPolarCurve*>(m_curve90_270)->m_angle = M_PI / 2;
     }
 
