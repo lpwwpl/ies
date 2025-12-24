@@ -305,7 +305,7 @@ bool AberrationWidget::loadDataFromFile(const QString& filename)
         }
         else if (readingData && !line.isEmpty()) {
             // 解析数据行
-            QStringList parts = line.split(' ', Qt::SkipEmptyParts);
+            QStringList parts = line.split(' ', QString::SkipEmptyParts);
             if (parts.size() >= 3) {
                 currentData.normalizedAperture.append(parts[1].toDouble());
                 currentData.aberration.append(parts[2].toDouble());

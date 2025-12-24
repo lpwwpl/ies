@@ -515,7 +515,7 @@ bool FieldViewWidget::loadFieldDataFile(const QString& filename)
         }
 
         // 解析数据行
-        QStringList parts = line.split(QRegExp("\\s+"), Qt::SkipEmptyParts);
+        QStringList parts = line.split(QRegExp("\\s+"), QString::SkipEmptyParts);
         if (parts.size() >= 5) {
             bool ok;
             FieldData data;

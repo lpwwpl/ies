@@ -419,7 +419,7 @@ bool DistortionGridWidget::loadDistortionData(const QString& filename)
         }
 
         if (dataSection) {
-            QStringList fields = line.split(QRegularExpression("\\s+"), Qt::SkipEmptyParts);
+            QStringList fields = line.split(QRegularExpression("\\s+"), QString::SkipEmptyParts);
 
             if (fields.size() >= 8) {
                 DistortionPoint point;

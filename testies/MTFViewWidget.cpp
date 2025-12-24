@@ -646,7 +646,7 @@ bool MTFViewer::loadFromString(const QString& data)
     m_lines.clear();
     m_currentSelectedIndex = -1;
 
-    QStringList lines = data.split('\n', Qt::SkipEmptyParts);
+    QStringList lines = data.split('\n', QString::SkipEmptyParts);
 
     MTFLine currentLine;
     bool readingData = false;
@@ -688,7 +688,7 @@ bool MTFViewer::loadFromString(const QString& data)
         }
         else if (readingData && !trimmedLine.isEmpty() && !trimmedLine.startsWith("#")) {
             // 读取数据行
-            QStringList parts = trimmedLine.split(' ', Qt::SkipEmptyParts);
+            QStringList parts = trimmedLine.split(' ', QString::SkipEmptyParts);
             if (parts.size() >= 3) {
                 bool ok1, ok2;
                 double x = parts[1].toDouble(&ok1);

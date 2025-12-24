@@ -701,7 +701,7 @@ void SpotDiagramPlotter::parseAiryData(QTextStream& in)
     // 读取三行Airy直径数据
     for (int i = 0; i < 3; i++) {
         QString line = in.readLine().trimmed();
-        QStringList parts = line.split(QRegExp("\\s+"), Qt::SkipEmptyParts);
+        QStringList parts = line.split(QRegExp("\\s+"), QString::SkipEmptyParts);
         if (parts.size() >= 2) {
             bool ok1, ok2;
             double airyX = parts[0].toDouble(&ok1);
@@ -716,7 +716,7 @@ void SpotDiagramPlotter::parseAiryData(QTextStream& in)
 
 void SpotDiagramPlotter::parseDataLine(const QString& line)
 {
-    QStringList parts = line.split(QRegExp("\\s+"), Qt::SkipEmptyParts);
+    QStringList parts = line.split(QRegExp("\\s+"), QString::SkipEmptyParts);
     if (parts.size() < 7) return;
 
     bool ok;
