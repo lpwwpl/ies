@@ -145,7 +145,7 @@
 #include <qwt_series_data.h>
 #include <vector>
 #include "common.h"
-
+#include "IESLoader.h"
 // 自定义极坐标数据类
 class PolarSeriesData : public QwtSeriesData<QwtPointPolar>
 {
@@ -201,7 +201,7 @@ class FilledPolarCurve : public QwtPolarCurve
 public:
     explicit FilledPolarCurve(const QString& title = QString())
         : QwtPolarCurve(title)
-        , m_fillBrush(Qt::NoBrush), m_angle(0), m_type(eC0)
+        , m_fillBrush(Qt::NoBrush), m_angle(0)/*, m_type(eC0)*/
     {
     }
 
@@ -240,18 +240,38 @@ public:
                 double dx = std::sin(azimuth+ m_angle);
                 double dy = -std::cos(azimuth+ m_angle);
 
-                if (m_type > 4) 
+                switch (IESLoader::instance().light.m_IESType)
+                {
+                case eC0:
+                case eC90:
+                case eC270:
+                {
+                    QPointF direction(dx, dy);
+                    QPointF point = pole + radial * direction;
+                    polygon.append(point);
+                }
+                break;
+                case eC360:
+                case eC180:
+                {
+                    QPointF direction(dx, -dy);
+                    QPointF point = pole + radial * direction;
+                    polygon.append(point);
+                }
+                    break;
+                case eB_9090:
+                case eB090:
+                case eA_9090:
+                case eA090:
                 {
                     QPointF direction(dy, dx);
                     QPointF point = pole + radial * direction;
                     polygon.append(point);
                 }
-                else
-                {
-                    QPointF direction(dx, dy);
-                    QPointF point = pole + radial * direction;
-                    polygon.append(point);
-                }    
+                    break;
+                default:
+                    break;
+                }
             }
 
             // 如果曲线不封闭，连接到中心点形成封闭区域
@@ -272,7 +292,6 @@ public:
 
 public:
     double m_angle;
-    EIESType m_type;
     QBrush m_fillBrush;
 };
 

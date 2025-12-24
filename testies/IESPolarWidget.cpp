@@ -1003,9 +1003,7 @@ void IESPolarWidget::updateIES(double angle)
         m_curve90_270->setTitle(QString("B %1 deg").arg(twoEightyPhiIndex));
         m_curve90_270->legendChanged();
 
-        static_cast<FilledPolarCurve*>(m_curve0_180)->m_type = eB_9090;
         static_cast<FilledPolarCurve*>(m_curve0_180)->m_angle = M_PI ;
-        static_cast<FilledPolarCurve*>(m_curve90_270)->m_type = eB_9090;
         static_cast<FilledPolarCurve*>(m_curve90_270)->m_angle = M_PI ;
     }
     else
@@ -1036,9 +1034,7 @@ void IESPolarWidget::updateIES(double angle)
         m_curve90_270->setTitle(QString("C %1 deg").arg(twoEightyPhiIndex));
         m_curve90_270->legendChanged();
 
-        static_cast<FilledPolarCurve*>(m_curve0_180)->m_type = eC0;
         static_cast<FilledPolarCurve*>(m_curve0_180)->m_angle = M_PI / 2;
-        static_cast<FilledPolarCurve*>(m_curve90_270)->m_type = eC0;
         static_cast<FilledPolarCurve*>(m_curve90_270)->m_angle = M_PI / 2;
     }
 
