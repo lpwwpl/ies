@@ -1,6 +1,5 @@
 ﻿#include "threeDdialog.h"
 #include "ui_threeddialog.h"
-#include "IESglWidget.h"
 #include <cmath>
 
 
@@ -33,6 +32,8 @@
 #include <vtkDelaunay3D.h>
 #include <vtkSmoothPolyDataFilter.h>
 #include <vtkStructuredGridGeometryFilter.h>
+
+#include "IESLoader.h"
 //#include "dislin.h"
 ThreeDDialog::ThreeDDialog(QWidget *parent)
     : QDialog(parent)

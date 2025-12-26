@@ -1175,7 +1175,7 @@ void IESIsoWidget::updateIESYZ(double distance, double halfmap)
     if (IESLoader::instance().light.candela.size() < 1)
         return;
 
-    calculateYZPlaneIlluminance();
+    calculateYZ_PlaneIlluminance();
     updatePlot();
 }
 
@@ -1189,7 +1189,7 @@ void IESIsoWidget::updateIESXZ(double distance, double halfmap)
     if (IESLoader::instance().light.candela.size() < 1)
         return;
 
-    calculateXZPlaneIlluminance();
+    calculateXZ_PlaneIlluminance();
     updatePlot();
 }
 

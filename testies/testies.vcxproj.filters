@@ -50,9 +50,6 @@
     <ClCompile Include="contours.cpp">
       <Filter>widgets</Filter>
     </ClCompile>
-    <ClCompile Include="IESglwidget.cpp">
-      <Filter>widgets</Filter>
-    </ClCompile>
     <ClCompile Include="TableItemDelegate.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -110,9 +107,6 @@
     </QtMoc>
     <QtMoc Include="threeDdialog.h">
       <Filter>Header Files</Filter>
-    </QtMoc>
-    <QtMoc Include="IESglwidget.h">
-      <Filter>widgets</Filter>
     </QtMoc>
     <QtMoc Include="IESPolarWidget.h">
       <Filter>widgets</Filter>
