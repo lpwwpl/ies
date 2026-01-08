@@ -593,7 +593,7 @@ void ISOLuxPlot::updateIESYZ(double distance, double halfmap)
         double y = -halfWidth + i * gridSpacing;
         for (int j = 0; j < gridSize; ++j) {
             double z = -halfWidth + j * gridSpacing;         
-            float intensity = calculateIlluminanceAtPoint_(0, y, z);
+            float intensity = calculateIlluminanceAtPoint(0, y, z);
             if (intensity > zmax)zmax = intensity;
             if (intensity < zmin)zmin = intensity;
             m_intensities->InsertNextValue(intensity);
@@ -608,7 +608,7 @@ void ISOLuxPlot::updateIESYZ(double distance, double halfmap)
         for (int j = 0; j < gridSize; ++j) {
             double z = -halfWidth + j * gridSpacing;
             double z_scale = z / radio;
-            float intensity = calculateIlluminanceAtPoint_(0, y, z);
+            float intensity = calculateIlluminanceAtPoint(0, y, z);
             m_points->InsertNextPoint(y_scale, z_scale,intensity / z_radio);
         }
     }
@@ -1248,7 +1248,7 @@ void ISOLuxPlot::updateIESXZ(double distance, double halfmap)
         const double x = -halfWidth + i * gridSpacing;
         for (int j = 0; j < gridSize; ++j) {
             const double z = -halfWidth + j * gridSpacing;
-            const float intensity = calculateIlluminanceAtPoint_(x, 0, z);
+            const float intensity = calculateIlluminanceAtPoint(x, 0, z);
 
             if (intensity > zmax)zmax = intensity;
             if (intensity < zmin)zmin = intensity;
@@ -1265,7 +1265,7 @@ void ISOLuxPlot::updateIESXZ(double distance, double halfmap)
         for (int j = 0; j < gridSize; ++j) {
             const double z = -halfWidth + j * gridSpacing;
             const double z_scale = z / radio;
-            const float intensity = calculateIlluminanceAtPoint_(x, 0, z);
+            const float intensity = calculateIlluminanceAtPoint(x, 0, z);
 
             m_points->InsertNextPoint(x_scale, z_scale, intensity / z_radio);
         }
@@ -1378,7 +1378,13 @@ double ISOLuxPlot::calculateIlluminanceAtPoint_(double x, double y, double z)
     double candela = IESLoader::instance().getCandelaValue(verticalAngle, horizontalAngle);
 
     // 计算照度 (距离平方反比定律 + 余弦定律)
-    double cosIncidence = -dz / totalDistance;  // 入射角余弦
+    double cosIncidence = 0;
+    if (z == 0)
+        cosIncidence = -dz / totalDistance;
+    else if (x == 0)
+        cosIncidence = -dx / totalDistance;
+    else if (y == 0)
+        cosIncidence = -dy / totalDistance;
     double illuminance = candela / (totalDistance * totalDistance) * cosIncidence;
 
     return std::max(0.0, illuminance);
@@ -1404,7 +1410,13 @@ double ISOLuxPlot::calculateIlluminanceAtPoint(double x, double y, double z)
     double candela = IESLoader::instance().getCandelaValue(verticalAngle, horizontalAngle);
 
     // 计算照度 (距离平方反比定律 + 余弦定律)
-    double cosIncidence = -dz / totalDistance;  // 入射角余弦
+    double cosIncidence = 0;
+    if (z == 0)
+        cosIncidence = -dz / totalDistance;
+    else if (x == 0)
+        cosIncidence = -dx / totalDistance;
+    else if (y == 0)
+        cosIncidence = -dy / totalDistance;
     double illuminance = candela / (totalDistance * totalDistance) * cosIncidence;
 
     return std::max(0.0, illuminance);

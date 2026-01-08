@@ -1077,6 +1077,7 @@ void IESIsoWidget::calculateXZ_PlaneIlluminance()
 
 double IESIsoWidget::calculateIlluminanceAtPoint(double x, double y, double z)
 {
+
     double dx = x - fixtureX;
     double dy = y - fixtureY;
     double dz = z - fixtureZ;
@@ -1090,7 +1091,14 @@ double IESIsoWidget::calculateIlluminanceAtPoint(double x, double y, double z)
     if (horizontalAngle < 0) horizontalAngle += 360;
 
     double candela = IESLoader::instance().getCandelaValue(verticalAngle, horizontalAngle);
-    double cosIncidence = -dz / totalDistance;
+    double cosIncidence = 0;
+    if (z == 0)
+        cosIncidence = -dz / totalDistance;
+    else if (x == 0)
+        cosIncidence = -dx / totalDistance;
+    else if (y == 0)
+        cosIncidence = -dy / totalDistance;
+
     double illuminance = candela / (totalDistance * totalDistance) * cosIncidence;
 
     return std::max(0.0, illuminance);
@@ -1111,7 +1119,13 @@ double IESIsoWidget::calculateIlluminanceAtPoint_(double x, double y, double z)
     if (horizontalAngle < 0) horizontalAngle += 360;
 
     double candela = IESLoader::instance().getCandelaValue(verticalAngle, horizontalAngle);
-    double cosIncidence = -dz / totalDistance;
+    double cosIncidence = 0;
+    if (z == 0)
+        cosIncidence = -dz / totalDistance;
+    else if (x == 0)
+        cosIncidence = -dx / totalDistance;
+    else if (y == 0)
+        cosIncidence = -dy / totalDistance;
     double illuminance = candela / (totalDistance * totalDistance) * cosIncidence;
 
     return std::max(0.0, illuminance);
@@ -1175,7 +1189,7 @@ void IESIsoWidget::updateIESYZ(double distance, double halfmap)
     if (IESLoader::instance().light.candela.size() < 1)
         return;
 
-    calculateYZ_PlaneIlluminance();
+    calculateYZPlaneIlluminance();
     updatePlot();
 }
 
@@ -1189,7 +1203,7 @@ void IESIsoWidget::updateIESXZ(double distance, double halfmap)
     if (IESLoader::instance().light.candela.size() < 1)
         return;
 
-    calculateXZ_PlaneIlluminance();
+    calculateXZPlaneIlluminance();
     updatePlot();
 }
 
