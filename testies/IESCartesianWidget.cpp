@@ -530,7 +530,7 @@ void IESCartesianWidget::updateIES(double angle)
         for (const auto& point : profile90_270) {
             points90_270.append(point);
         }
-
+        
         m_curve0_180->setSamples(points0_180);
         m_curve90_270->setSamples(points90_270);
 

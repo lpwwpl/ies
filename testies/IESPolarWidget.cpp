@@ -984,8 +984,8 @@ void IESPolarWidget::updateIES(double angle)
 
         m_curve0_180->setData(data0_180);
         m_curve90_270->setData(data90_270);
-        m_curve0_180->setVisible(true);
-        m_curve90_270->setVisible(true);
+        //m_curve0_180->setVisible(true);
+        //m_curve90_270->setVisible(true);
 
 
         int oneEightyPhiIndex = angle;
@@ -1019,8 +1019,8 @@ void IESPolarWidget::updateIES(double angle)
         m_curve0_180->setData(data0_180);
         m_curve90_270->setData(data90_270);
 
-        m_curve0_180->setVisible(true);
-        m_curve90_270->setVisible(true);
+        //m_curve0_180->setVisible(true);
+        //m_curve90_270->setVisible(true);
 
      
         m_curve0_180->setTitle(QString("C %1 deg").arg(angle));
