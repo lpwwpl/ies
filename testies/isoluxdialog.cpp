@@ -83,13 +83,15 @@ ISOLuxPlot::ISOLuxPlot()/*:vtx(nullptr),itx(nullptr)*/
     contourActor = vtkSmartPointer<vtkActor>::New();
     contourActor->SetMapper(contourMapper);
     contourActor->GetProperty()->SetColor(0, 0, 0); // 黑色轮廓线
-    contourActor->GetProperty()->SetLineWidth(5);
+    contourActor->GetProperty()->SetLineWidth(10);
+    contourActor->GetProperty()->SetPointSize(2);
+    contourActor->GetProperty()->EdgeVisibilityOn();  // 边缘可见
     m_renderer->AddActor(contourActor);
 
     delaunay = vtkSmartPointer<vtkDelaunay2D>::New();
     delaunay->SetInputData(m_polyData);
-    delaunay->SetTolerance(0.001);
-    delaunay->SetAlpha(1);
+    //delaunay->SetTolerance(0.001);
+    //delaunay->SetAlpha(0.001);
     delaunay->Update();
     //extractEdges = vtkSmartPointer<vtkExtractEdges>::New();
     //extractEdges->SetInputConnection(delaunay->GetOutputPort());
@@ -557,6 +559,7 @@ void ISOLuxPlot::updateIESXY(double distance, double halfmap)
 
     updateCubeAxesBounds();
     contourFilter->GenerateValues(m_levelSize, zmin, zmax);
+    //contourFilter->SetValue(0, 0.5); // 设置等高值
     contourFilter->Update();
 
     this->renderWindow()->Render();
