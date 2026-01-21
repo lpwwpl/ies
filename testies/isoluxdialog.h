@@ -70,17 +70,17 @@ public:
     ISOLuxPlot();
 
 
-    double fixtureX;
-    double fixtureY;
-    double fixtureZ;
-    double calculationWidth;
-    double workplaneHeight;
-    double gridSpacing;
-    int m_levelSize;
-    bool m_bUseGrid;
-    double maxIlluminance;
-    double minIlluminance;
-    int m_numOfPoints;
+    //double fixtureX;
+    //double fixtureY;
+    //double fixtureZ;
+    //double calculationWidth;
+    //double workplaneHeight;
+    //double gridSpacing;
+    //int m_levelSize;
+    //bool m_bUseGrid;
+    //double maxIlluminance;
+    //double minIlluminance;
+    //int m_numOfPoints;
 
     void setAxisVisibility(bool visible);
     void setGridVisibility(bool visible);
@@ -94,9 +94,9 @@ public:
     void updateIESXZ_(double distance, double halfmap);
 
     void setViewToIsometric45();
-    double calculateIlluminanceAtPoint(double x, double y, double z);
+    //double calculateIlluminanceAtPoint(double x, double y, double z);
     // ///////-z
-    double calculateIlluminanceAtPoint_(double x, double y, double z);
+    //double calculateIlluminanceAtPoint_(double x, double y, double z);
     void updateCubeAxesBounds();
 
     vtkSmartPointer<vtkLookupTable> createColorLookupTable();

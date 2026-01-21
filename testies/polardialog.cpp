@@ -50,6 +50,8 @@ PolarDialog::PolarDialog(QWidget *parent)
 
 PolarDialog::~PolarDialog()
 {
+    if (m_cartesianWidget)delete m_cartesianWidget;
+    if (m_polarWidget)delete m_polarWidget;
     delete ui;
 }
 

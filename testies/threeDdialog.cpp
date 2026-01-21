@@ -87,6 +87,7 @@ ThreeDDialog::ThreeDDialog(QWidget *parent)
 
 ThreeDDialog::~ThreeDDialog()
 {
+    if (m_iesWidget)delete m_iesWidget;
     delete ui;
 }
 void ThreeDDialog::updateIESDataColor(bool value)
@@ -163,7 +164,7 @@ IESPointCloudWidget::IESPointCloudWidget(QWidget* parent)
     m_polyData = vtkSmartPointer<vtkPolyData>::New();
     m_glyphFilter = vtkSmartPointer<vtkVertexGlyphFilter>::New();
     m_delaunay = vtkSmartPointer<vtkDelaunay3D>::New();
-    m_smoothFilter = vtkSmartPointer<vtkSmoothPolyDataFilter>::New();
+    //m_smoothFilter = vtkSmartPointer<vtkSmoothPolyDataFilter>::New();
     m_geometryFilter = vtkSmartPointer<vtkStructuredGridGeometryFilter>::New();
     m_mapper = vtkSmartPointer<vtkPolyDataMapper>::New();
     structuredGrid = vtkSmartPointer<vtkStructuredGrid>::New();
@@ -185,11 +186,12 @@ IESPointCloudWidget::IESPointCloudWidget(QWidget* parent)
     m_glyphFilter->SetInputData(m_polyData);
     m_surfaceFilter->SetInputData(structuredGrid);
     m_geometryFilter->SetInputData(structuredGrid);
+
     //m_surfaceFilter->SetInputConnection(m_delaunay->GetOutputPort());
     //m_delaunay->SetInputData(m_polyData);
     //m_delaunay->SetAlpha(0.1); // 控制网格密度
-    m_smoothFilter->SetInputConnection(m_surfaceFilter->GetOutputPort());
-    m_smoothFilter->SetNumberOfIterations(15);
+    //m_smoothFilter->SetInputConnection(m_surfaceFilter->GetOutputPort());
+    //m_smoothFilter->SetNumberOfIterations(15);
     //////////////
     //addCoordinateAxes();
 

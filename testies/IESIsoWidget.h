@@ -99,11 +99,7 @@
 #include <qwt_plot_marker.h>
 #include <qwt_plot_legenditem.h>
 
-// 照度计算点
-struct IlluminancePoint {
-    double x, y, z;
-    double illuminance; // 照度(lux)
-};
+
 
 // 等照度线
 struct IsoluxCurve {
@@ -261,16 +257,16 @@ public:
     void updatePlot();
 
     // 计算函数
-    void calculateXZPlaneIlluminance();
-    void calculateYZPlaneIlluminance();
-    void calculateXYPlaneIlluminance();
-    void calculateXZ_PlaneIlluminance();
-    void calculateYZ_PlaneIlluminance();
-    void calculateXY_PlaneIlluminance();
+    //void calculateXZPlaneIlluminance();
+    //void calculateYZPlaneIlluminance();
+    //void calculateXYPlaneIlluminance();
+    //void calculateXZ_PlaneIlluminance();
+    //void calculateYZ_PlaneIlluminance();
+    //void calculateXY_PlaneIlluminance();
 
     // 照度计算
-    double calculateIlluminanceAtPoint(double x, double y, double z);
-    double calculateIlluminanceAtPoint_(double x, double y, double z);
+    //double calculateIlluminanceAtPoint(double x, double y, double z);
+    //double calculateIlluminanceAtPoint_(double x, double y, double z);
 
     // 设置网格可见性
     void setGridVisible(bool visible) {
@@ -279,14 +275,14 @@ public:
     }
 
     // 设置等值线级别数量
-    void setLevelSize(int levelSize) {
-        m_levelSize = levelSize;
-    }
+    //void setLevelSize(int levelSize) {
+    //    m_levelSize = levelSize;
+    //}
 
-    // 设置点数
-    void setNumPoints(int numPoints) {
-        m_numOfPoints = numPoints;
-    }
+    //// 设置点数
+    //void setNumPoints(int numPoints) {
+    //    m_numOfPoints = numPoints;
+    //}
 
 private:
     //void updateColorMapData();
@@ -300,22 +296,22 @@ public:
     IlluminanceRasterData* m_rasterData;
 
     // 数据
-    double calculationWidth;
-    double gridSpacing;
-    double maxIlluminance;
-    double minIlluminance;
+    //double calculationWidth;
+    //double gridSpacing;
+    //double maxIlluminance;
+    //double minIlluminance;
 
-    std::vector<double> illuminanceLevels;
+    //std::vector<double> illuminanceLevels;
     std::vector<IsoluxCurve> isoluxCurves;
-    std::vector<IlluminancePoint> illuminanceGrid;
-    std::vector<std::vector<double>> illuminanceGriddata;
+    //std::vector<IlluminancePoint> illuminanceGrid;
+    //std::vector<std::vector<double>> illuminanceGriddata;
 
-    double fixtureX;
-    double fixtureY;
-    double fixtureZ;
-    int m_levelSize;
-    bool m_bUseGrid;
-    int m_numOfPoints;
+    //double fixtureX;
+    //double fixtureY;
+    //double fixtureZ;
+    //int m_levelSize;
+    //bool m_bUseGrid;
+    //int m_numOfPoints;
 
     std::vector<QwtPlotCurve*> m_contourCurves;  // 存储等值线曲线
     IESColorMap* m_colorMap;                     // 颜色映射

@@ -7,6 +7,13 @@
 #include <QOpenGLTexture>
 #include "tiny_ies.hpp"
 
+// 照度计算点
+struct IlluminancePoint {
+    double x, y, z;
+    double illuminance; // 照度(lux)
+    IlluminancePoint() {}
+    IlluminancePoint(double x_,double y_,double z_,double ill_):x(x_),y(y_),z(z_),illuminance(ill_) {}
+};
 
 class IESLoader
 {
@@ -38,6 +45,17 @@ public:
     QVector3D polar_to_cartesian(double theta,double phi,double distance =1);
     double getCandelaValue(double vertical, double horizontal) ;
     int findClosestIndex(const std::vector<double>& array, double value);
+
+
+    // 计算函数
+    void calculateXZPlaneIlluminance();
+    void calculateYZPlaneIlluminance();
+    void calculateXYPlaneIlluminance();
+    void calculateXZ_PlaneIlluminance();
+    void calculateYZ_PlaneIlluminance();
+    void calculateXY_PlaneIlluminance();
+    double calculateIlluminanceAtPoint(double x, double y, double z);
+    double calculateIlluminanceAtPoint_(double x, double y, double z);
     //double interpolateCandela(double vertical, double horizontal);
     //double getCandelaValue(double vertical, double horizontal) const;
 private:
@@ -84,6 +102,25 @@ public:
     std::vector<double> pflat;
     std::vector< QVector3D> coords;
     std::vector<double> intensity;
+
+
+
+    double calculationWidth;
+    double gridSpacing;
+    double maxIlluminance;
+    double minIlluminance;
+
+    std::vector<double> illuminanceLevels;
+    //std::vector<IsoluxCurve> isoluxCurves;
+    std::vector<IlluminancePoint> illuminanceGrid;
+    std::vector<std::vector<double>> illuminanceGriddata;
+
+    double fixtureX;
+    double fixtureY;
+    double fixtureZ;
+    int m_levelSize;
+    bool m_bUseGrid;
+    int m_numOfPoints;
 };
 
 #endif // IESLOADER_H

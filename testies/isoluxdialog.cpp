@@ -70,14 +70,14 @@ ISOLuxPlot::ISOLuxPlot()/*:vtx(nullptr),itx(nullptr)*/
     m_actor->SetMapper(m_mapper);
     m_renderer->AddActor(m_actor);
 
-    gridSpacing = 0.1;
-    calculationWidth = 20;
+    //gridSpacing = 0.1;
+    //calculationWidth = 20;
     m_size = 25;
     
 
     contourFilter = vtkSmartPointer<vtkContourFilter>::New();
     contourFilter->SetInputData(m_polyData);
-    contourFilter->GenerateValues(m_levelSize, zmin, zmax);
+    //contourFilter->GenerateValues(m_levelSize, zmin, zmax);
     contourMapper = vtkSmartPointer<vtkPolyDataMapper>::New();
     contourMapper->SetInputConnection(contourFilter->GetOutputPort());
     contourActor = vtkSmartPointer<vtkActor>::New();
@@ -265,8 +265,7 @@ void ISOLuxDialog::on_spinNbOfPoints_valueChanged(int)
 }
 void ISOLuxDialog::on_chkGrid_stateChanged(int value)
 {
-    m_isoWidget->m_bUseGrid = value;
-    m_3dplot->m_bUseGrid = value;
+    IESLoader::instance().m_bUseGrid = value;
     updateIES();
 }
 void ISOLuxDialog::on_cmbPlane_currentIndexChanged(int plane)
@@ -274,20 +273,22 @@ void ISOLuxDialog::on_cmbPlane_currentIndexChanged(int plane)
     bool is2D = ui->rb2D->isChecked();
     double distance = ui->spinDistance->value();
     double halfMap = ui->spinHalfMapWidth->value();
+
+    IESLoader::instance().m_levelSize = ui->spinLevels->value();
+    IESLoader::instance().m_numOfPoints = ui->spinNbOfPoints->value();
+
     switch (plane)
     {
     case ePlaneX:
     {
+        IESLoader::instance().m_levelSize = ui->spinLevels->value();
+        IESLoader::instance().m_numOfPoints = ui->spinNbOfPoints->value();
         if (is2D)
         {
-            m_isoWidget->m_levelSize = ui->spinLevels->value();
-            m_isoWidget->m_numOfPoints = ui->spinNbOfPoints->value();
             m_isoWidget->updateIESYZ(distance,halfMap);
         }
         else
         {
-            m_3dplot->m_numOfPoints = ui->spinNbOfPoints->value();
-            m_3dplot->m_levelSize = ui->spinLevels->value();
             m_3dplot->updateIESYZ(distance,halfMap);
         }
         //if()
@@ -297,14 +298,10 @@ void ISOLuxDialog::on_cmbPlane_currentIndexChanged(int plane)
     {
         if (is2D)
         {
-            m_isoWidget->m_levelSize = ui->spinLevels->value();
-            m_isoWidget->m_numOfPoints = ui->spinNbOfPoints->value();
             m_isoWidget->updateIESXZ(distance, halfMap);
         }
         else
         {
-            m_3dplot->m_levelSize = ui->spinLevels->value();
-            m_isoWidget->m_numOfPoints = ui->spinNbOfPoints->value();
             m_3dplot->updateIESXZ(distance, halfMap);
         }
     }
@@ -313,15 +310,10 @@ void ISOLuxDialog::on_cmbPlane_currentIndexChanged(int plane)
     {
         if (is2D)
         {
-
-            m_isoWidget->m_levelSize = ui->spinLevels->value();
-            m_isoWidget->m_numOfPoints = ui->spinNbOfPoints->value();
             m_isoWidget->updateIESXY(distance, halfMap);
         }
         else
         {
-            m_3dplot->m_levelSize = ui->spinLevels->value();
-            m_isoWidget->m_numOfPoints = ui->spinNbOfPoints->value();
             m_3dplot->updateIESXY(distance, halfMap);
         }
     }
@@ -330,14 +322,10 @@ void ISOLuxDialog::on_cmbPlane_currentIndexChanged(int plane)
     {
         if (is2D)
         {
-            m_isoWidget->m_levelSize = ui->spinLevels->value();
-            m_isoWidget->m_numOfPoints = ui->spinNbOfPoints->value();
             m_isoWidget->updateIESYZ_(distance, halfMap);
         }
         else
         {
-            m_3dplot->m_numOfPoints = ui->spinNbOfPoints->value();
-            m_3dplot->m_levelSize = ui->spinLevels->value();
             m_3dplot->updateIESYZ_(distance, halfMap);
         }
     }
@@ -346,14 +334,10 @@ void ISOLuxDialog::on_cmbPlane_currentIndexChanged(int plane)
     {
         if (is2D)
         {
-            m_isoWidget->m_levelSize = ui->spinLevels->value();
-            m_isoWidget->m_numOfPoints = ui->spinNbOfPoints->value();
             m_isoWidget->updateIESXZ_(distance, halfMap);
         }
         else
         {
-            m_3dplot->m_levelSize = ui->spinLevels->value();
-            m_isoWidget->m_numOfPoints = ui->spinNbOfPoints->value();
             m_3dplot->updateIESXZ_(distance, halfMap);
         }
     }
@@ -362,15 +346,10 @@ void ISOLuxDialog::on_cmbPlane_currentIndexChanged(int plane)
     {
         if (is2D)
         {
-
-            m_isoWidget->m_levelSize = ui->spinLevels->value();
-            m_isoWidget->m_numOfPoints = ui->spinNbOfPoints->value();
             m_isoWidget->updateIESXY_(distance, halfMap);
         }
         else
         {
-            m_3dplot->m_levelSize = ui->spinLevels->value();
-            m_isoWidget->m_numOfPoints = ui->spinNbOfPoints->value();
             m_3dplot->updateIESXY_(distance, halfMap);
         }
     }
@@ -445,6 +424,8 @@ void ISOLuxDialog::on_rb3D_toggled()
 }
 ISOLuxDialog::~ISOLuxDialog()
 {
+    if (m_isoWidget)delete m_isoWidget;
+    if (m_3dplot)delete m_3dplot;
     delete ui;
 }
 
@@ -459,50 +440,63 @@ void ISOLuxPlot::updateIESXY(double distance, double halfmap)
         return;
     clearPoints();
 
-    m_scalarBarActor->SetNumberOfLabels(m_levelSize);   // 设置标签数量
+    m_scalarBarActor->SetNumberOfLabels(IESLoader::instance().m_levelSize);   // 设置标签数量
     m_intensities->SetName("Intensity");
     // 计算最大光强值用于归一化
     double maxIntensity = IESLoader::instance().light.max_candela;
-    maxIlluminance = 0;
-    minIlluminance = 1e9;
-    calculationWidth = halfmap * 2;
-    gridSpacing = calculationWidth / m_numOfPoints;
-    double halfWidth = calculationWidth / 2.0;
-    int gridSize = calculationWidth / gridSpacing;
+    IESLoader::instance().maxIlluminance = 0;
+    IESLoader::instance().minIlluminance = 1e9;
+    IESLoader::instance().calculationWidth = halfmap * 2;
+    IESLoader::instance().gridSpacing = IESLoader::instance().calculationWidth / IESLoader::instance().m_numOfPoints;
+    double halfWidth = IESLoader::instance().calculationWidth / 2.0;
+    int gridSize = IESLoader::instance().calculationWidth / IESLoader::instance().gridSpacing;
 
     vtkSmartPointer<vtkCellArray> cells = vtkSmartPointer<vtkCellArray>::New();
-    fixtureX = 0;
-    fixtureY = 0;
-    fixtureZ = distance;
+    IESLoader::instance().fixtureX = 0;
+    IESLoader::instance().fixtureY = 0;
+    IESLoader::instance().fixtureZ = distance;
 
-    double radio = calculationWidth / m_size;
+    double radio = IESLoader::instance().IESLoader::instance().calculationWidth / m_size;
     zmax = -INFINITY;
     zmin = INFINITY;
     for (int i = 0; i < gridSize; ++i) {
         std::vector<double> oneLine;
-        double x = -halfWidth + i * gridSpacing;
+        double x = -halfWidth + i * IESLoader::instance().gridSpacing;
         for (int j = 0; j < gridSize; ++j) {
-            double y = -halfWidth + j * gridSpacing;
-            float intensity = calculateIlluminanceAtPoint(x, y, 0);
+            double y = -halfWidth + j * IESLoader::instance().gridSpacing;
+            float intensity = IESLoader::instance().calculateIlluminanceAtPoint(x, y, 0);
             if (intensity > zmax)zmax = intensity;
             if (intensity < zmin)zmin = intensity;
-            m_intensities->InsertNextValue(intensity);
+            //m_intensities->InsertNextValue(intensity);
         }
     }
+    std::vector<IlluminancePoint> temp_points;
     double z_radio = zmax / m_size;
     if (z_radio == 0)z_radio = 1;
     for (int i = 0; i < gridSize; ++i) {
         std::vector<double> oneLine;
-        double x = -halfWidth + i * gridSpacing;
+        double x = -halfWidth + i * IESLoader::instance().gridSpacing;
         double x_scale = x / radio;
         for (int j = 0; j < gridSize; ++j) {
-            double y = -halfWidth + j * gridSpacing;
+            double y = -halfWidth + j * IESLoader::instance().gridSpacing;
             double y_scale = y / radio;
-            float intensity = calculateIlluminanceAtPoint(x, y, 0);
-            m_points->InsertNextPoint(x_scale, y_scale, intensity / z_radio);
+            float intensity = IESLoader::instance().calculateIlluminanceAtPoint(x, y, 0);
+            temp_points.push_back(IlluminancePoint(x_scale, y_scale, intensity / z_radio, intensity));
+            //m_points->InsertNextPoint(x_scale, y_scale, intensity / z_radio);
         }
     }
-
+    if (IESLoader::instance().light.m_IESType <= 4)
+    {
+        for (auto& p : temp_points)
+        {
+            p.y = -p.y;
+        }
+    }
+    for (auto in : temp_points)
+    {
+        m_points->InsertNextPoint(in.x, in.y, in.z);
+        m_intensities->InsertNextValue(in.illuminance);
+    }
     // 添加水平线
     for (int i = 0; i < gridSize; ++i) {
         for (int j = 0; j < gridSize - 1; ++j) {
@@ -558,7 +552,7 @@ void ISOLuxPlot::updateIESXY(double distance, double halfmap)
     surfaceMapper->Update();
 
     updateCubeAxesBounds();
-    contourFilter->GenerateValues(m_levelSize, zmin, zmax);
+    contourFilter->GenerateValues(IESLoader::instance().m_levelSize, zmin, zmax);
     //contourFilter->SetValue(0, 0.5); // 设置等高值
     contourFilter->Update();
 
@@ -571,51 +565,64 @@ void ISOLuxPlot::updateIESYZ(double distance, double halfmap)
 
     clearPoints();
 
-    m_scalarBarActor->SetNumberOfLabels(m_levelSize);   // 设置标签数量
+    m_scalarBarActor->SetNumberOfLabels(IESLoader::instance().m_levelSize);   // 设置标签数量
 
     m_intensities->SetName("Intensity");
     // 计算最大光强值用于归一化
     double maxIntensity = IESLoader::instance().light.max_candela;
-    maxIlluminance = 0;
-    minIlluminance = 1e9;
-    calculationWidth = halfmap * 2;
-    gridSpacing = calculationWidth / m_numOfPoints;
-    double halfWidth = calculationWidth / 2.0;
-    int gridSize = calculationWidth / gridSpacing;
+    IESLoader::instance().maxIlluminance = 0;
+    IESLoader::instance().minIlluminance = 1e9;
+    IESLoader::instance().calculationWidth = halfmap * 2;
+    IESLoader::instance().gridSpacing = IESLoader::instance().calculationWidth / IESLoader::instance().m_numOfPoints;
+    double halfWidth = IESLoader::instance().calculationWidth / 2.0;
+    int gridSize = IESLoader::instance().calculationWidth / IESLoader::instance().gridSpacing;
 
     vtkSmartPointer<vtkCellArray> cells = vtkSmartPointer<vtkCellArray>::New();
 
-    fixtureX = distance;
-    fixtureY = 0;
-    fixtureZ = 0;
-    double radio =  calculationWidth/ m_size;
+    IESLoader::instance().fixtureX = distance;
+    IESLoader::instance().fixtureY = 0;
+    IESLoader::instance().fixtureZ = 0;
+    double radio = IESLoader::instance().calculationWidth/ m_size;
     zmax = -INFINITY;
     zmin = INFINITY;
     for (int i = 0; i < gridSize; ++i) {
         std::vector<double> oneLine;
-        double y = -halfWidth + i * gridSpacing;
+        double y = -halfWidth + i * IESLoader::instance().gridSpacing;
         for (int j = 0; j < gridSize; ++j) {
-            double z = -halfWidth + j * gridSpacing;         
-            float intensity = calculateIlluminanceAtPoint(0, y, z);
+            double z = -halfWidth + j * IESLoader::instance().gridSpacing;
+            float intensity = IESLoader::instance().calculateIlluminanceAtPoint(0, y, z);
             if (intensity > zmax)zmax = intensity;
             if (intensity < zmin)zmin = intensity;
-            m_intensities->InsertNextValue(intensity);
+            //m_intensities->InsertNextValue(intensity);
         }
     }
+    std::vector<IlluminancePoint> temp_points;
     double z_radio = zmax / m_size;
     if (z_radio == 0)z_radio = 1;
     for (int i = 0; i < gridSize; ++i) {
         std::vector<double> oneLine;
-        double y = -halfWidth + i * gridSpacing;
+        double y = -halfWidth + i * IESLoader::instance().gridSpacing;
         double y_scale = y / radio;
         for (int j = 0; j < gridSize; ++j) {
-            double z = -halfWidth + j * gridSpacing;
+            double z = -halfWidth + j * IESLoader::instance().gridSpacing;
             double z_scale = z / radio;
-            float intensity = calculateIlluminanceAtPoint(0, y, z);
-            m_points->InsertNextPoint(y_scale, z_scale,intensity / z_radio);
+            float intensity = IESLoader::instance().calculateIlluminanceAtPoint(0, y, z);
+            temp_points.push_back(IlluminancePoint(y_scale, z_scale, intensity / z_radio, intensity));
+            //m_points->InsertNextPoint(y_scale, z_scale,intensity / z_radio);
         }
     }
-
+    if (IESLoader::instance().light.m_IESType <= 4)
+    {
+        for (auto& p : temp_points)
+        {
+            p.y = -p.y;
+        }
+    }
+    for (auto in : temp_points)
+    {
+        m_points->InsertNextPoint(in.x, in.y, in.z);
+        m_intensities->InsertNextValue(in.illuminance);
+    }
 
     // 添加水平线
     for (int i = 0; i < gridSize; ++i) {
@@ -675,7 +682,7 @@ void ISOLuxPlot::updateIESYZ(double distance, double halfmap)
     surfaceMapper->SetLookupTable(m_lut);
     surfaceMapper->Update();
 
-    contourFilter->GenerateValues(m_levelSize, zmin, zmax);
+    contourFilter->GenerateValues(IESLoader::instance().m_levelSize, zmin, zmax);
     contourFilter->Update();
     this->renderWindow()->Render();
 }
@@ -686,51 +693,63 @@ void ISOLuxPlot::updateIESXY_(double distance, double halfmap)
         return;
     clearPoints();
 
-    m_scalarBarActor->SetNumberOfLabels(m_levelSize);   // 设置标签数量
+    m_scalarBarActor->SetNumberOfLabels(IESLoader::instance().m_levelSize);   // 设置标签数量
     m_intensities->SetName("Intensity");
     // 计算最大光强值用于归一化
     double maxIntensity = IESLoader::instance().light.max_candela;
-    maxIlluminance = 0;
-    minIlluminance = 1e9;
-    calculationWidth = halfmap * 2;
-    gridSpacing = calculationWidth / m_numOfPoints;
-    double halfWidth = calculationWidth / 2.0;
-    int gridSize = calculationWidth / gridSpacing;
+    IESLoader::instance().maxIlluminance = 0;
+    IESLoader::instance().minIlluminance = 1e9;
+    IESLoader::instance().calculationWidth = halfmap * 2;
+    IESLoader::instance().gridSpacing = IESLoader::instance().calculationWidth / IESLoader::instance().m_numOfPoints;
+    double halfWidth = IESLoader::instance().calculationWidth / 2.0;
+    int gridSize = IESLoader::instance().calculationWidth / IESLoader::instance().gridSpacing;
 
     vtkSmartPointer<vtkCellArray> cells = vtkSmartPointer<vtkCellArray>::New();
-    fixtureX = 0;
-    fixtureY = 0;
-    fixtureZ = distance;
+    IESLoader::instance().fixtureX = 0;
+    IESLoader::instance().fixtureY = 0;
+    IESLoader::instance().fixtureZ = distance;
 
-    double radio = calculationWidth / m_size;
+    double radio = IESLoader::instance().calculationWidth / m_size;
     zmax = -INFINITY;
     zmin = INFINITY;
     for (int i = 0; i < gridSize; ++i) {
         std::vector<double> oneLine;
-        double x = -halfWidth + i * gridSpacing;
+        double x = -halfWidth + i * IESLoader::instance().gridSpacing;
         for (int j = 0; j < gridSize; ++j) {
-            double y = -halfWidth + j * gridSpacing;
-            float intensity = calculateIlluminanceAtPoint_(x, y, 0);
+            double y = -halfWidth + j * IESLoader::instance().gridSpacing;
+            float intensity = IESLoader::instance().calculateIlluminanceAtPoint_(x, y, 0);
             if (intensity > zmax)zmax = intensity;
             if (intensity < zmin)zmin = intensity;
-            m_intensities->InsertNextValue(intensity);
+            //m_intensities->InsertNextValue(intensity);
         }
     }
+    std::vector<IlluminancePoint> temp_points;
     double z_radio = zmax / m_size;
     if (z_radio == 0)z_radio = 1;
     for (int i = 0; i < gridSize; ++i) {
         std::vector<double> oneLine;
-        double x = -halfWidth + i * gridSpacing;
+        double x = -halfWidth + i * IESLoader::instance().gridSpacing;
         double x_scale = x / radio;
         for (int j = 0; j < gridSize; ++j) {
-            double y = -halfWidth + j * gridSpacing;
+            double y = -halfWidth + j * IESLoader::instance().gridSpacing;
             double y_scale = y / radio;
-            float intensity = calculateIlluminanceAtPoint_(x, y, 0);
-            m_points->InsertNextPoint(x_scale, y_scale, intensity / z_radio);
+            float intensity = IESLoader::instance().calculateIlluminanceAtPoint_(x, y, 0);
+            temp_points.push_back(IlluminancePoint(x_scale, y_scale, intensity / z_radio, intensity));
+            //m_points->InsertNextPoint(x_scale, y_scale, intensity / z_radio);
         }
     }
-
-
+    if (IESLoader::instance().light.m_IESType > 4)
+    {
+        for (auto& p : temp_points)
+        {
+            p.y = -p.y;
+        }
+    }
+    for (auto in : temp_points)
+    {
+        m_points->InsertNextPoint(in.x, in.y, in.z);
+        m_intensities->InsertNextValue(in.illuminance);
+    }
     // 添加水平线
     for (int i = 0; i < gridSize; ++i) {
         for (int j = 0; j < gridSize - 1; ++j) {
@@ -786,7 +805,7 @@ void ISOLuxPlot::updateIESXY_(double distance, double halfmap)
     surfaceMapper->Update();
 
     updateCubeAxesBounds();
-    contourFilter->GenerateValues(m_levelSize, zmin, zmax);
+    contourFilter->GenerateValues(IESLoader::instance().m_levelSize, zmin, zmax);
     contourFilter->Update();
 
     this->renderWindow()->Render();
@@ -798,51 +817,64 @@ void ISOLuxPlot::updateIESYZ_(double distance, double halfmap)
 
     clearPoints();
 
-    m_scalarBarActor->SetNumberOfLabels(m_levelSize);   // 设置标签数量
+    m_scalarBarActor->SetNumberOfLabels(IESLoader::instance().m_levelSize);   // 设置标签数量
 
     m_intensities->SetName("Intensity");
     // 计算最大光强值用于归一化
     double maxIntensity = IESLoader::instance().light.max_candela;
-    maxIlluminance = 0;
-    minIlluminance = 1e9;
-    calculationWidth = halfmap * 2;
-    gridSpacing = calculationWidth / m_numOfPoints;
-    double halfWidth = calculationWidth / 2.0;
-    int gridSize = calculationWidth / gridSpacing;
+    IESLoader::instance().maxIlluminance = 0;
+    IESLoader::instance().minIlluminance = 1e9;
+    IESLoader::instance().calculationWidth = halfmap * 2;
+    IESLoader::instance().gridSpacing = IESLoader::instance().calculationWidth / IESLoader::instance().m_numOfPoints;
+    double halfWidth = IESLoader::instance().calculationWidth / 2.0;
+    int gridSize = IESLoader::instance().calculationWidth / IESLoader::instance().gridSpacing;
 
     vtkSmartPointer<vtkCellArray> cells = vtkSmartPointer<vtkCellArray>::New();
 
-    fixtureX = distance;
-    fixtureY = 0;
-    fixtureZ = 0;
-    double radio = calculationWidth / m_size;
+    IESLoader::instance().fixtureX = distance;
+    IESLoader::instance().fixtureY = 0;
+    IESLoader::instance().fixtureZ = 0;
+    double radio = IESLoader::instance().calculationWidth / m_size;
     zmax = -INFINITY;
     zmin = INFINITY;
     for (int i = 0; i < gridSize; ++i) {
         std::vector<double> oneLine;
-        double y = -halfWidth + i * gridSpacing;
+        double y = -halfWidth + i * IESLoader::instance().gridSpacing;
         for (int j = 0; j < gridSize; ++j) {
-            double z = -halfWidth + j * gridSpacing;
-            float intensity = calculateIlluminanceAtPoint_(0, y, z);
+            double z = -halfWidth + j * IESLoader::instance().gridSpacing;
+            float intensity = IESLoader::instance().calculateIlluminanceAtPoint_(0, y, z);
             if (intensity > zmax)zmax = intensity;
             if (intensity < zmin)zmin = intensity;
-            m_intensities->InsertNextValue(intensity);
+            //m_intensities->InsertNextValue(intensity);
         }
     }
+    std::vector<IlluminancePoint> temp_points;
     double z_radio = zmax / m_size;
     if (z_radio == 0)z_radio = 1;
     for (int i = 0; i < gridSize; ++i) {
         std::vector<double> oneLine;
-        double y = -halfWidth + i * gridSpacing;
+        double y = -halfWidth + i * IESLoader::instance().gridSpacing;
         double y_scale = y / radio;
         for (int j = 0; j < gridSize; ++j) {
-            double z = -halfWidth + j * gridSpacing;
+            double z = -halfWidth + j * IESLoader::instance().gridSpacing;
             double z_scale = z / radio;
-            float intensity = calculateIlluminanceAtPoint_(0, y, z);
-            m_points->InsertNextPoint(y_scale, z_scale, intensity / z_radio);
+            float intensity = IESLoader::instance().calculateIlluminanceAtPoint_(0, y, z);
+            temp_points.push_back(IlluminancePoint(y_scale, z_scale, intensity / z_radio, intensity));
+            //m_points->InsertNextPoint(y_scale, z_scale, intensity / z_radio);
         }
     }
-
+    if (IESLoader::instance().light.m_IESType > 4)
+    {
+        for (auto& p : temp_points)
+        {
+            p.y = -p.y;
+        }
+    }
+    for (auto in : temp_points)
+    {
+        m_points->InsertNextPoint(in.x, in.y, in.z);
+        m_intensities->InsertNextValue(in.illuminance);
+    }
 
     // 添加水平线
     for (int i = 0; i < gridSize; ++i) {
@@ -902,7 +934,7 @@ void ISOLuxPlot::updateIESYZ_(double distance, double halfmap)
     surfaceMapper->SetLookupTable(m_lut);
     surfaceMapper->Update();
 
-    contourFilter->GenerateValues(m_levelSize, zmin, zmax);
+    contourFilter->GenerateValues(IESLoader::instance().m_levelSize, zmin, zmax);
     contourFilter->Update();
     this->renderWindow()->Render();
 }
@@ -912,53 +944,66 @@ void ISOLuxPlot::updateIESXZ_(double distance, double halfmap)
         return;
     clearPoints();
 
-    m_scalarBarActor->SetNumberOfLabels(m_levelSize);   // 设置标签数量
+    m_scalarBarActor->SetNumberOfLabels(IESLoader::instance().m_levelSize);   // 设置标签数量
     m_intensities->SetName("Intensity");
     // 计算最大光强值用于归一化
     double maxIntensity = IESLoader::instance().light.max_candela;
-    maxIlluminance = 0;
-    minIlluminance = 1e9;
-    gridSpacing = calculationWidth / m_numOfPoints;
-    calculationWidth = halfmap * 2;
-    double halfWidth = calculationWidth / 2.0;
-    int gridSize = calculationWidth / gridSpacing;
+    IESLoader::instance().maxIlluminance = 0;
+    IESLoader::instance().minIlluminance = 1e9;
+    IESLoader::instance().gridSpacing = IESLoader::instance().calculationWidth / IESLoader::instance().m_numOfPoints;
+    IESLoader::instance().calculationWidth = halfmap * 2;
+    double halfWidth = IESLoader::instance().calculationWidth / 2.0;
+    int gridSize = IESLoader::instance().calculationWidth / IESLoader::instance().gridSpacing;
 
     vtkSmartPointer<vtkCellArray> cells = vtkSmartPointer<vtkCellArray>::New();
-    fixtureX = 0;
-    fixtureY = distance;
-    fixtureZ = 0;
+    IESLoader::instance().fixtureX = 0;
+    IESLoader::instance().fixtureY = distance;
+    IESLoader::instance().fixtureZ = 0;
 
-    double radio = calculationWidth / m_size;
+    double radio = IESLoader::instance().calculationWidth / m_size;
     zmax = -INFINITY;
     zmin = INFINITY;
+    std::vector<IlluminancePoint> temp;
 
     for (int i = 0; i < gridSize; ++i) {
-        const double x = -halfWidth + i * gridSpacing;
+        const double x = -halfWidth + i * IESLoader::instance().gridSpacing;
         for (int j = 0; j < gridSize; ++j) {
-            const double z = -halfWidth + j * gridSpacing;
-            const float intensity = calculateIlluminanceAtPoint_(x, 0, z);
-
+            const double z = -halfWidth + j * IESLoader::instance().gridSpacing;
+            const float intensity = IESLoader::instance().calculateIlluminanceAtPoint_(x, 0,z);
             if (intensity > zmax)zmax = intensity;
-            m_intensities->InsertNextValue(intensity);
+            if (intensity < zmin)zmin = intensity;
+            //m_intensities->InsertNextValue(intensity);
         }
     }
-
+    std::vector<IlluminancePoint> temp_points;
     double z_radio = zmax / m_size;
     if (z_radio == 0)z_radio = 1;
     for (int i = 0; i < gridSize; ++i) {
-        const double x = -halfWidth + i * gridSpacing;
+        const double x = -halfWidth + i * IESLoader::instance().gridSpacing;
         const double x_scale = x / radio;
         //#pragma omp for
         for (int j = 0; j < gridSize; ++j) {
-            const double z = -halfWidth + j * gridSpacing;
+            const double z = -halfWidth + j * IESLoader::instance().gridSpacing;
             const double z_scale = z / radio;
-            const float intensity = calculateIlluminanceAtPoint_(x, 0, z);
-
-            m_points->InsertNextPoint(x_scale, z_scale, intensity / z_radio);
+            const float intensity = IESLoader::instance().calculateIlluminanceAtPoint_(x, 0, z);
+            temp_points.push_back(IlluminancePoint(x_scale, z_scale, intensity / z_radio, intensity));
+            //m_points->InsertNextPoint(x_scale, z_scale, intensity / z_radio);
         }
     }
+    if (IESLoader::instance().light.m_IESType > 4)
+    {
+        for (auto& p : temp_points)
+        {
+            p.y = -p.y;
+        }
+    }
+    for (auto in : temp_points)
+    {
+        m_points->InsertNextPoint(in.x, in.y, in.z);
+        m_intensities->InsertNextValue(in.illuminance);
+    }
 
-
+    //std::reverse(m_points.begin(), m_points.end());
     // 添加水平线
     for (int i = 0; i < gridSize; ++i) {
         for (int j = 0; j < gridSize - 1; ++j) {
@@ -1010,7 +1055,7 @@ void ISOLuxPlot::updateIESXZ_(double distance, double halfmap)
     surfaceMapper->Update();
 
     updateCubeAxesBounds();
-    contourFilter->GenerateValues(m_levelSize, zmin, zmax);
+    contourFilter->GenerateValues(IESLoader::instance().m_levelSize, zmin, zmax);
     contourFilter->Update();
 
     this->renderWindow()->Render();
@@ -1162,7 +1207,7 @@ void ISOLuxPlot::setAxisVisibility(bool visible) {
 }
 void ISOLuxPlot::updateCubeAxesBounds() {
 
-    if (m_bUseGrid)
+    if (IESLoader::instance().m_bUseGrid)
     {
         cubeAxesActor->DrawXGridlinesOn();
         cubeAxesActor->DrawYGridlinesOn();
@@ -1227,53 +1272,61 @@ void ISOLuxPlot::updateIESXZ(double distance, double halfmap)
         return;
     clearPoints();
 
-    m_scalarBarActor->SetNumberOfLabels(m_levelSize);   // 设置标签数量
+    m_scalarBarActor->SetNumberOfLabels(IESLoader::instance().m_levelSize);   // 设置标签数量
     m_intensities->SetName("Intensity");
     // 计算最大光强值用于归一化
     double maxIntensity = IESLoader::instance().light.max_candela;
-    maxIlluminance = 0;
-    minIlluminance = 1e9;
-    gridSpacing = calculationWidth / m_numOfPoints;
-    calculationWidth = halfmap * 2;
-    double halfWidth = calculationWidth / 2.0;
-    int gridSize = calculationWidth / gridSpacing;
+    IESLoader::instance().maxIlluminance = 0;
+    IESLoader::instance().minIlluminance = 1e9;
+    IESLoader::instance().gridSpacing = IESLoader::instance().calculationWidth / IESLoader::instance().m_numOfPoints;
+    IESLoader::instance().calculationWidth = halfmap * 2;
+    double halfWidth = IESLoader::instance().calculationWidth / 2.0;
+    int gridSize = IESLoader::instance().calculationWidth / IESLoader::instance().gridSpacing;
 
     vtkSmartPointer<vtkCellArray> cells = vtkSmartPointer<vtkCellArray>::New();
-    fixtureX = 0;
-    fixtureY = distance;
-    fixtureZ = 0;
+    IESLoader::instance().fixtureX = 0;
+    IESLoader::instance().fixtureY = distance;
+    IESLoader::instance().fixtureZ = 0;
 
-    double radio = calculationWidth/ m_size;
+    double radio = IESLoader::instance().calculationWidth/ m_size;
     zmax = -INFINITY;
     zmin = INFINITY;
-
+    //std::vector<double> temp_intensity;
     for (int i = 0; i < gridSize; ++i) {
-        const double x = -halfWidth + i * gridSpacing;
+        const double x = -halfWidth + i * IESLoader::instance().gridSpacing;
         for (int j = 0; j < gridSize; ++j) {
-            const double z = -halfWidth + j * gridSpacing;
-            const float intensity = calculateIlluminanceAtPoint(x, 0, z);
-
+            const double z = -halfWidth + j * IESLoader::instance().gridSpacing;
+            const float intensity = IESLoader::instance().calculateIlluminanceAtPoint(x, 0, z);
             if (intensity > zmax)zmax = intensity;
             if (intensity < zmin)zmin = intensity;
-            m_intensities->InsertNextValue(intensity);
         }
     }
-
+    std::vector<IlluminancePoint> temp_points;
     double z_radio = zmax / m_size;
     if (z_radio == 0)z_radio = 1;
     for (int i = 0; i < gridSize; ++i) {
-        const double x = -halfWidth + i * gridSpacing;
+        const double x = -halfWidth + i * IESLoader::instance().gridSpacing;
         const double x_scale = x / radio;
         //#pragma omp for
         for (int j = 0; j < gridSize; ++j) {
-            const double z = -halfWidth + j * gridSpacing;
+            const double z = -halfWidth + j * IESLoader::instance().gridSpacing;
             const double z_scale = z / radio;
-            const float intensity = calculateIlluminanceAtPoint(x, 0, z);
-
-            m_points->InsertNextPoint(x_scale, z_scale, intensity / z_radio);
+            const float intensity = IESLoader::instance().calculateIlluminanceAtPoint(x, 0, z);
+            temp_points.push_back(IlluminancePoint(x_scale, z_scale, intensity / z_radio,intensity));           
         }
     }
-
+    if (IESLoader::instance().light.m_IESType <= 4)
+    {
+        for (auto& p : temp_points)
+        {
+            p.y = -p.y;
+        }
+    }
+    for (auto in : temp_points)
+    {
+        m_points->InsertNextPoint(in.x, in.y, in.z);
+        m_intensities->InsertNextValue(in.illuminance);
+    }
 
     // 添加水平线
     for (int i = 0; i < gridSize; ++i) {
@@ -1354,73 +1407,9 @@ void ISOLuxPlot::updateIESXZ(double distance, double halfmap)
 
     updateCubeAxesBounds();
 
-    contourFilter->GenerateValues(m_levelSize, zmin, zmax);
+    contourFilter->GenerateValues(IESLoader::instance().m_levelSize, zmin, zmax);
     contourFilter->Update();
 
     this->renderWindow()->Render();
 }
 
-double ISOLuxPlot::calculateIlluminanceAtPoint_(double x, double y, double z)
-{
-    // 计算距离
-    double dx = x - fixtureX;
-    double dy = y - fixtureY;
-    double dz = z - fixtureZ;
-    double totalDistance = sqrt(dx * dx + dy * dy + dz * dz);
-
-    if (totalDistance == 0) return 0;
-
-    // 计算垂直角度 (从灯具向下为正)
-    double verticalAngle = acos(-dz / totalDistance) * 180.0 / M_PI;  // 注意符号
-
-    // 计算水平角度
-    double horizontalAngle = atan2(dy, dx) * 180.0 / M_PI;
-    if (horizontalAngle < 0) horizontalAngle += 360;
-
-    // 获取光强值
-    double candela = IESLoader::instance().getCandelaValue(verticalAngle, horizontalAngle);
-
-    // 计算照度 (距离平方反比定律 + 余弦定律)
-    double cosIncidence = 0;
-    if (z == 0)
-        cosIncidence = -dz / totalDistance;
-    else if (x == 0)
-        cosIncidence = -dx / totalDistance;
-    else if (y == 0)
-        cosIncidence = -dy / totalDistance;
-    double illuminance = candela / (totalDistance * totalDistance) * cosIncidence;
-
-    return std::max(0.0, illuminance);
-}
-double ISOLuxPlot::calculateIlluminanceAtPoint(double x, double y, double z)
-{
-    // 计算距离
-    double dx = x - fixtureX;
-    double dy = y - fixtureY;
-    double dz = z - fixtureZ;
-    double totalDistance = sqrt(dx * dx + dy * dy + dz * dz);
-
-    if (totalDistance == 0) return 0;
-
-    // 计算垂直角度 (从灯具向下为正)
-    double verticalAngle = acos(dz / totalDistance) * 180.0 / M_PI;  // 注意符号
-
-    // 计算水平角度
-    double horizontalAngle = atan2(dy, dx) * 180.0 / M_PI;
-    if (horizontalAngle < 0) horizontalAngle += 360;
-
-    // 获取光强值
-    double candela = IESLoader::instance().getCandelaValue(verticalAngle, horizontalAngle);
-
-    // 计算照度 (距离平方反比定律 + 余弦定律)
-    double cosIncidence = 0;
-    if (z == 0)
-        cosIncidence = -dz / totalDistance;
-    else if (x == 0)
-        cosIncidence = -dx / totalDistance;
-    else if (y == 0)
-        cosIncidence = -dy / totalDistance;
-    double illuminance = candela / (totalDistance * totalDistance) * cosIncidence;
-
-    return std::max(0.0, illuminance);
-}

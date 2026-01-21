@@ -634,16 +634,6 @@ IESIsoWidget::IESIsoWidget(QWidget* parent)
     , m_grid(nullptr)
     , m_colorScale(nullptr)
     , m_rasterData(nullptr)
-    , calculationWidth(20)
-    , gridSpacing(0.1)
-    , maxIlluminance(0)
-    , minIlluminance(1e9)
-    , fixtureX(0)
-    , fixtureY(0)
-    , fixtureZ(0)
-    , m_levelSize(5)
-    , m_bUseGrid(false)
-    , m_numOfPoints(200)
     , m_colorMap(nullptr)
 {
     Init();
@@ -723,12 +713,12 @@ void IESIsoWidget::updatePlot()
     // 清除旧图形
     clearPlot();
 
-    if (illuminanceGriddata.empty()) {
+    if (IESLoader::instance().illuminanceGriddata.empty()) {
         qDebug() << "Illuminance data is empty!";
         return;
     }
 
-    double halfRange = calculationWidth / 2.0;
+    double halfRange = IESLoader::instance().calculationWidth / 2.0;
 
     // 创建新的光谱图
     m_spectrogram = new QwtPlotSpectrogram("照度分布");
@@ -737,7 +727,7 @@ void IESIsoWidget::updatePlot()
 
     // 创建并设置光栅数据
     m_rasterData = new IlluminanceRasterData();
-    m_rasterData->setData(illuminanceGriddata, halfRange);
+    m_rasterData->setData(IESLoader::instance().illuminanceGriddata, halfRange);
     m_spectrogram->setData(m_rasterData);
     m_spectrogram->attach(this);
 
@@ -750,28 +740,28 @@ void IESIsoWidget::updatePlot()
     setAxisScale(QwtPlot::yLeft, -halfRange, halfRange, step);
 
     // 更新右侧颜色标尺
-    if (maxIlluminance > minIlluminance) {
+    if (IESLoader::instance().maxIlluminance > IESLoader::instance().minIlluminance) {
         axisWidget(QwtPlot::yRight)->setColorMap(
-            QwtInterval(minIlluminance, maxIlluminance),
+            QwtInterval(IESLoader::instance().minIlluminance, IESLoader::instance().maxIlluminance),
             m_colorMap
         );
-        setAxisScale(QwtPlot::yRight, minIlluminance, maxIlluminance);
+        setAxisScale(QwtPlot::yRight, IESLoader::instance().minIlluminance, IESLoader::instance().maxIlluminance);
     }
 
     // 计算等值线
-    if (m_levelSize > 0 && maxIlluminance > minIlluminance) {
-        double dist = maxIlluminance - minIlluminance;
-        double step = dist / m_levelSize;
+    if (IESLoader::instance().m_levelSize > 0 && IESLoader::instance().maxIlluminance > IESLoader::instance().minIlluminance) {
+        double dist = IESLoader::instance().maxIlluminance - IESLoader::instance().minIlluminance;
+        double step = dist / IESLoader::instance().m_levelSize;
 
         std::vector<double> levels;
-        for (int i = 1; i < m_levelSize; i++) {
-            levels.push_back(minIlluminance + i * step);
+        for (int i = 1; i < IESLoader::instance().m_levelSize; i++) {
+            levels.push_back(IESLoader::instance().minIlluminance + i * step);
         }
 
         // 使用MarchingSquares生成等值线
-        if (!illuminanceGriddata.empty()) {
+        if (!IESLoader::instance().illuminanceGriddata.empty()) {
             // 注意：MarchingSquares生成的数据需要修正90°翻转
-            MarchingSquares contourPlot(illuminanceGriddata,
+            MarchingSquares contourPlot(IESLoader::instance().illuminanceGriddata,
                 -halfRange, halfRange,
                 -halfRange, halfRange);
 
@@ -810,7 +800,7 @@ void IESIsoWidget::updatePlot()
         }
     }
     //    //显示网格线
-    if (m_bUseGrid)
+    if (IESLoader::instance().m_bUseGrid)
     {
         m_grid->setVisible(true);
     }
@@ -821,315 +811,9 @@ void IESIsoWidget::updatePlot()
     // 重新绘制
     replot();
 
-    qDebug() << "Plot updated. Illuminance range:" << minIlluminance << "-" << maxIlluminance;
+    qDebug() << "Plot updated. Illuminance range:" << IESLoader::instance().minIlluminance << "-" << IESLoader::instance().maxIlluminance;
 }
 
-// 修正数据存储顺序，以匹配Qwt的坐标系
-void IESIsoWidget::calculateXYPlaneIlluminance()
-{
-    illuminanceGrid.clear();
-    illuminanceGriddata.clear();
-    maxIlluminance = 0;
-    minIlluminance = 1e9;
-
-    gridSpacing = calculationWidth / m_numOfPoints;
-    double halfWidth = calculationWidth / 2.0;
-    int gridSize = m_numOfPoints;
-
-    // 注意：为了匹配Qwt的坐标系，我们需要将y作为第一维，x作为第二维
-    // 这样在显示时就不会有90°翻转了
-    illuminanceGriddata.resize(gridSize + 1);
-
-    for (int j = 0; j <= gridSize; ++j) {  // y方向
-        std::vector<double> oneLine(gridSize + 1, 0.0);
-        double y = -halfWidth + j * gridSpacing;
-        for (int i = 0; i <= gridSize; ++i) {  // x方向
-            double x = -halfWidth + i * gridSpacing;
-            double illuminance = calculateIlluminanceAtPoint(x, y, 0);
-
-            IlluminancePoint point;
-            point.x = x;
-            point.y = y;
-            point.illuminance = illuminance;
-
-            illuminanceGrid.push_back(point);
-            oneLine[i] = illuminance;
-
-            if (illuminance > maxIlluminance) maxIlluminance = illuminance;
-            if (illuminance < minIlluminance && illuminance > 0) minIlluminance = illuminance;
-        }
-        illuminanceGriddata[j] = oneLine;  // y作为第一维
-    }
-
-    // 确保最小值合理
-    if (minIlluminance >= maxIlluminance) {
-        minIlluminance = maxIlluminance * 0.1;
-    }
-}
-
-void IESIsoWidget::calculateYZPlaneIlluminance()
-{
-    illuminanceGrid.clear();
-    illuminanceGriddata.clear();
-    maxIlluminance = 0;
-    minIlluminance = 1e9;
-
-    gridSpacing = calculationWidth / m_numOfPoints;
-    double halfRange = calculationWidth / 2.0;
-    int gridSize = m_numOfPoints;
-
-    // 注意：为了匹配Qwt的坐标系，我们需要将z作为第一维，y作为第二维
-    illuminanceGriddata.resize(gridSize + 1);
-
-    for (int j = 0; j <= gridSize; ++j) {  // z方向
-        std::vector<double> oneLine(gridSize + 1, 0.0);
-        double z = -halfRange + j * gridSpacing;
-        for (int i = 0; i <= gridSize; ++i) {  // y方向
-            double y = -halfRange + i * gridSpacing;
-            double illuminance = calculateIlluminanceAtPoint(0, y, z);
-
-            IlluminancePoint point;
-            point.x = 0;
-            point.y = y;
-            point.z = z;
-            point.illuminance = illuminance;
-
-            illuminanceGrid.push_back(point);
-            oneLine[i] = illuminance;
-
-            if (illuminance > maxIlluminance) maxIlluminance = illuminance;
-            if (illuminance < minIlluminance && illuminance > 0) minIlluminance = illuminance;
-        }
-        illuminanceGriddata[j] = oneLine;  // z作为第一维
-    }
-
-    if (minIlluminance >= maxIlluminance) {
-        minIlluminance = maxIlluminance * 0.1;
-    }
-}
-
-void IESIsoWidget::calculateXZPlaneIlluminance()
-{
-    illuminanceGrid.clear();
-    illuminanceGriddata.clear();
-    maxIlluminance = 0;
-    minIlluminance = 1e9;
-
-    gridSpacing = calculationWidth / m_numOfPoints;
-    double halfRange = calculationWidth / 2.0;
-    int gridSize = m_numOfPoints;
-
-    // 注意：为了匹配Qwt的坐标系，我们需要将z作为第一维，x作为第二维
-    illuminanceGriddata.resize(gridSize + 1);
-
-    for (int j = 0; j <= gridSize; ++j) {  // z方向
-        std::vector<double> oneLine(gridSize + 1, 0.0);
-        double z = -halfRange + j * gridSpacing;
-        for (int i = 0; i <= gridSize; ++i) {  // x方向
-            double x = -halfRange + i * gridSpacing;
-            double illuminance = calculateIlluminanceAtPoint(x, 0, z);
-
-            IlluminancePoint point;
-            point.x = x;
-            point.y = 0;
-            point.z = z;
-            point.illuminance = illuminance;
-
-            illuminanceGrid.push_back(point);
-            oneLine[i] = illuminance;
-
-            if (illuminance > maxIlluminance) maxIlluminance = illuminance;
-            if (illuminance < minIlluminance && illuminance > 0) minIlluminance = illuminance;
-        }
-        illuminanceGriddata[j] = oneLine;  // z作为第一维
-    }
-
-    if (minIlluminance >= maxIlluminance) {
-        minIlluminance = maxIlluminance * 0.1;
-    }
-}
-
-void IESIsoWidget::calculateXY_PlaneIlluminance()
-{
-    illuminanceGrid.clear();
-    illuminanceGriddata.clear();
-    maxIlluminance = 0;
-    minIlluminance = 1e9;
-
-    gridSpacing = calculationWidth / m_numOfPoints;
-    double halfWidth = calculationWidth / 2.0;
-    int gridSize = m_numOfPoints;
-
-    // 注意：为了匹配Qwt的坐标系，我们需要将y作为第一维，x作为第二维
-    illuminanceGriddata.resize(gridSize + 1);
-
-    for (int j = 0; j <= gridSize; ++j) {  // y方向
-        std::vector<double> oneLine(gridSize + 1, 0.0);
-        double y = -halfWidth + j * gridSpacing;
-        for (int i = 0; i <= gridSize; ++i) {  // x方向
-            double x = -halfWidth + i * gridSpacing;
-            double illuminance = calculateIlluminanceAtPoint_(x, y, 0);
-
-            IlluminancePoint point;
-            point.x = x;
-            point.y = y;
-            point.illuminance = illuminance;
-
-            illuminanceGrid.push_back(point);
-            oneLine[i] = illuminance;
-
-            if (illuminance > maxIlluminance) maxIlluminance = illuminance;
-            if (illuminance < minIlluminance && illuminance > 0) minIlluminance = illuminance;
-        }
-        illuminanceGriddata[j] = oneLine;  // y作为第一维
-    }
-
-    if (minIlluminance >= maxIlluminance) {
-        minIlluminance = maxIlluminance * 0.1;
-    }
-}
-
-void IESIsoWidget::calculateYZ_PlaneIlluminance()
-{
-    illuminanceGrid.clear();
-    illuminanceGriddata.clear();
-    maxIlluminance = 0;
-    minIlluminance = 1e9;
-
-    gridSpacing = calculationWidth / m_numOfPoints;
-    double halfRange = calculationWidth / 2.0;
-    int gridSize = m_numOfPoints;
-
-    // 注意：为了匹配Qwt的坐标系，我们需要将z作为第一维，y作为第二维
-    illuminanceGriddata.resize(gridSize + 1);
-
-    for (int j = 0; j <= gridSize; ++j) {  // z方向
-        std::vector<double> oneLine(gridSize + 1, 0.0);
-        double z = -halfRange + j * gridSpacing;
-        for (int i = 0; i <= gridSize; ++i) {  // y方向
-            double y = -halfRange + i * gridSpacing;
-            double illuminance = calculateIlluminanceAtPoint_(0, y, z);
-
-            IlluminancePoint point;
-            point.x = 0;
-            point.y = y;
-            point.z = z;
-            point.illuminance = illuminance;
-
-            illuminanceGrid.push_back(point);
-            oneLine[i] = illuminance;
-
-            if (illuminance > maxIlluminance) maxIlluminance = illuminance;
-            if (illuminance < minIlluminance && illuminance > 0) minIlluminance = illuminance;
-        }
-        illuminanceGriddata[j] = oneLine;  // z作为第一维
-    }
-
-    if (minIlluminance >= maxIlluminance) {
-        minIlluminance = maxIlluminance * 0.1;
-    }
-}
-
-void IESIsoWidget::calculateXZ_PlaneIlluminance()
-{
-    illuminanceGrid.clear();
-    illuminanceGriddata.clear();
-    maxIlluminance = 0;
-    minIlluminance = 1e9;
-
-    gridSpacing = calculationWidth / m_numOfPoints;
-    double halfRange = calculationWidth / 2.0;
-    int gridSize = m_numOfPoints;
-
-    // 注意：为了匹配Qwt的坐标系，我们需要将z作为第一维，x作为第二维
-    illuminanceGriddata.resize(gridSize + 1);
-
-    for (int j = 0; j <= gridSize; ++j) {  // z方向
-        std::vector<double> oneLine(gridSize + 1, 0.0);
-        double z = -halfRange + j * gridSpacing;
-        for (int i = 0; i <= gridSize; ++i) {  // x方向
-            double x = -halfRange + i * gridSpacing;
-            double illuminance = calculateIlluminanceAtPoint_(x, 0, z);
-
-            IlluminancePoint point;
-            point.x = x;
-            point.y = 0;
-            point.z = z;
-            point.illuminance = illuminance;
-
-            illuminanceGrid.push_back(point);
-            oneLine[i] = illuminance;
-
-            if (illuminance > maxIlluminance) maxIlluminance = illuminance;
-            if (illuminance < minIlluminance && illuminance > 0) minIlluminance = illuminance;
-        }
-        illuminanceGriddata[j] = oneLine;  // z作为第一维
-    }
-
-    if (minIlluminance >= maxIlluminance) {
-        minIlluminance = maxIlluminance * 0.1;
-    }
-}
-
-// 修正数据索引访问，确保正确的坐标系
-// 同时需要修正 IlluminanceRasterData 的 value 函数
-// 在 IESIsoWidget.h 中修改 IlluminanceRasterData 的 value 函数：
-
-double IESIsoWidget::calculateIlluminanceAtPoint(double x, double y, double z)
-{
-
-    double dx = x - fixtureX;
-    double dy = y - fixtureY;
-    double dz = z - fixtureZ;
-    double totalDistance = sqrt(dx * dx + dy * dy + dz * dz);
-
-    if (totalDistance == 0) return 0;
-
-    double verticalAngle = acos(dz / totalDistance) * 180.0 / M_PI;
-    double horizontalAngle = atan2(dy, dx) * 180.0 / M_PI;
-
-    if (horizontalAngle < 0) horizontalAngle += 360;
-
-    double candela = IESLoader::instance().getCandelaValue(verticalAngle, horizontalAngle);
-    double cosIncidence = 0;
-    if (z == 0)
-        cosIncidence = -dz / totalDistance;
-    else if (x == 0)
-        cosIncidence = -dx / totalDistance;
-    else if (y == 0)
-        cosIncidence = -dy / totalDistance;
-
-    double illuminance = candela / (totalDistance * totalDistance) * cosIncidence;
-
-    return std::max(0.0, illuminance);
-}
-
-double IESIsoWidget::calculateIlluminanceAtPoint_(double x, double y, double z)
-{
-    double dx = x - fixtureX;
-    double dy = y - fixtureY;
-    double dz = z - fixtureZ;
-    double totalDistance = sqrt(dx * dx + dy * dy + dz * dz);
-
-    if (totalDistance == 0) return 0;
-
-    double verticalAngle = acos(-dz / totalDistance) * 180.0 / M_PI;
-    double horizontalAngle = atan2(dy, dx) * 180.0 / M_PI;
-
-    if (horizontalAngle < 0) horizontalAngle += 360;
-
-    double candela = IESLoader::instance().getCandelaValue(verticalAngle, horizontalAngle);
-    double cosIncidence = 0;
-    if (z == 0)
-        cosIncidence = -dz / totalDistance;
-    else if (x == 0)
-        cosIncidence = -dx / totalDistance;
-    else if (y == 0)
-        cosIncidence = -dy / totalDistance;
-    double illuminance = candela / (totalDistance * totalDistance) * cosIncidence;
-
-    return std::max(0.0, illuminance);
-}
 
 // 同时需要更新 IESIsoWidget.h 中的 IlluminanceRasterData::value 函数：
 // 由于我们修改了数据存储顺序（y作为第一维，x作为第二维），
@@ -1167,84 +851,85 @@ virtual double value(double x, double y) const override {
 
 void IESIsoWidget::updateIESXY(double distance, double halfmap)
 {
-    fixtureX = 0;
-    fixtureY = 0;
-    fixtureZ = distance;
-    calculationWidth = halfmap * 2;
+    IESLoader::instance().fixtureX = 0;
+    IESLoader::instance().fixtureY = 0;
+    IESLoader::instance().fixtureZ = distance;
+    IESLoader::instance().calculationWidth = halfmap * 2;
 
     if (IESLoader::instance().light.candela.size() < 1)
         return;
 
-    calculateXYPlaneIlluminance();
+    IESLoader::instance().calculateXYPlaneIlluminance();
     updatePlot();
 }
 
 void IESIsoWidget::updateIESYZ(double distance, double halfmap)
 {
-    fixtureX = distance;
-    fixtureY = 0;
-    fixtureZ = 0;
-    calculationWidth = halfmap * 2;
+    IESLoader::instance().fixtureX = distance;
+    IESLoader::instance().fixtureY = 0;
+    IESLoader::instance().fixtureZ = 0;
+    IESLoader::instance().calculationWidth = halfmap * 2;
 
     if (IESLoader::instance().light.candela.size() < 1)
         return;
 
-    calculateYZPlaneIlluminance();
+    //if()
+    IESLoader::instance().calculateYZPlaneIlluminance();
     updatePlot();
 }
 
 void IESIsoWidget::updateIESXZ(double distance, double halfmap)
 {
-    fixtureX = 0;
-    fixtureY = distance;
-    fixtureZ = 0;
-    calculationWidth = halfmap * 2;
+    IESLoader::instance().fixtureX = 0;
+    IESLoader::instance().fixtureY = distance;
+    IESLoader::instance().fixtureZ = 0;
+    IESLoader::instance().calculationWidth = halfmap * 2;
 
     if (IESLoader::instance().light.candela.size() < 1)
         return;
 
-    calculateXZPlaneIlluminance();
+    IESLoader::instance().calculateXZPlaneIlluminance();
     updatePlot();
 }
 
 void IESIsoWidget::updateIESXY_(double distance, double halfmap)
 {
-    fixtureX = 0;
-    fixtureY = 0;
-    fixtureZ = distance;
-    calculationWidth = halfmap * 2;
+    IESLoader::instance().fixtureX = 0;
+    IESLoader::instance().fixtureY = 0;
+    IESLoader::instance().fixtureZ = distance;
+    IESLoader::instance().calculationWidth = halfmap * 2;
 
     if (IESLoader::instance().light.candela.size() < 1)
         return;
 
-    calculateXY_PlaneIlluminance();
+    IESLoader::instance().calculateXY_PlaneIlluminance();
     updatePlot();
 }
 
 void IESIsoWidget::updateIESYZ_(double distance, double halfmap)
 {
-    fixtureX = distance;
-    fixtureY = 0;
-    fixtureZ = 0;
-    calculationWidth = halfmap * 2;
+    IESLoader::instance().fixtureX = distance;
+    IESLoader::instance().fixtureY = 0;
+    IESLoader::instance().fixtureZ = 0;
+    IESLoader::instance().calculationWidth = halfmap * 2;
 
     if (IESLoader::instance().light.candela.size() < 1)
         return;
 
-    calculateYZ_PlaneIlluminance();
+    IESLoader::instance().calculateYZ_PlaneIlluminance();
     updatePlot();
 }
 
 void IESIsoWidget::updateIESXZ_(double distance, double halfmap)
 {
-    fixtureX = 0;
-    fixtureY = distance;
-    fixtureZ = 0;
-    calculationWidth = halfmap * 2;
+    IESLoader::instance().fixtureX = 0;
+    IESLoader::instance().fixtureY = distance;
+    IESLoader::instance().fixtureZ = 0;
+    IESLoader::instance().calculationWidth = halfmap * 2;
 
     if (IESLoader::instance().light.candela.size() < 1)
         return;
 
-    calculateXZ_PlaneIlluminance();
+    IESLoader::instance().calculateXZ_PlaneIlluminance();
     updatePlot();
 }

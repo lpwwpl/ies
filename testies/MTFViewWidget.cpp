@@ -908,7 +908,15 @@ void MTFViewer::showLegend(bool show)
 {
     if (m_legend) {
         m_legend->setVisible(show);
-        m_plot->replot();
+        //if (!show)
+        //{
+
+        //}
+        //else
+        //{
+
+        //}
+        m_plot->replot();      
     }
 }
 

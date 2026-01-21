@@ -7,7 +7,16 @@
 #include "tiny_ies.hpp"
 #include <qmath.h>
 #include <QMessageBox>
-IESLoader::IESLoader()
+IESLoader::IESLoader(): calculationWidth(20)
+, gridSpacing(0.1)
+, maxIlluminance(0)
+, minIlluminance(1e9)
+, fixtureX(0)
+, fixtureY(0)
+, fixtureZ(0)
+, m_levelSize(5)
+, m_bUseGrid(false)
+, m_numOfPoints(200)
 {
     m_thetas_size = 180;
     m_phis_size = 360;
@@ -347,9 +356,9 @@ double IESLoader::getCandelaValue(double vertical, double horizontal)
     while (horizontal < 0) horizontal += 360;
     while (horizontal >= 360) horizontal -= 360;
 
-    //if (light.m_IESType > 4)
+    //if (light.m_IESType > 4 && horizontal < 180)
     //{
-    //    while (horizontal >180) horizontal -= 180;
+    //    return 0;
     //}
     // 简单的最近邻插值 - 实际应用中应使用双线性插值
     int vIdx = 0, hIdx = 0;
@@ -358,6 +367,7 @@ double IESLoader::getCandelaValue(double vertical, double horizontal)
     //360 h
     hIdx = findPhiIndex(horizontal);
     vIdx = findThetaIndex(vertical);
+
     //for (int i = 0; i < verticalAngles.size(); ++i) {
     //    double diff = fabs(verticalAngles[i] - vertical);
     //    if (diff < minVDiff) {
@@ -856,7 +866,8 @@ void IESLoader::fillData()
         // /////////////////////////////////
         newPhis.insert(newPhis.end(), phis1.begin(), phis1.end());
         newPhis.insert(newPhis.end(), phis2.begin(), phis2.end());
-      
+        ////////////////////////////////////////////////////
+        //std::sort(newPhis.begin(), newPhis.end());
 
         std::vector<std::vector<double>> vals1;
         std::vector<std::vector<double>> vals2;
@@ -1229,4 +1240,322 @@ QOpenGLTexture* IESLoader::createTexture()
     texture->setData(QOpenGLTexture::Red, QOpenGLTexture::Float32, iesData.constData());
 
     return texture;
+}
+
+
+
+// 修正数据存储顺序，以匹配Qwt的坐标系
+void IESLoader::calculateXYPlaneIlluminance()
+{
+    illuminanceGrid.clear();
+    illuminanceGriddata.clear();
+    maxIlluminance = 0;
+    minIlluminance = 1e9;
+
+    gridSpacing = calculationWidth / m_numOfPoints;
+    double halfWidth = calculationWidth / 2.0;
+    int gridSize = m_numOfPoints;
+
+    // 注意：为了匹配Qwt的坐标系，我们需要将y作为第一维，x作为第二维
+    // 这样在显示时就不会有90°翻转了
+    illuminanceGriddata.resize(gridSize + 1);
+
+    for (int j = 0; j <= gridSize; ++j) {  // y方向
+        std::vector<double> oneLine(gridSize + 1, 0.0);
+        double y = -halfWidth + j * gridSpacing;
+        for (int i = 0; i <= gridSize; ++i) {  // x方向
+            double x = -halfWidth + i * gridSpacing;
+            double illuminance = calculateIlluminanceAtPoint(x, y, 0);
+
+            IlluminancePoint point;
+            point.x = x;
+            point.y = y;
+            point.illuminance = illuminance;
+
+            illuminanceGrid.push_back(point);
+            oneLine[i] = illuminance;
+
+            if (illuminance > maxIlluminance) maxIlluminance = illuminance;
+            if (illuminance < minIlluminance && illuminance > 0) minIlluminance = illuminance;
+        }
+        illuminanceGriddata[j] = oneLine;  // y作为第一维
+    }
+    if (IESLoader::instance().light.m_IESType <= 4)
+        std::reverse(illuminanceGriddata.begin(), illuminanceGriddata.end());
+    // 确保最小值合理
+    if (minIlluminance >= maxIlluminance) {
+        minIlluminance = maxIlluminance * 0.1;
+    }
+}
+
+void IESLoader::calculateYZPlaneIlluminance()
+{
+    illuminanceGrid.clear();
+    illuminanceGriddata.clear();
+    maxIlluminance = 0;
+    minIlluminance = 1e9;
+
+    gridSpacing = calculationWidth / m_numOfPoints;
+    double halfRange = calculationWidth / 2.0;
+    int gridSize = m_numOfPoints;
+
+    // 注意：为了匹配Qwt的坐标系，我们需要将z作为第一维，y作为第二维
+    illuminanceGriddata.resize(gridSize + 1);
+
+    for (int j = 0; j <= gridSize; ++j) {  // z方向
+        std::vector<double> oneLine(gridSize + 1, 0.0);
+        double z = -halfRange + j * gridSpacing;
+        for (int i = 0; i <= gridSize; ++i) {  // y方向
+            double y = -halfRange + i * gridSpacing;
+            double illuminance = calculateIlluminanceAtPoint(0, y, z);
+
+            IlluminancePoint point;
+            point.x = 0;
+            point.y = y;
+            point.z = z;
+            point.illuminance = illuminance;
+
+            illuminanceGrid.push_back(point);
+            oneLine[i] = illuminance;
+
+            if (illuminance > maxIlluminance) maxIlluminance = illuminance;
+            if (illuminance < minIlluminance && illuminance > 0) minIlluminance = illuminance;
+        }
+        illuminanceGriddata[j] = oneLine;  // z作为第一维
+    }
+    if (IESLoader::instance().light.m_IESType <= 4)
+        std::reverse(illuminanceGriddata.begin(), illuminanceGriddata.end());
+    if (minIlluminance >= maxIlluminance) {
+        minIlluminance = maxIlluminance * 0.1;
+    }
+}
+
+void IESLoader::calculateXZPlaneIlluminance()
+{
+    illuminanceGrid.clear();
+    illuminanceGriddata.clear();
+    maxIlluminance = 0;
+    minIlluminance = 1e9;
+
+    gridSpacing = calculationWidth / m_numOfPoints;
+    double halfRange = calculationWidth / 2.0;
+    int gridSize = m_numOfPoints;
+
+    // 注意：为了匹配Qwt的坐标系，我们需要将z作为第一维，x作为第二维
+    illuminanceGriddata.resize(gridSize + 1);
+
+    for (int j = 0; j <= gridSize; ++j) {  // z方向
+        std::vector<double> oneLine(gridSize + 1, 0.0);
+        double z = -halfRange + j * gridSpacing;
+        for (int i = 0; i <= gridSize; ++i) {  // x方向
+            double x = -halfRange + i * gridSpacing;
+            double illuminance = calculateIlluminanceAtPoint(x, 0, z);
+
+            IlluminancePoint point;
+            point.x = x;
+            point.y = 0;
+            point.z = z;
+            point.illuminance = illuminance;
+
+            illuminanceGrid.push_back(point);
+            oneLine[i] = illuminance;
+
+            if (illuminance > maxIlluminance) maxIlluminance = illuminance;
+            if (illuminance < minIlluminance && illuminance > 0) minIlluminance = illuminance;
+        }
+        illuminanceGriddata[j] = oneLine;  // z作为第一维
+    }
+    if (IESLoader::instance().light.m_IESType <= 4)
+        std::reverse(illuminanceGriddata.begin(), illuminanceGriddata.end());
+    if (minIlluminance >= maxIlluminance) {
+        minIlluminance = maxIlluminance * 0.1;
+    }
+}
+
+void IESLoader::calculateXY_PlaneIlluminance()
+{
+    illuminanceGrid.clear();
+    illuminanceGriddata.clear();
+    maxIlluminance = 0;
+    minIlluminance = 1e9;
+
+    gridSpacing = calculationWidth / m_numOfPoints;
+    double halfWidth = calculationWidth / 2.0;
+    int gridSize = m_numOfPoints;
+
+    // 注意：为了匹配Qwt的坐标系，我们需要将y作为第一维，x作为第二维
+    illuminanceGriddata.resize(gridSize + 1);
+
+    for (int j = 0; j <= gridSize; ++j) {  // y方向
+        std::vector<double> oneLine(gridSize + 1, 0.0);
+        double y = -halfWidth + j * gridSpacing;
+        for (int i = 0; i <= gridSize; ++i) {  // x方向
+            double x = -halfWidth + i * gridSpacing;
+            double illuminance = calculateIlluminanceAtPoint_(x, y, 0);
+
+            IlluminancePoint point;
+            point.x = x;
+            point.y = y;
+            point.illuminance = illuminance;
+
+            illuminanceGrid.push_back(point);
+            oneLine[i] = illuminance;
+
+            if (illuminance > maxIlluminance) maxIlluminance = illuminance;
+            if (illuminance < minIlluminance && illuminance > 0) minIlluminance = illuminance;
+        }
+        illuminanceGriddata[j] = oneLine;  // y作为第一维
+    }
+    if (IESLoader::instance().light.m_IESType > 4)
+        std::reverse(illuminanceGriddata.begin(), illuminanceGriddata.end());
+    if (minIlluminance >= maxIlluminance) {
+        minIlluminance = maxIlluminance * 0.1;
+    }
+}
+
+void IESLoader::calculateYZ_PlaneIlluminance()
+{
+    illuminanceGrid.clear();
+    illuminanceGriddata.clear();
+    maxIlluminance = 0;
+    minIlluminance = 1e9;
+
+    gridSpacing = calculationWidth / m_numOfPoints;
+    double halfRange = calculationWidth / 2.0;
+    int gridSize = m_numOfPoints;
+
+    // 注意：为了匹配Qwt的坐标系，我们需要将z作为第一维，y作为第二维
+    illuminanceGriddata.resize(gridSize + 1);
+
+    for (int j = 0; j <= gridSize; ++j) {  // z方向
+        std::vector<double> oneLine(gridSize + 1, 0.0);
+        double z = -halfRange + j * gridSpacing;
+        for (int i = 0; i <= gridSize; ++i) {  // y方向
+            double y = -halfRange + i * gridSpacing;
+            double illuminance = calculateIlluminanceAtPoint_(0, y, z);
+
+            IlluminancePoint point;
+            point.x = 0;
+            point.y = y;
+            point.z = z;
+            point.illuminance = illuminance;
+
+            illuminanceGrid.push_back(point);
+            oneLine[i] = illuminance;
+
+            if (illuminance > maxIlluminance) maxIlluminance = illuminance;
+            if (illuminance < minIlluminance && illuminance > 0) minIlluminance = illuminance;
+        }
+        illuminanceGriddata[j] = oneLine;  // z作为第一维
+    }
+    if (IESLoader::instance().light.m_IESType > 4)
+        std::reverse(illuminanceGriddata.begin(), illuminanceGriddata.end());
+    if (minIlluminance >= maxIlluminance) {
+        minIlluminance = maxIlluminance * 0.1;
+    }
+}
+
+void IESLoader::calculateXZ_PlaneIlluminance()
+{
+    illuminanceGrid.clear();
+    illuminanceGriddata.clear();
+    maxIlluminance = 0;
+    minIlluminance = 1e9;
+
+    gridSpacing = calculationWidth / m_numOfPoints;
+    double halfRange = calculationWidth / 2.0;
+    int gridSize = m_numOfPoints;
+
+    // 注意：为了匹配Qwt的坐标系，我们需要将z作为第一维，x作为第二维
+    illuminanceGriddata.resize(gridSize + 1);
+
+    for (int j = 0; j <= gridSize; ++j) {  // z方向
+        std::vector<double> oneLine(gridSize + 1, 0.0);
+        double z = -halfRange + j * gridSpacing;
+        for (int i = 0; i <= gridSize; ++i) {  // x方向
+            double x = -halfRange + i * gridSpacing;
+            double illuminance = calculateIlluminanceAtPoint_(x, 0, z);
+
+            IlluminancePoint point;
+            point.x = x;
+            point.y = 0;
+            point.z = z;
+            point.illuminance = illuminance;
+
+            illuminanceGrid.push_back(point);
+            oneLine[i] = illuminance;
+
+            if (illuminance > maxIlluminance) maxIlluminance = illuminance;
+            if (illuminance < minIlluminance && illuminance > 0) minIlluminance = illuminance;
+        }
+        illuminanceGriddata[j] = oneLine;  // z作为第一维
+    }
+    if (IESLoader::instance().light.m_IESType > 4)
+        std::reverse(illuminanceGriddata.begin(), illuminanceGriddata.end());
+    if (minIlluminance >= maxIlluminance) {
+        minIlluminance = maxIlluminance * 0.1;
+    }
+}
+
+// 修正数据索引访问，确保正确的坐标系
+// 同时需要修正 IlluminanceRasterData 的 value 函数
+// 在 IESLoader.h 中修改 IlluminanceRasterData 的 value 函数：
+
+double IESLoader::calculateIlluminanceAtPoint(double x, double y, double z)
+{
+
+    double dx = x - fixtureX;
+    double dy = y - fixtureY;
+    double dz = z - fixtureZ;
+    double totalDistance = sqrt(dx * dx + dy * dy + dz * dz);
+
+    if (totalDistance == 0) return 0;
+
+    double verticalAngle = acos(dz / totalDistance) * 180.0 / M_PI;
+    double horizontalAngle = atan2(dy, dx) * 180.0 / M_PI;
+
+    if (horizontalAngle < 0) horizontalAngle += 360;
+
+    double candela = IESLoader::instance().getCandelaValue(verticalAngle, horizontalAngle);
+    double cosIncidence = 0;
+    if (z == 0)
+        cosIncidence = -dz / totalDistance;
+    else if (x == 0)
+        cosIncidence = -dx / totalDistance;
+    else if (y == 0)
+        cosIncidence = -dy / totalDistance;
+
+    double illuminance = candela / (totalDistance * totalDistance) * cosIncidence;
+
+    return std::max(0.0, illuminance);
+}
+
+double IESLoader::calculateIlluminanceAtPoint_(double x, double y, double z)
+{
+    double dx = -x + fixtureX;
+    double dy = -y + fixtureY;
+    double dz = -z + fixtureZ;
+    double totalDistance = sqrt(dx * dx + dy * dy + dz * dz);
+
+    if (totalDistance == 0) return 0;
+
+    double verticalAngle = acos(dz / totalDistance) * 180.0 / M_PI;
+    double horizontalAngle = atan2(dy, dx) * 180.0 / M_PI;
+
+    //20260121
+    //if (IESLoader::instance().light.m_IESType > 4 && x == 0)
+    //    return 0.0;
+    //if (horizontalAngle < 0) horizontalAngle += 360;
+
+    double candela = IESLoader::instance().getCandelaValue(verticalAngle, horizontalAngle);
+    double cosIncidence = 0;
+    if (z == 0)
+        cosIncidence = dz / totalDistance;
+    else if (x == 0)
+        cosIncidence = dx / totalDistance;
+    else if (y == 0)
+        cosIncidence = dy / totalDistance;
+    double illuminance = candela / (totalDistance * totalDistance) * cosIncidence;
+
+    return std::max(0.0, illuminance);
 }
