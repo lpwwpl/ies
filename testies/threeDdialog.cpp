@@ -63,17 +63,22 @@ ThreeDDialog::ThreeDDialog(QWidget *parent)
     connect(ui->chkOYZ, SIGNAL(stateChanged(int)), m_iesWidget, SLOT(on_chkOYZ_stateChanged(int)));
     connect(ui->chkAxis, SIGNAL(stateChanged(int)), m_iesWidget, SLOT(on_chkAxis_stateChanged(int)));
 
-    connect(ui->rbViewMesh, SIGNAL(toggled(bool)), this, SLOT(updateIESDataMesh(bool)));
-    connect(ui->rbViewShading, SIGNAL(toggled(bool)), this, SLOT(updateIESDataShading(bool)));
-    connect(ui->rbColor, SIGNAL(toggled(bool)), this, SLOT(updateIESDataColor(bool)));
-    connect(ui->rbShape, SIGNAL(toggled(bool)), this, SLOT(updateIESDataShape(bool)));
+    //updateIESData
+    //connect(ui->rbViewMesh, SIGNAL(toggled(bool)), this, SLOT(updateIESDataMesh(bool)));
+    //connect(ui->rbViewShading, SIGNAL(toggled(bool)), this, SLOT(updateIESDataShading(bool)));
+    //connect(ui->rbColor, SIGNAL(toggled(bool)), this, SLOT(updateIESDataColor(bool)));
+    //connect(ui->rbShape, SIGNAL(toggled(bool)), this, SLOT(updateIESDataShape(bool)));
+    connect(ui->rbViewMesh, SIGNAL(toggled(bool)), this, SLOT(updateIESData(bool)));
+    connect(ui->rbViewShading, SIGNAL(toggled(bool)), this, SLOT(updateIESData(bool)));
+    connect(ui->rbColor, SIGNAL(toggled(bool)), this, SLOT(updateIESData(bool)));
+    connect(ui->rbShape, SIGNAL(toggled(bool)), this, SLOT(updateIESData(bool)));
 
     ui->rbViewShading->blockSignals(true);
     ui->rbColor->blockSignals(true);
     ui->rbViewMesh->blockSignals(true);
     ui->rbShape->blockSignals(true);
 
-    //ui->rbViewShading->setChecked(true);
+    ui->rbViewShading->setChecked(true);
     ui->rbColor->setChecked(true);
 
     ui->rbViewShading->blockSignals(false);
@@ -81,7 +86,7 @@ ThreeDDialog::ThreeDDialog(QWidget *parent)
     ui->rbViewMesh->blockSignals(false);
     ui->rbShape->blockSignals(false);
 
-    updateIESDataShape(true);
+    //updateIESDataShape(true);
  
 }
 
@@ -90,63 +95,46 @@ ThreeDDialog::~ThreeDDialog()
     if (m_iesWidget)delete m_iesWidget;
     delete ui;
 }
-void ThreeDDialog::updateIESDataColor(bool value)
+void ThreeDDialog::updateIESData(bool value)
 {
-    m_iesWidget->updateIESDataColor(value);
-    m_iesWidget->on_chkOYZ_stateChanged(ui->chkOYZ->isChecked());
-    m_iesWidget->on_chkOXZ_stateChanged(ui->chkOXZ->isChecked());
-    m_iesWidget->on_chkOXY_stateChanged(ui->chkOXY->isChecked());
-    m_iesWidget->on_chkAxis_stateChanged(ui->chkAxis->isChecked());
-}
-void ThreeDDialog::updateIESDataShape(bool value)
-{
-    if (ui->rbViewMesh->isChecked())
+    bool bShading = ui->rbViewShading->isChecked();
+    bool bMesh = ui->rbViewMesh->isChecked();
+    bool bShape = ui->rbShape->isChecked();
+    bool bColor = ui->rbColor->isChecked();
+    
+    if (bShading && bShape)
     {
-        m_iesWidget->updateIESDataMesh(value);
+        m_iesWidget->updateIESDataShading_shape();
+    }
+    else if (bShading && bColor)
+    {
+        m_iesWidget->updateIESDataShading_Color();
+    }
+    else if (bMesh && bShape)
+    {
+        m_iesWidget->updateIESDataMesh_shape();
+    }
+    else if (bMesh && bColor)
+    {
+        m_iesWidget->updateIESDataMesh_color();
     }
     else
     {
-        m_iesWidget->updateIESDataShading(value);
+        return;
     }
     m_iesWidget->on_chkOYZ_stateChanged(ui->chkOYZ->isChecked());
     m_iesWidget->on_chkOXZ_stateChanged(ui->chkOXZ->isChecked());
     m_iesWidget->on_chkOXY_stateChanged(ui->chkOXY->isChecked());
     m_iesWidget->on_chkAxis_stateChanged(ui->chkAxis->isChecked());
 }
-void ThreeDDialog::updateIESDataMesh(bool value)
-{
-    m_iesWidget->updateIESDataMesh(value);
-    m_iesWidget->on_chkOYZ_stateChanged(ui->chkOYZ->isChecked());
-    m_iesWidget->on_chkOXZ_stateChanged(ui->chkOXZ->isChecked());
-    m_iesWidget->on_chkOXY_stateChanged(ui->chkOXY->isChecked());
-    m_iesWidget->on_chkAxis_stateChanged(ui->chkAxis->isChecked());
-}
-void ThreeDDialog::updateIESDataShading(bool value)
-{
-    m_iesWidget->updateIESDataShading(value);
-    m_iesWidget->on_chkOYZ_stateChanged(ui->chkOYZ->isChecked());
-    m_iesWidget->on_chkOXZ_stateChanged(ui->chkOXZ->isChecked());
-    m_iesWidget->on_chkOXY_stateChanged(ui->chkOXY->isChecked());
-    m_iesWidget->on_chkAxis_stateChanged(ui->chkAxis->isChecked());
-}
+
 void ThreeDDialog::updateIES()
 {
     //m_iesWidget->clearPoints();
     if (IESLoader::instance().light.candela.size() < 1)
         return;
 
-    if (ui->rbColor->isChecked())
-    {
-        m_iesWidget->updateIESDataColor(true);
-    }
-    else if (ui->rbViewMesh->isChecked())
-    {
-        m_iesWidget->updateIESDataMesh(true);
-    }
-    else if (ui->rbViewShading->isChecked())
-    {
-        m_iesWidget->updateIESDataShading(true);
-    } 
+    updateIESData(true);
     m_iesWidget->on_chkOYZ_stateChanged(ui->chkOYZ->isChecked());
     m_iesWidget->on_chkOXZ_stateChanged(ui->chkOXZ->isChecked());
     m_iesWidget->on_chkOXY_stateChanged(ui->chkOXY->isChecked());
@@ -236,10 +224,17 @@ IESPointCloudWidget::~IESPointCloudWidget()
         this->renderWindow()->RemoveRenderer(m_renderer);
     }
 }
-void IESPointCloudWidget::updateIESDataShape(bool value)
+
+void IESPointCloudWidget::updateIESDataMesh_color()
 {
+    return;
+}
+
+void IESPointCloudWidget::updateIESDataMesh_shape()
+{
+    m_fillStyle = eShape;
+
     if (IESLoader::instance().light.candela.size() < 1)return;
-    if (!value)return;
 
     FillShapeData();
     // 设置Mapper
@@ -250,21 +245,7 @@ void IESPointCloudWidget::updateIESDataShape(bool value)
     //m_intensities->Modified();
     m_mapper->Modified();
 
-    switch(m_fillStyle)
-    {
-    case eShading:
-    {
-        m_mapper->SetInputConnection(m_geometryFilter->GetOutputPort());//m_glyphFilter
-    }
-    break;
-    case eMesh:
-    {
-        m_mapper->SetInputConnection(m_glyphFilter->GetOutputPort());//
-    }
-    break;
-    default:
-        break;
-    }
+    m_mapper->SetInputConnection(m_glyphFilter->GetOutputPort());//
 
     // 重置相机以显示所有点:cite[8]
     m_renderer->ResetCamera();
@@ -273,10 +254,35 @@ void IESPointCloudWidget::updateIESDataShape(bool value)
     // 渲染窗口:cite[8]
     this->renderWindow()->Render();
 }
-void IESPointCloudWidget::updateIESDataColor(bool value)
+void IESPointCloudWidget::updateIESDataShading_shape()
+{
+    m_fillStyle = eShape;
+
+    if (IESLoader::instance().light.candela.size() < 1)return;
+
+    FillShapeData();
+    // 设置Mapper
+
+    m_polyData->Modified();
+    structuredGrid->Modified();
+    m_points->Modified();
+    //m_intensities->Modified();
+    m_mapper->Modified();
+
+    m_mapper->SetInputConnection(m_geometryFilter->GetOutputPort());//m_glyphFilter
+
+    // 重置相机以显示所有点:cite[8]
+    m_renderer->ResetCamera();
+
+    //m_renderer->Render();
+    // 渲染窗口:cite[8]
+    this->renderWindow()->Render();
+}
+
+void IESPointCloudWidget::updateIESDataShading_Color()
 {    
     if (IESLoader::instance().light.candela.size() < 1)return;
-    if (!value)return;
+    //if (!value)return;
     m_fillStyle = eColor;
 
     FillColorData();
@@ -296,18 +302,11 @@ void IESPointCloudWidget::updateIESDataColor(bool value)
     //m_renderer->Render();
     // 渲染窗口:cite[8]
     this->renderWindow()->Render();
-
 }
 void IESPointCloudWidget::clearPoints()
 {
     m_points->Reset();
     m_intensities->Reset();
-}
-void IESPointCloudWidget::updateIESDataShading(bool value)
-{
-    if (!value)return;
-    m_fillStyle = eShading;
-    updateIESDataShape(value);
 }
 
 // 添加径向刻度线（在径向线上添加短刻度标记）
@@ -1240,13 +1239,6 @@ void IESPointCloudWidget::FillShapeData()
     
     //m_scalarBarActor->SetOrientationToVertical();
     m_renderer->RemoveActor(m_scalarBarActor);
-}
-
-void IESPointCloudWidget::updateIESDataMesh(bool value)
-{
-    if (!value)return;
-    m_fillStyle = eMesh;
-    updateIESDataShape(value);
 }
 
 void IESPointCloudWidget::on_chkOXY_stateChanged(int value)

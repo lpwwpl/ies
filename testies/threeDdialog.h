@@ -38,8 +38,7 @@ class vtkStructuredGridGeometryFilter;
 
 enum eFillStyle
 {
-    eShading=0,
-    eMesh,
+    eShape,
     eColor
 };
 class IESPointCloudWidget : public QVTKOpenGLNativeWidget
@@ -106,10 +105,13 @@ public:
         bool showLabels = true);
 public Q_SLOTS:
     // 初始化IES数据并更新显示
-    void updateIESDataMesh(bool);
-    void updateIESDataShading(bool);
-    void updateIESDataColor(bool);
-    void updateIESDataShape(bool);
+    void updateIESDataMesh_shape();
+    void updateIESDataShading_shape();
+
+    void updateIESDataShading_Color();
+    void updateIESDataMesh_color();
+
+
     void on_chkOXY_stateChanged(int);
     void on_chkOXZ_stateChanged(int);
     void on_chkOYZ_stateChanged(int);
@@ -192,10 +194,10 @@ public:
     void updateIES();
 
 public Q_SLOTS:
-    void updateIESDataColor(bool);
-    void updateIESDataShape(bool);
-    void updateIESDataMesh(bool);
-    void updateIESDataShading(bool);
+    void updateIESData(bool);
+    //void updateIESDataShape(bool);
+    //void updateIESDataMesh(bool);
+    //void updateIESDataShading(bool);
 private:
     Ui::ThreeDDialog*ui;
     IESPointCloudWidget* m_iesWidget;
