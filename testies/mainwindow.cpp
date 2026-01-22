@@ -169,12 +169,51 @@ MainWindow::MainWindow(QWidget* parent)
     connect(m_newFileDialog, SIGNAL(signalCreateTypeB_0_90(QString, EIES_VType)), this, SLOT(slotCreateTypeB_0_90(QString, EIES_VType)));
     connect(m_newFileDialog, SIGNAL(signalCreateTypeA_m90_p90(QString, EIES_VType)), this, SLOT(slotCreateTypeA_m90_p90(QString, EIES_VType)));
     connect(m_newFileDialog, SIGNAL(signalCreateTypeA_0_90(QString, EIES_VType)), this, SLOT(slotCreateTypeA_0_90(QString, EIES_VType)));
-
+    connect(ui->rbMeters, &QRadioButton::toggled, this, &MainWindow::onrbMetersToggled);
+    connect(ui->rbFeet, &QRadioButton::toggled, this, &MainWindow::onrbFeetToggled);
     //default
     slotCreateTypeC_0_360("IESNA:LM-63-2002", eC_V180);
 }
 
 MainWindow::~MainWindow() { delete ui; }
+
+void MainWindow::onrbMetersToggled(bool value)
+{
+    if (value)
+    {
+        double m2feet = 3.2808399;
+        double Width = ui->leWidth->text().toDouble();
+        double Length = ui->leLen->text().toDouble();
+        double Height = ui->leHeight->text().toDouble();
+
+        double m_width = (Width / m2feet);
+        double m_len = (Length / m2feet);
+        double m_height = (Height / m2feet);
+
+        ui->leWidth->setText(QString("%1").arg(m_width));
+        ui->leLen->setText(QString("%1").arg(m_len));
+        ui->leHeight->setText(QString("%1").arg(m_height));
+    }
+}
+
+void MainWindow::onrbFeetToggled(bool value)
+{
+    if (value)
+    {
+        double m2feet = 3.2808399;
+        double Width = ui->leWidth->text().toDouble();
+        double Length = ui->leLen->text().toDouble();
+        double Height = ui->leHeight->text().toDouble();
+
+        double feet_width = (Width * m2feet);
+        double feet_len = (Length * m2feet);
+        double feet_height = (Height * m2feet);
+
+        ui->leWidth->setText(QString("%1").arg(feet_width));
+        ui->leLen->setText(QString("%1").arg(feet_len));
+        ui->leHeight->setText(QString("%1").arg(feet_height));
+    }
+}
 
 void MainWindow::slot_heditor()
 {    
@@ -665,6 +704,10 @@ void MainWindow::fillUI(/*EIESType htype, EIES_VType vtype*/)
         temp += "\n";
         header += temp;
     }
+    if (IESLoader::instance().light.units_type == 1)
+        ui->rbFeet->setChecked(true);
+    else
+        ui->rbMeters->setChecked(true);
     ui->textEdit->setText(QString::fromStdString(header));
     ui->leNumberOf->setText(QString::number(IESLoader::instance().light.number_lights));
     ui->leLumenPer->setText(QString::number(IESLoader::instance().light.lumens_per_lamp));
@@ -899,6 +942,13 @@ void MainWindow::on_actionSave_triggered()
         light.vertical_angles = getVerticalAngles();
         light.number_horizontal_angles = light.horizontal_angles.size();
         light.number_vertical_angles = light.vertical_angles.size();
+        light.width = ui->leWidth->text().toDouble();
+        light.height = ui->leHeight->text().toDouble();
+        light.length = ui->leLen->text().toDouble();
+        if (ui->rbFeet->isChecked())
+            light.units_type = 1;
+        else
+            light.units_type = 2;
         light.candela.clear();
         for (uint32_t i = 0; i < light.number_horizontal_angles; i++) {
             for (uint32_t j = 0; j < light.number_vertical_angles; j++)
@@ -931,6 +981,14 @@ void MainWindow::on_actionSave_As_triggered()
     light.vertical_angles = getVerticalAngles();
     light.number_horizontal_angles = light.horizontal_angles.size();
     light.number_vertical_angles = light.vertical_angles.size();
+    light.width = ui->leWidth->text().toDouble();
+    light.height = ui->leHeight->text().toDouble();
+    light.length = ui->leLen->text().toDouble();
+
+    if(ui->rbFeet->isChecked())
+        light.units_type = 1;
+    else 
+        light.units_type = 2;
     light.candela.clear();
     for (uint32_t i = 0; i < light.number_horizontal_angles; i++) {
         for (uint32_t j = 0; j < light.number_vertical_angles; j++)

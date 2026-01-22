@@ -113,6 +113,10 @@ public Q_SLOTS:
     void showMTF();
     void showFov();
     void showDistort();
+
+    void onrbMetersToggled(bool);
+    void onrbFeetToggled(bool);
+
 protected:
     void moveEvent(QMoveEvent* event);
     bool eventFilter(QObject* obj, QEvent* event) override;
