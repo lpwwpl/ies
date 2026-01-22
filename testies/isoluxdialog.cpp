@@ -55,7 +55,7 @@ ISOLuxPlot::ISOLuxPlot()/*:vtx(nullptr),itx(nullptr)*/
         bounds[i] = 0.0;
     }
 
-    createColorLookupTable();
+    //createColorLookupTable();
     createCoordinateGrid();
     createScalarBar(m_lut);
 

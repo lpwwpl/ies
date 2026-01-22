@@ -33,6 +33,17 @@
 #include <vtkSmoothPolyDataFilter.h>
 #include <vtkStructuredGridGeometryFilter.h>
 
+
+#include <vtkExtractGrid.h>
+#include <vtkExtractEdges.h>
+#include <vtkStripper.h>
+#include <vtkTubeFilter.h>
+#include <vtkAppendPolyData.h>
+#include <vtkFeatureEdges.h>
+#include <vtkRuledSurfaceFilter.h>
+#include <vtkMaskPoints.h>
+#include <vtkMaskPolyData.h>
+
 #include "IESLoader.h"
 //#include "dislin.h"
 ThreeDDialog::ThreeDDialog(QWidget *parent)
@@ -143,7 +154,7 @@ void ThreeDDialog::updateIES()
 
 
 IESPointCloudWidget::IESPointCloudWidget(QWidget* parent)
-    : QVTKOpenGLNativeWidget(parent)
+    : QVTKOpenGLNativeWidget(parent), m_pointInterval(10)
 {
     // 初始化VTK组件
     m_renderer = vtkSmartPointer<vtkRenderer>::New();
@@ -151,7 +162,7 @@ IESPointCloudWidget::IESPointCloudWidget(QWidget* parent)
     m_intensities = vtkSmartPointer<vtkFloatArray>::New();
     m_polyData = vtkSmartPointer<vtkPolyData>::New();
     m_glyphFilter = vtkSmartPointer<vtkVertexGlyphFilter>::New();
-    m_delaunay = vtkSmartPointer<vtkDelaunay3D>::New();
+    //m_delaunay = vtkSmartPointer<vtkDelaunay3D>::New();
     //m_smoothFilter = vtkSmartPointer<vtkSmoothPolyDataFilter>::New();
     m_geometryFilter = vtkSmartPointer<vtkStructuredGridGeometryFilter>::New();
     m_mapper = vtkSmartPointer<vtkPolyDataMapper>::New();
@@ -159,6 +170,9 @@ IESPointCloudWidget::IESPointCloudWidget(QWidget* parent)
     m_actor = vtkSmartPointer<vtkActor>::New();
     m_colorTransferFunction = vtkSmartPointer<vtkColorTransferFunction>::New();
     m_surfaceFilter = vtkSmartPointer<vtkDataSetSurfaceFilter>::New();
+
+    m_extractGrid= vtkSmartPointer<vtkExtractGrid>::New();
+
     // 设置强度值数组名
     m_intensities->SetName("Intensity");
 
@@ -172,17 +186,88 @@ IESPointCloudWidget::IESPointCloudWidget(QWidget* parent)
 
     // 设置GlyphFilter
     m_glyphFilter->SetInputData(m_polyData);
+    //m_glyphFilter->SetInputData(m_polyData);
     m_surfaceFilter->SetInputData(structuredGrid);
     m_geometryFilter->SetInputData(structuredGrid);
 
     //m_surfaceFilter->SetInputConnection(m_delaunay->GetOutputPort());
-    //m_delaunay->SetInputData(m_polyData);
-    //m_delaunay->SetAlpha(0.1); // 控制网格密度
+    ////m_delaunay->SetInputData(m_polyData);
+    ////m_delaunay->SetAlpha(5); // 控制网格密度
     //m_smoothFilter->SetInputConnection(m_surfaceFilter->GetOutputPort());
     //m_smoothFilter->SetNumberOfIterations(15);
     //////////////
     //addCoordinateAxes();
 
+
+
+
+    m_edgeExtractor = vtkSmartPointer<vtkExtractEdges>::New();
+    m_edgeExtractor->SetInputData(structuredGrid);
+    // 方法2：使用TubeFilter加粗线条
+    //m_tubeFilter = vtkSmartPointer<vtkTubeFilter>::New();
+    //m_tubeFilter->SetInputConnection(m_edgeExtractor->GetOutputPort());
+    //m_tubeFilter->SetRadius(m_tubeRadius);
+    //m_tubeFilter->SetNumberOfSides(50);
+    //m_tubeFilter->CappingOn();
+
+    // 方法3：提取等值线
+    //m_contourFilter = vtkSmartPointer<vtkContourFilter>::New();
+    //m_contourFilter->SetInputData(structuredGrid);
+
+    // 设置等值线级别
+    //double range[2];
+    //m_intensities->GetRange(range);
+    //int numContours = 5;
+    //for (int i = 0; i <= numContours; i++) {
+    //    double value = range[0] + (range[1] - range[0]) * i / numContours;
+    //    m_contourFilter->SetValue(i, value);
+    //}
+
+    // 方法4：使用Stripper优化线条
+    //m_stripper = vtkSmartPointer<vtkStripper>::New();
+    //m_stripper->SetInputConnection(m_contourFilter->GetOutputPort());
+
+    // 方法5：提取特征边
+    //m_featureEdges = vtkSmartPointer<vtkFeatureEdges>::New();
+    //m_featureEdges->SetInputData(structuredGrid);
+    //m_featureEdges->BoundaryEdgesOn();
+    //m_featureEdges->FeatureEdgesOff();
+    //m_featureEdges->NonManifoldEdgesOff();
+    //m_featureEdges->ManifoldEdgesOff();
+
+    // 组合多个filters的结果
+    //m_appendFilter = vtkSmartPointer<vtkAppendPolyData>::New();
+    //m_appendFilter->AddInputConnection(m_tubeFilter->GetOutputPort());
+    // 根据配置选择显示哪些部分
+    //if (m_showEdges) {
+    //    if (m_useTubes) {
+    //        m_appendFilter->AddInputConnection(m_tubeFilter->GetOutputPort());
+    //    }
+    //    else {
+    //        m_appendFilter->AddInputConnection(m_edgeExtractor->GetOutputPort());
+    //    }
+    //}
+
+
+    // 如果没有选择任何显示，至少显示网格边
+    //if (!m_showEdges && !m_showContours) {
+    //    m_appendFilter->AddInputConnection(m_edgeExtractor->GetOutputPort());
+    //}
+
+    // 设置Mapper
+    //m_mapper->SetInputConnection(m_appendFilter->GetOutputPort());
+    // 设置为线框模式
+    //m_actor->GetProperty()->SetRepresentationToWireframe();
+    //m_actor->GetProperty()->SetLineWidth(2.0);
+
+
+
+
+
+
+
+
+    //m_mapper->SetLookupTable(createColorLookupTable());
     m_mapper->SetScalarModeToUsePointData(); // 使用点数据中的标量
     m_mapper->SetLookupTable(m_colorTransferFunction); // 设置颜色查找表
     //m_mapper->SetInputConnection(m_geometryFilter->GetOutputPort());
@@ -227,7 +312,52 @@ IESPointCloudWidget::~IESPointCloudWidget()
 
 void IESPointCloudWidget::updateIESDataMesh_color()
 {
-    return;
+    if (IESLoader::instance().light.candela.size() < 1)return;
+    //if (!value)return;
+    m_fillStyle = eColor;
+
+    FillColorData();
+
+
+    m_extractGrid->SetInputData(structuredGrid);
+
+    // 设置采样步长 - 控制网格稀疏度
+    // 假设原始网格维度是(361, 181, 1)
+    // 我们可以设置步长为(15, 15, 1)，每15个点取一个
+    int strideX = 3; // Theta方向步长
+    int strideY = 3; // Phi方向步长
+
+    m_extractGrid->SetSampleRate(strideX, strideY, 1);
+    // 或者使用VOI（感兴趣区域）提取
+    // m_extractGrid->SetVOI(0, 360, 0, 180, 0, 0); // 提取整个区域
+    // m_extractGrid->SetSampleRate(strideX, strideY, 1);
+    m_extractGrid->Update();
+
+    // 提取稀疏网格的边
+    m_edgeExtractor->SetInputConnection(m_extractGrid->GetOutputPort());
+
+    m_points->Modified();
+    m_intensities->Modified();
+    m_polyData->Modified();
+    structuredGrid->Modified();
+    m_mapper->Modified();
+    m_mapper->SetInputConnection(m_edgeExtractor->GetOutputPort());
+
+    m_actor->GetProperty()->SetRepresentationToWireframe();
+    m_actor->GetProperty()->SetLineWidth(0.5);
+
+    // 可选：设置线框样式为虚线，增加视觉间隔
+    m_actor->GetProperty()->SetLineStipplePattern(0xF0F0); // 4像素实线，4像素空白
+    //m_actor->GetProperty()->SetLineStippleRepeatFactor(2);
+    //m_actor->GetProperty()->SetLineStippleEnabled(true);
+
+
+    // 重置相机以显示所有点:cite[8]
+    m_renderer->ResetCamera();
+
+    //m_renderer->Render();
+    // 渲染窗口:cite[8]
+    this->renderWindow()->Render();
 }
 
 void IESPointCloudWidget::updateIESDataMesh_shape()
@@ -246,7 +376,7 @@ void IESPointCloudWidget::updateIESDataMesh_shape()
     m_mapper->Modified();
 
     m_mapper->SetInputConnection(m_glyphFilter->GetOutputPort());//
-
+    m_actor->GetProperty()->SetRepresentationToSurface();
     // 重置相机以显示所有点:cite[8]
     m_renderer->ResetCamera();
 
@@ -270,7 +400,7 @@ void IESPointCloudWidget::updateIESDataShading_shape()
     m_mapper->Modified();
 
     m_mapper->SetInputConnection(m_geometryFilter->GetOutputPort());//m_glyphFilter
-
+    m_actor->GetProperty()->SetRepresentationToSurface();
     // 重置相机以显示所有点:cite[8]
     m_renderer->ResetCamera();
 
@@ -288,6 +418,7 @@ void IESPointCloudWidget::updateIESDataShading_Color()
     FillColorData();
     m_mapper->SetInputConnection(m_surfaceFilter->GetOutputPort());
 
+    m_actor->GetProperty()->SetRepresentationToSurface();
     // 通知组件数据已更新
     //m_polyData->Modified();
 

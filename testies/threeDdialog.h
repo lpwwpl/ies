@@ -36,6 +36,16 @@ class vtkDelaunay3D;
 class vtkSmoothPolyDataFilter;
 class vtkStructuredGridGeometryFilter;
 
+class vtkExtractGrid;
+class vtkExtractEdges;
+class vtkStripper;
+class vtkTubeFilter;
+class vtkAppendPolyData;
+class vtkFeatureEdges;
+class vtkRuledSurfaceFilter;
+class vtkMaskPoints;
+class vtkMaskPolyData;
+
 enum eFillStyle
 {
     eShape,
@@ -65,8 +75,6 @@ public:
     void updateXYCandelaLabels(double maxRadius, int numCircles);
     void updateYZCandelaLabels(double maxRadius, int numCircles);
     void updateXZCandelaLabels(double maxRadius, int numCircles);
-
-
 
     void createXArrowSourceAxis(
         const std::string& axisName,
@@ -103,6 +111,7 @@ public:
         double tipLength = 0.3,
         double tipRadius = 0.1,
         bool showLabels = true);
+
 public Q_SLOTS:
     // 初始化IES数据并更新显示
     void updateIESDataMesh_shape();
@@ -117,6 +126,17 @@ public Q_SLOTS:
     void on_chkOYZ_stateChanged(int);
     void on_chkAxis_stateChanged(int);
 private:
+    vtkSmartPointer<vtkExtractGrid> m_gridExtractor;
+    vtkSmartPointer<vtkExtractEdges> m_edgeExtractor;
+    vtkSmartPointer<vtkStripper> m_stripper;
+    vtkSmartPointer<vtkTubeFilter> m_tubeFilter;
+    vtkSmartPointer<vtkAppendPolyData> m_appendFilter;
+    //vtkSmartPointer<vtkContourFilter> m_contourFilter;
+    vtkSmartPointer<vtkFeatureEdges> m_featureEdges;
+    vtkSmartPointer<vtkRuledSurfaceFilter> m_ruledSurfaceFilter;
+    vtkSmartPointer<vtkMaskPolyData> m_maskPolyData;
+    int m_pointInterval;      // 点间隔
+    vtkSmartPointer<vtkExtractGrid> m_extractGrid;// = vtkSmartPointer<vtkExtractGrid>::New();
 
     // VTK组件智能指针
     vtkSmartPointer<vtkRenderer> m_renderer;          // 场景渲染器
@@ -181,6 +201,8 @@ private:
     vtkSmartPointer<vtkFollower> m_xArrow_textActor;
     vtkSmartPointer<vtkFollower> m_yArrow_textActor;
     vtkSmartPointer<vtkFollower> m_zArrow_textActor;
+
+    vtkSmartPointer<vtkActor> surfaceActor;
 };
 
 
