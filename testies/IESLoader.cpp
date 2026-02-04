@@ -1251,7 +1251,7 @@ void IESLoader::calculateXYPlaneIlluminance()
     illuminanceGriddata.clear();
     maxIlluminance = 0;
     minIlluminance = 1e9;
-
+    if (m_numOfPoints % 2 == 0)m_numOfPoints++;
     gridSpacing = calculationWidth / m_numOfPoints;
     double halfWidth = calculationWidth / 2.0;
     int gridSize = m_numOfPoints;
@@ -1295,6 +1295,8 @@ void IESLoader::calculateYZPlaneIlluminance()
     maxIlluminance = 0;
     minIlluminance = 1e9;
 
+    if (m_numOfPoints % 2 == 0)m_numOfPoints++;
+
     gridSpacing = calculationWidth / m_numOfPoints;
     double halfRange = calculationWidth / 2.0;
     int gridSize = m_numOfPoints;
@@ -1337,6 +1339,9 @@ void IESLoader::calculateXZPlaneIlluminance()
     maxIlluminance = 0;
     minIlluminance = 1e9;
 
+
+    if (m_numOfPoints % 2 == 0)m_numOfPoints++;
+
     gridSpacing = calculationWidth / m_numOfPoints;
     double halfRange = calculationWidth / 2.0;
     int gridSize = m_numOfPoints;
@@ -1345,9 +1350,9 @@ void IESLoader::calculateXZPlaneIlluminance()
     illuminanceGriddata.resize(gridSize + 1);
 
     for (int j = 0; j <= gridSize; ++j) {  // z方向
-        std::vector<double> oneLine(gridSize + 1, 0.0);
+        std::vector<double> oneLine(gridSize +1, 0.0);
         double z = -halfRange + j * gridSpacing;
-        for (int i = 0; i <= gridSize; ++i) {  // x方向
+        for (int i = 0; i <gridSize; ++i) {  // x方向
             double x = -halfRange + i * gridSpacing;
             double illuminance = calculateIlluminanceAtPoint(x, 0, z);
 
@@ -1378,7 +1383,7 @@ void IESLoader::calculateXY_PlaneIlluminance()
     illuminanceGriddata.clear();
     maxIlluminance = 0;
     minIlluminance = 1e9;
-
+    if (m_numOfPoints % 2 == 0)m_numOfPoints++;
     gridSpacing = calculationWidth / m_numOfPoints;
     double halfWidth = calculationWidth / 2.0;
     int gridSize = m_numOfPoints;
@@ -1419,7 +1424,7 @@ void IESLoader::calculateYZ_PlaneIlluminance()
     illuminanceGriddata.clear();
     maxIlluminance = 0;
     minIlluminance = 1e9;
-
+    if (m_numOfPoints % 2 == 0)m_numOfPoints++;
     gridSpacing = calculationWidth / m_numOfPoints;
     double halfRange = calculationWidth / 2.0;
     int gridSize = m_numOfPoints;
@@ -1461,7 +1466,7 @@ void IESLoader::calculateXZ_PlaneIlluminance()
     illuminanceGriddata.clear();
     maxIlluminance = 0;
     minIlluminance = 1e9;
-
+    if (m_numOfPoints % 2 == 0)m_numOfPoints++;
     gridSpacing = calculationWidth / m_numOfPoints;
     double halfRange = calculationWidth / 2.0;
     int gridSize = m_numOfPoints;
