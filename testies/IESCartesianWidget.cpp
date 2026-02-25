@@ -452,22 +452,22 @@ void IESCartesianWidget::initPlot()
     insertLegend(legend, QwtPlot::RightLegend);
 
     // 设置绘图区域布局
-    plotLayout()->setAlignCanvasToScales(true);
+    //plotLayout()->setAlignCanvasToScales(true);
 
     // 添加缩放功能
-    m_zoomer = new QwtPlotZoomer(canvas());
-    m_zoomer->setRubberBandPen(QPen(Qt::darkBlue, 2, Qt::DotLine));
-    m_zoomer->setTrackerPen(QPen(Qt::darkBlue));
-    m_zoomer->setMousePattern(QwtEventPattern::MouseSelect2,
-        Qt::RightButton, Qt::ControlModifier);
-    m_zoomer->setMousePattern(QwtEventPattern::MouseSelect3,
-        Qt::RightButton);
+    //m_zoomer = new QwtPlotZoomer(canvas());
+    //m_zoomer->setRubberBandPen(QPen(Qt::darkBlue, 2, Qt::DotLine));
+    //m_zoomer->setTrackerPen(QPen(Qt::darkBlue));
+    //m_zoomer->setMousePattern(QwtEventPattern::MouseSelect2,
+    //    Qt::RightButton, Qt::ControlModifier);
+    //m_zoomer->setMousePattern(QwtEventPattern::MouseSelect3,
+    //    Qt::RightButton);
 
     // 添加平移功能
-    m_panner = new QwtPlotPanner(canvas());
+    //m_panner = new QwtPlotPanner(canvas());
 
     // 添加鼠标滚轮缩放功能
-    m_magnifier = new QwtPlotMagnifier(canvas());
+    //m_magnifier = new QwtPlotMagnifier(canvas());
 
     // 设置自动重绘
     setAutoReplot(true);
@@ -577,7 +577,7 @@ std::vector<QPointF> IESCartesianWidget::generateC0C180Profile(double angle)
     profile1.reserve(IESLoader::instance().newThetas_r1.size());
 
     for (size_t i = 0; i < IESLoader::instance().newThetas_r1.size() && i < r1.size(); ++i) {
-        profile1.push_back(QPointF(IESLoader::instance().newThetas_r1[i], r1[i]));
+        profile1.push_back(QPointF(IESLoader::instance().newThetas_r1[i], /*r1[i]*/std::round(r1[i] * 10000.0) / 10000.0));
     }
     profile.insert(profile.end(), profile1.begin(), profile1.end());
 
@@ -599,7 +599,7 @@ std::vector<QPointF> IESCartesianWidget::generateC0C180Profile(double angle)
         std::vector<QPointF> profile2;
         profile2.reserve(IESLoader::instance().newThetas_r2.size());
         for (size_t i = 0; i < IESLoader::instance().newThetas_r2.size() && i < r2.size(); ++i) {
-            profile2.push_back(QPointF(IESLoader::instance().newThetas_r2[i] - 360, r2[i]));
+            profile2.push_back(QPointF(IESLoader::instance().newThetas_r2[i] - 360, /*r2[i]*/std::round(r2[i] * 10000.0) / 10000.0));
         }
         profile.insert(profile.end(), profile2.begin(), profile2.end());
     }
@@ -627,7 +627,7 @@ std::vector<QPointF> IESCartesianWidget::generateC90C270Profile(double angle)
         profile1.reserve(IESLoader::instance().newThetas_r1.size());
         for (size_t i = 0; i < IESLoader::instance().newThetas_r1.size() && i < r3.size(); ++i) {
             if (!std::isnan(r3[i])) {
-                profile1.push_back(QPointF(IESLoader::instance().newThetas_r1[i], r3[i]));
+                profile1.push_back(QPointF(IESLoader::instance().newThetas_r1[i], /*r3[i]*/std::round(r3[i] * 10000.0) / 10000.0));
             }
         }
 
@@ -650,7 +650,7 @@ std::vector<QPointF> IESCartesianWidget::generateC90C270Profile(double angle)
         profile2.reserve(IESLoader::instance().newThetas_r2.size());
         for (size_t i = 0; i < IESLoader::instance().newThetas_r2.size() && i < r4.size(); ++i) {
             if (!std::isnan(r4[i])) {
-                profile2.push_back(QPointF(IESLoader::instance().newThetas_r2[i] - 360, r4[i]));
+                profile2.push_back(QPointF(IESLoader::instance().newThetas_r2[i] - 360,/* r4[i]*/std::round(r4[i] * 10000.0) / 10000.0));
             }
         }
 
