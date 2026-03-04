@@ -80,6 +80,21 @@
     <ClCompile Include="SpotDiagramWidget.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="IESglwidget.cpp">
+      <Filter>widgets</Filter>
+    </ClCompile>
+    <ClCompile Include="PlotSetting.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="QwtPropertyBrowser.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="SimplePropertyBrowser.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="PlotBase.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="tiny_ies.hpp">
@@ -92,6 +107,9 @@
       <Filter>widgets</Filter>
     </ClInclude>
     <ClInclude Include="common.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="PlotSetting.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -141,6 +159,18 @@
     <QtMoc Include="SpotDiagramWidget.h">
       <Filter>Header Files</Filter>
     </QtMoc>
+    <QtMoc Include="IESglwidget.h">
+      <Filter>widgets</Filter>
+    </QtMoc>
+    <QtMoc Include="QwtPropertyBrowser.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+    <QtMoc Include="SimplePropertyBrowser.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+    <QtMoc Include="PlotBase.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
   </ItemGroup>
   <ItemGroup>
     <QtRcc Include="res.qrc">
@@ -150,6 +180,9 @@
       <Filter>Resource Files</Filter>
     </QtRcc>
     <QtRcc Include="resources\qss\light_style_sheet\qlightstyle\lightstyle.qrc">
+      <Filter>Resource Files</Filter>
+    </QtRcc>
+    <QtRcc Include="qtproperty\qtpropertybrowser.qrc">
       <Filter>Resource Files</Filter>
     </QtRcc>
   </ItemGroup>

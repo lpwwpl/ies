@@ -20,20 +20,28 @@
 //    mesh(X, Y, Z);
 //    show();// 需要调用show才能显示 return 0; 
 //}
+void initApplication() {
+    QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
+    QCoreApplication::setAttribute(Qt::AA_UseHighDpiPixmaps);
+
+#ifdef WIN32
+    QApplication::setFont(QFont("Microsoft YaHei UI", 9));
+#endif
+
+    QSurfaceFormat openGLFormat;
+    openGLFormat.setVersion(3, 3);
+    openGLFormat.setProfile(QSurfaceFormat::CoreProfile);
+    openGLFormat.setDepthBufferSize(24);
+    openGLFormat.setStencilBufferSize(8);
+    QSurfaceFormat::setDefaultFormat(openGLFormat);
+}
 int main(int argc, char* argv[])
 {
     //QTextCodec::setCodecForLocale(QTextCodec::codecForName("UTF-8"));
+    initApplication();
+
 
     QApplication app(argc, argv);
-
-    // 设置OpenGL版本和配置
-    QSurfaceFormat format;
-    format.setVersion(3, 3);
-    format.setProfile(QSurfaceFormat::CoreProfile);
-    format.setDepthBufferSize(24);
-    format.setStencilBufferSize(8);
-    format.setSamples(4);
-    QSurfaceFormat::setDefaultFormat(format);
 
     vtkOutputWindow::SetGlobalWarningDisplay(0); // 关闭警告显示
     // 创建并显示主窗口

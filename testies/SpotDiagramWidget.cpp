@@ -552,6 +552,9 @@
 #include <algorithm>
 #include <limits>
 #include <QTimer>
+#include "SimplePropertyBrowser.h"
+#include <QSplitter>
+#include <QFileDialog>
 // 初始化静态成员变量
 constexpr double SpotDiagramPlotter::FIELD_SPACING;
 constexpr double SpotDiagramPlotter::LEFT_AXIS_OFFSET;
@@ -568,29 +571,36 @@ SpotDiagramPlotter::SpotDiagramPlotter(QWidget* parent)
     m_colorMap["RGBCyan"] = QColor(0, 255, 255);
 
     // 创建界面
-    QVBoxLayout* mainLayout = new QVBoxLayout(this);
-    m_plot = new QwtPlot(this);
-    m_plot->setCanvasBackground(Qt::white);
-
-    // 设置右键菜单策略
-    setContextMenuPolicy(Qt::CustomContextMenu);
-    connect(this, &QWidget::customContextMenuRequested, this, [this](const QPoint& pos) {
-        QMenu menu(this);
-        QAction* resetAction = menu.addAction("重置视图");
-        QAction* selectedAction = menu.exec(mapToGlobal(pos));
-
-        if (selectedAction == resetAction) {
-            resetView();
-        }
-        });
-
-    mainLayout->addWidget(m_plot);
+    //QVBoxLayout* mainLayout = new QVBoxLayout(this);
+    m_toolbar_plot = new PlotBase(this);
+    m_plot = m_toolbar_plot->m_plot;
+    m_legend = m_toolbar_plot->m_legend;
+    m_grid = m_toolbar_plot->m_grid;
+    m_settings = m_toolbar_plot->m_settings;
 
     // 设置初始大小
     resize(QSize(640, 480));
 
     // 设置图表
     setupPlot();
+
+    m_settings = new PlotSettings();
+    m_simple_browser = new SimplePropertyBrowser(m_settings, m_plot, m_grid, m_legend, this);
+    // 分割器
+    m_splitter = new QSplitter(this);
+    m_splitter->addWidget(m_toolbar_plot);
+    m_splitter->addWidget(m_simple_browser);
+
+    m_splitter->setStretchFactor(0, 1);
+    m_splitter->setStretchFactor(1, 0);
+    m_simple_browser->setMinimumWidth(300);
+    m_simple_browser->setMaximumWidth(400);
+    m_splitter->setCollapsible(1, false);
+    m_splitter->setSizes({ 900, 300 });
+
+    QVBoxLayout* mainLayout = new QVBoxLayout(this);
+    mainLayout->setContentsMargins(0, 0, 0, 0);
+    mainLayout->addWidget(m_splitter);
 }
 
 SpotDiagramPlotter::~SpotDiagramPlotter()
@@ -751,9 +761,7 @@ void SpotDiagramPlotter::setupPlot()
     m_plot->enableAxis(QwtPlot::yRight, true);
 
     // 设置网格
-    m_grid = new QwtPlotGrid();
     m_grid->setPen(QPen(Qt::gray, 0, Qt::DotLine));
-    m_grid->attach(m_plot);
 
     // 添加缩放功能 - 右键拖拽矩形放大
     m_zoomer = new QwtPlotZoomer(QwtPlot::xBottom, QwtPlot::yLeft,
@@ -785,6 +793,9 @@ void SpotDiagramPlotter::setupPlot()
     // 设置自动重绘
     m_plot->setAutoReplot(true);
 
+    m_plot->canvas()->setContextMenuPolicy(Qt::CustomContextMenu);
+    connect(m_plot->canvas(), &QWidget::customContextMenuRequested,
+        this, &SpotDiagramPlotter::showContextMenu);
     // 安装事件过滤器
     m_plot->canvas()->installEventFilter(this);
 }
@@ -911,7 +922,31 @@ void SpotDiagramPlotter::plotSpotDiagrams()
         // 添加点数据到图表（数据扩大并居中）
         addSpotDataToPlot(m_fieldData[fieldIndex], verticalOffset, fieldName, fieldIndex, centerX, centerY);
     }
+    int index = 0;
+    for (auto v : m_fieldCurves.values())
+    {
+        QVector<QwtPlotCurve*> curves = v;
+        for (auto curve : curves)
+        {
+            MTFLine line;
+            line.curve = curve;
+            line.index = index;
+            const QwtSymbol* sym = curve->symbol();
+            QPen pen = sym->pen();
+            line.m_style.pointColor = pen.color();
+            line.m_style.pointStyle = QwtSymbol::Ellipse;
+            line.m_style.pointSize = pen.width();
+            line.m_style.lineStyle = (Qt::PenStyle)(Qt::CustomDashLine + 1);
+            line.m_style.pointFilled = true;
+            line.m_style.fillPointStyle = eSmallEllipse;
+            m_settings->m_lines[index] = line;
+            index++;
+        }
+    }
 
+
+    m_simple_browser->updateLineCombo();
+    m_simple_browser->setCurrentCurve(0);
     // 设置坐标轴范围
     m_plot->setAxisScale(QwtPlot::xBottom, xMin, xMax);
     m_plot->setAxisScale(QwtPlot::yLeft, yMin, yMax);
@@ -954,7 +989,7 @@ void SpotDiagramPlotter::addSpotDataToPlot(const QVector<SpotData>& data, double
     for (auto it = colorData.begin(); it != colorData.end(); ++it) {
         const QString& colorName = it.key();
         const QVector<QPointF>& points = it.value();
-
+  
         QwtPlotCurve* curve = new QwtPlotCurve(fieldName + " - " + colorName);
 
         // 设置数据
@@ -977,6 +1012,15 @@ void SpotDiagramPlotter::addSpotDataToPlot(const QVector<SpotData>& data, double
 
         // 存储曲线对象
         m_fieldCurves[fieldIndex].append(curve);
+        //line.curve = curve;
+        //line.index = index;
+        //line.m_style.pointColor = color;
+        //line.m_style.pointStyle = QwtSymbol::Ellipse;
+        //line.m_style.pointSize = 4;     
+        //line.m_style.lineStyle = (Qt::PenStyle)(Qt::CustomDashLine + 1);
+        //line.m_style.fillPointStyle = eSmallEllipse;
+        //m_settings->m_lines[index] = line;
+      
     }
 }
 
@@ -1290,25 +1334,21 @@ bool SpotDiagramPlotter::eventFilter(QObject* watched, QEvent* event)
     return QWidget::eventFilter(watched, event);
 }
 
-void SpotDiagramPlotter::contextMenuEvent(QContextMenuEvent* event)
+void SpotDiagramPlotter::showContextMenu(const QPoint& pos)
 {
     QMenu menu(this);
-    QAction* resetAction = menu.addAction("重置视图");
-
-    QAction* selectedAction = menu.exec(event->globalPos());
-
-    if (selectedAction == resetAction) {
-        resetView();
-    }
-}
-
-void SpotDiagramPlotter::resetView()
-{
-    // 重置到初始视图
-    restoreInitialView();
-
-    // 重新应用自定义刻度绘制
-    reapplyScaleDraws();
+    menu.addAction(tr("重置视图"), this, &SpotDiagramPlotter::fitView);
+    menu.addAction(tr("图例在左侧"), [this]() { setLegendPosition(true); });
+    menu.addAction(tr("图例在右侧"), [this]() { setLegendPosition(false); });
+    menu.addAction(m_legend->isVisible() ? tr("隐藏图例") : tr("显示图例"),
+        [this]() { showLegend(!m_legend->isVisible()); });
+    //menu.addAction(tr("清除选择"), this, &SpotDiagramPlotter::clearAllSelections);
+    menu.addSeparator();
+    menu.addAction(tr("保存SVG..."), [this]() {
+        QString fn = QFileDialog::getSaveFileName(this, tr("保存SVG"), "", tr("SVG (*.svg)"));
+        if (!fn.isEmpty()) m_toolbar_plot->saveAsSVG(fn);
+        });
+    menu.exec(m_plot->canvas()->mapToGlobal(pos));
 }
 
 void SpotDiagramPlotter::saveInitialView()
@@ -1335,4 +1375,117 @@ void SpotDiagramPlotter::restoreInitialView()
 
     // 重新绘制
     m_plot->replot();
+}
+
+void SpotDiagramPlotter::setLegendPosition(bool leftSide)
+{
+    m_settings->legend.position = leftSide ? QwtPlot::LeftLegend : QwtPlot::RightLegend;
+    m_simple_browser->applyLegendSettings();
+}
+
+void SpotDiagramPlotter::showLegend(bool show)
+{
+    m_settings->legend.visible = show;
+    m_simple_browser->applyLegendSettings();
+}
+void SpotDiagramPlotter::zoomIn()
+{
+    m_plot->setAxisScale(QwtPlot::xBottom,
+        m_plot->axisScaleDiv(QwtPlot::xBottom).lowerBound() * 0.9,
+        m_plot->axisScaleDiv(QwtPlot::xBottom).upperBound() * 0.9);
+    m_plot->setAxisScale(QwtPlot::yLeft,
+        m_plot->axisScaleDiv(QwtPlot::yLeft).lowerBound() * 0.9,
+        m_plot->axisScaleDiv(QwtPlot::yLeft).upperBound() * 0.9);
+    m_plot->replot();
+
+    m_settings->xAxis.min = m_plot->axisScaleDiv(QwtPlot::xBottom).lowerBound();
+    m_settings->xAxis.max = m_plot->axisScaleDiv(QwtPlot::xBottom).upperBound();
+
+    m_settings->yAxis.min = m_plot->axisScaleDiv(QwtPlot::yLeft).lowerBound();
+    m_settings->yAxis.max = m_plot->axisScaleDiv(QwtPlot::yLeft).upperBound();
+
+    m_simple_browser->applyXAxisSettings();
+    m_simple_browser->applyYAxisSettings();
+}
+
+void SpotDiagramPlotter::zoomOut()
+{
+    m_plot->setAxisScale(QwtPlot::xBottom,
+        m_plot->axisScaleDiv(QwtPlot::xBottom).lowerBound() * 1.1,
+        m_plot->axisScaleDiv(QwtPlot::xBottom).upperBound() * 1.1);
+    m_plot->setAxisScale(QwtPlot::yLeft,
+        m_plot->axisScaleDiv(QwtPlot::yLeft).lowerBound() * 1.1,
+        m_plot->axisScaleDiv(QwtPlot::yLeft).upperBound() * 1.1);
+    m_plot->replot();
+
+    m_settings->xAxis.min = m_plot->axisScaleDiv(QwtPlot::xBottom).lowerBound();
+    m_settings->xAxis.max = m_plot->axisScaleDiv(QwtPlot::xBottom).upperBound();
+
+    m_settings->yAxis.min = m_plot->axisScaleDiv(QwtPlot::yLeft).lowerBound();
+    m_settings->yAxis.max = m_plot->axisScaleDiv(QwtPlot::yLeft).upperBound();
+
+    m_simple_browser->applyXAxisSettings();
+    m_simple_browser->applyYAxisSettings();
+}
+
+void SpotDiagramPlotter::fitView()
+{
+    //autoScaleAxes();
+    //m_plot->replot();
+    // 重置到初始视图
+    restoreInitialView();
+
+    // 重新应用自定义刻度绘制
+    reapplyScaleDraws();
+}
+
+void SpotDiagramPlotter::autoScaleAxes()
+{
+    double minX = std::numeric_limits<double>::max();
+    double maxX = std::numeric_limits<double>::lowest();
+    double minY = std::numeric_limits<double>::max();
+    double maxY = std::numeric_limits<double>::lowest();
+    bool hasData = false;
+    for (const MTFLine& line : m_settings->m_lines) {
+        if (!line.m_style.visible || line.data.isEmpty()) continue;
+        hasData = true;
+        for (const QPointF& p : line.data) {
+            if (p.x() < minX) minX = p.x();
+            if (p.x() > maxX) maxX = p.x();
+            if (p.y() < minY) minY = p.y();
+            if (p.y() > maxY) maxY = p.y();
+        }
+    }
+    if (hasData) {
+        double xMargin = (maxX - minX) * 0.05;
+        double yMargin = (maxY - minY) * 0.05;
+        if (xMargin <= 0) xMargin = 1.0;
+        if (yMargin <= 0) yMargin = 0.1;
+
+        m_plot->setAxisScale(QwtPlot::xBottom, minX - xMargin, maxX + xMargin);
+        m_plot->setAxisScale(QwtPlot::yLeft, std::max(0.0, minY - yMargin), maxY + yMargin);
+        QwtScaleDiv temp = m_plot->axisScaleDiv(QwtPlot::xBottom);
+        QList<double> ticks = temp.ticks(QwtScaleDiv::MajorTick);
+        m_settings->xAxis.min = minX - xMargin;
+        m_settings->xAxis.max = maxX + xMargin;
+
+        m_settings->xAxis.step = ticks[1] - ticks[0];
+
+
+        m_settings->yAxis.min = minY - yMargin;
+        m_settings->yAxis.max = maxY + yMargin;
+        temp = m_plot->axisScaleDiv(QwtPlot::yLeft);
+        ticks = temp.ticks(QwtScaleDiv::MajorTick);
+        m_settings->yAxis.step = ticks[1] - ticks[0];
+
+    }
+    else {
+        m_settings->xAxis.min = m_defaultXMin;
+        m_settings->xAxis.max = m_defaultXMax;
+
+        m_settings->yAxis.min = m_defaultYMin;
+        m_settings->yAxis.max = m_defaultYMax;
+    }
+    m_simple_browser->applyXAxisSettings();
+    m_simple_browser->applyYAxisSettings();
 }

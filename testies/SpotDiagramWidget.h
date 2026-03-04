@@ -130,9 +130,10 @@
 #include <qwt_scale_draw.h>
 #include <qwt_text.h>
 #include <qwt_symbol.h>
-
+#include <qwt_legend.h>
 #include "common.h"
-
+#include "PlotSetting.h"
+#include "PlotBase.h"
 // 点列图数据结构
 struct SpotData {
     int index;          // 索引
@@ -143,6 +144,9 @@ struct SpotData {
     double wavelength;  // 波长
     QString colorName;  // 颜色名称
 };
+
+class SimplePropertyBrowser;
+class QSplitter;
 
 // 自定义刻度绘制类，用于显示多行文本
 class MultiLineScaleDraw : public QwtScaleDraw
@@ -183,18 +187,16 @@ public:
 
     // 绘制点列图
     void plotSpotDiagrams();
+    void setLegendPosition(bool leftSide);
+    void showLegend(bool show);
 
 private slots:
-    // 右键菜单动作
-    void resetView();
     // 缩放完成后的处理
     void handleZoomed(const QRectF&);
     // 平移完成后的处理
     void handlePanned(int dx, int dy);
-
+    void showContextMenu(const QPoint& pos);
 protected:
-    // 重写上下文菜单事件
-    void contextMenuEvent(QContextMenuEvent* event) override;
     // 重写事件过滤器
     bool eventFilter(QObject* watched, QEvent* event) override;
 
@@ -249,6 +251,13 @@ private:
     // 根据当前Y轴位置更新标签
     void updateLabelsForCurrentView();
 
+    // 自动缩放
+    void autoScaleAxes();
+
+public Q_SLOTS:
+    void zoomIn();
+    void zoomOut();
+    void fitView();
 private:
     QwtPlot* m_plot;                            // 图表控件
     QVector<SpotData> m_spotData;               // 点列图数据
@@ -261,12 +270,13 @@ private:
 
     // 存储每个视场的曲线
     QMap<int, QVector<QwtPlotCurve*>> m_fieldCurves;
+
     QMap<int, QVector<QwtPlotMarker*>> m_fieldMarkers;
 
     QwtPlotZoomer* m_zoomer;                    // 缩放工具
     QwtPlotPanner* m_panner;                    // 平移工具
     QwtPlotGrid* m_grid;                        // 网格
-
+    QwtLegend* m_legend;
     // 自定义刻度绘制器
     MultiLineScaleDraw* m_leftScaleDraw;
     MultiLineScaleDraw* m_rightScaleDraw;
@@ -294,6 +304,15 @@ private:
 
     // 左侧Y轴偏移量
     static constexpr double LEFT_AXIS_OFFSET = 0.5; // 左侧Y坐标偏移量
+
+    PlotSettings* m_settings;
+    PlotBase* m_toolbar_plot;
+    SimplePropertyBrowser* m_simple_browser;
+    QSplitter* m_splitter;
+
+
+    double m_defaultXMin = 0.0, m_defaultXMax = 200.0;
+    double m_defaultYMin = 0.0, m_defaultYMax = 1.1;
 };
 
 
