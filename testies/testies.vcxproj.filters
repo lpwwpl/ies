@@ -182,9 +182,6 @@
     <QtRcc Include="resources\qss\light_style_sheet\qlightstyle\lightstyle.qrc">
       <Filter>Resource Files</Filter>
     </QtRcc>
-    <QtRcc Include="qtproperty\qtpropertybrowser.qrc">
-      <Filter>Resource Files</Filter>
-    </QtRcc>
   </ItemGroup>
   <ItemGroup>
     <QtUic Include="mainwindow.ui">
