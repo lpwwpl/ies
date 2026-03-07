@@ -95,6 +95,12 @@
     <ClCompile Include="PlotBase.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="StringEditWithButton.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="StringEditorFactory.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="tiny_ies.hpp">
@@ -169,6 +175,12 @@
       <Filter>Header Files</Filter>
     </QtMoc>
     <QtMoc Include="PlotBase.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+    <QtMoc Include="StringEditWithButton.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+    <QtMoc Include="StringEditorFactory.h">
       <Filter>Header Files</Filter>
     </QtMoc>
   </ItemGroup>

@@ -1,5 +1,4 @@
-﻿#ifndef QWTPROPERTYBROWSER_H
-#define QWTPROPERTYBROWSER_H
+﻿#pragma once
 
 #include <QWidget>
 
@@ -24,6 +23,7 @@ class QwtPlot;
 class QwtPlotCurve;
 class QwtPlotGrid;
 class QwtLegend;
+class StringEditorFactory;
 
 class QwtPropertyBrowser : public QWidget
 {
@@ -41,7 +41,7 @@ signals:
 private slots:
     //property属性更改，则更新m_settings和plot
     void onValueChanged(QtProperty* property, const QVariant& value);
-
+    void onValueChanged(QtProperty* property, const QString& value);
 public:
     void createGlobalProperties();
     void createAxisProperties();
@@ -85,9 +85,11 @@ public:
     QwtPlotGrid* m_grid;
     QwtLegend* m_legend;
     PlotSettings* m_settings;
-
+    QtStringPropertyManager* m_stringManager;
     QtVariantPropertyManager* m_manager;
     QtTreePropertyBrowser* m_browser;
+
+    StringEditorFactory* m_stringEditorFactory;
 
     // 默认范围
     double m_defaultXMin = 0.0, m_defaultXMax = 200.0;
@@ -99,7 +101,7 @@ public:
     // 全局属性
     QtVariantProperty* m_gridVisibleProperty;
     QtVariantProperty* m_originProperty;
-    QtVariantProperty* m_titleProperty;
+    QtProperty* m_titleProperty;
     QtVariantProperty* m_titleFontProperty;
     QtVariantProperty* m_titleColorProperty;
     QtVariantProperty* m_backgroundColorProperty;
@@ -140,4 +142,3 @@ public:
     //QtVariantProperty* m_curveSymbolFilledProperty;
 };
 
-#endif // QWTPROPERTYBROWSER_H

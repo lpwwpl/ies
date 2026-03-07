@@ -16,6 +16,7 @@
 #include <qwt_plot.h>
 #include <qwt_legend.h>
 #include <qwt_plot_curve.h>
+#include "StringEditorFactory.h"
 
 QwtPropertyBrowser::QwtPropertyBrowser(PlotSettings* settings, QwtPlot* plot, QwtPlotGrid* grid, QwtLegend* legend, QWidget* parent)
     : QWidget(parent)
@@ -23,8 +24,9 @@ QwtPropertyBrowser::QwtPropertyBrowser(PlotSettings* settings, QwtPlot* plot, Qw
    /* , m_currentCurve(nullptr)*/
 {
     m_manager = new QtVariantPropertyManager(this);
-    connect(m_manager, &QtVariantPropertyManager::valueChanged,
-        this, &QwtPropertyBrowser::onValueChanged);
+    connect(m_manager, SIGNAL(valueChanged(QtProperty* ,const QVariant&)),
+        this, SLOT(onValueChanged(QtProperty* ,const QVariant&)));
+
 
     m_browser = new QtTreePropertyBrowser(this);
     m_browser->setPropertiesWithoutValueMarked(false);
@@ -32,6 +34,13 @@ QwtPropertyBrowser::QwtPropertyBrowser(PlotSettings* settings, QwtPlot* plot, Qw
 
     QtVariantEditorFactory* variantFactory = new QtVariantEditorFactory(this);
     m_browser->setFactoryForManager(m_manager, variantFactory);
+
+    m_stringManager = new QtStringPropertyManager(this);
+    connect(m_stringManager, SIGNAL(valueChanged(QtProperty*, const QString&)),
+        this, SLOT(onValueChanged(QtProperty*, const QString&)));
+
+    m_stringEditorFactory = new StringEditorFactory(this);
+    m_browser->setFactoryForManager(m_stringManager, m_stringEditorFactory);
 
     createGlobalProperties();
     createAxisProperties();
@@ -53,7 +62,8 @@ void QwtPropertyBrowser::InitSetupUI()
     // 全局属性
     m_gridVisibleProperty->setValue(m_settings->gridVisible);
     m_originProperty->setValue(m_settings->origin);
-    m_titleProperty->setValue(m_settings->title);
+    //m_titleProperty->setValue(m_settings->title);
+    m_stringManager->setValue(m_titleProperty, m_settings->title);
     m_titleFontProperty->setValue(m_settings->titleFont);
     m_titleColorProperty->setValue(m_settings->titleColor);
     m_backgroundColorProperty->setValue(m_settings->backgroundColor);
@@ -85,6 +95,19 @@ void QwtPropertyBrowser::InitSetupUI()
     m_axisProps[QwtPlot::yLeft].tickFontProperty->setValue(m_settings->yAxis.tickFont);
     m_axisProps[QwtPlot::yLeft].tickColorProperty->setValue(m_settings->yAxis.tickColor);
 }
+void QwtPropertyBrowser::onValueChanged(QtProperty* property, const QString& value)
+{
+    Q_UNUSED(property)
+        Q_UNUSED(value)
+
+        if (!m_plot)
+            return;
+        if (property == m_titleProperty)
+        {
+            m_settings->title = value;
+            applyTitleSettings_plot();
+        }
+}
 void QwtPropertyBrowser::onValueChanged(QtProperty* property, const QVariant& value)
 {
     Q_UNUSED(property)
@@ -113,11 +136,6 @@ void QwtPropertyBrowser::onValueChanged(QtProperty* property, const QVariant& va
     {
         m_settings->origin = static_cast<PlotSettings::Origin>(value.toInt());
         applyOrigin();
-    }
-    else if (property == m_titleProperty)
-    {
-        m_settings->title = value.toString();
-        applyTitleSettings_plot();
     }
     else if (property == m_titleFontProperty)
     {
@@ -430,7 +448,7 @@ void QwtPropertyBrowser::createGlobalProperties()
     m_originProperty->setAttribute("enumNames", origins);
     group_global->addSubProperty(m_originProperty);
 
-    m_titleProperty = m_manager->addProperty(QVariant::String, "标题");
+    m_titleProperty = m_stringManager->addProperty("标题");
     group_global->addSubProperty(m_titleProperty);
 
     m_titleFontProperty = m_manager->addProperty(QVariant::Font, "标题字体");
@@ -750,7 +768,8 @@ void QwtPropertyBrowser::applyBackgroundColor()
 
 void QwtPropertyBrowser::applyTitleSettings()
 {
-    m_titleProperty->setValue(m_settings->title);
+    //m_titleProperty->setValue(m_settings->title);
+    m_stringManager->setValue(m_titleProperty, m_settings->title);
     m_titleFontProperty->setValue(m_settings->titleFont);
     QColor color = m_settings->titleColor;
     m_titleColorProperty->setValue(color);
