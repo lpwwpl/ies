@@ -3,15 +3,15 @@
 #include <QWidget>
 
 
-#include "qtproperty/qtpropertymanager.h"
-#include "qtproperty/qteditorfactory.h"
-#include "qtproperty/qtbuttonpropertybrowser.h"
-#include "qtproperty/qtgroupboxpropertybrowser.h"
+#include "qtpropertymanager.h"
+#include "qteditorfactory.h"
+#include "qtbuttonpropertybrowser.h"
+#include "qtgroupboxpropertybrowser.h"
 
-#include "qtproperty/qtpropertybrowser.h"
-#include "qtproperty/qtpropertybrowserutils_p.h"
-#include "qtproperty/qtvariantproperty.h"
-#include "qtproperty/qttreepropertybrowser.h"
+#include "qtpropertybrowser.h"
+#include "qtpropertybrowserutils_p.h"
+#include "qtvariantproperty.h"
+#include "qttreepropertybrowser.h"
 
 
 #include <qwt_plot.h>
