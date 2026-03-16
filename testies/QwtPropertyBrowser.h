@@ -37,6 +37,7 @@ public:
 
 signals:
     void propertyChanged();
+    void signalUpdateItemStyle(int);
 
 private slots:
     //property属性更改，则更新m_settings和plot
@@ -46,7 +47,7 @@ public:
     void createGlobalProperties();
     void createAxisProperties();
     void createCurveProperties();
-
+    void createPlotItemProperties();
     
     //只更新plot
     void updateCurveStyle(int index);
@@ -63,6 +64,13 @@ public:
     void applyTitleSettings();
     void applyLegendSettings();
     void applyOrigin();
+
+
+    void updateItemCombo();
+    void loadItemSettings(int index);
+    void loadItemGroupSettings(int index);
+    void setCurrentItem(int);
+    void updateItemStyle(int index);
 
     //只更新plot
     void applyXAxisSettings_plot();
@@ -103,6 +111,7 @@ public:
     QtVariantProperty* group_global;
     QtVariantProperty* group_axis;
     QtVariantProperty* group_curve;
+    QtVariantProperty* group_item;
     // 全局属性
     QtVariantProperty* m_gridVisibleProperty;
     QtVariantProperty* m_originProperty;
@@ -135,6 +144,7 @@ public:
     // 曲线属性
     QStringList m_CurveTitles;
     QStringList m_CurveGroups;
+    QtVariantProperty* m_curveGroupEditableProperty;
     QtVariantProperty* m_curveTitleProperty;
     QtVariantProperty* m_curveVisibleProperty;
     QtVariantProperty* m_curveLineColorProperty;
@@ -143,11 +153,22 @@ public:
     QtVariantProperty* m_curveLineStyleProperty;
     QtVariantProperty* m_curveSymbolStyleProperty;
     QtVariantProperty* m_curveSymbolSizeProperty;
-    //QtVariantProperty* m_curveGroupProperty;
     QtVariantProperty* m_curveGroupProperty;
-
     QtVariantProperty* m_curveSymbolColorProperty;
     QtVariantProperty* m_curveCustomPatternProperty;
+
+    QStringList m_itemGroups;
+    QStringList m_itemTitles;
+    QtVariantProperty* m_itemGroupEditableProperty;
+    QtVariantProperty* m_itemTitleProperty;
+    QtVariantProperty* m_itemVisiableProperty;
+    QtVariantProperty* m_itemGroupProperty;
+    QtVariantProperty* m_itemXProperty;
+    QtVariantProperty* m_itemYProperty;
+    QtVariantProperty* m_itemAngleProperty;
+    QtVariantProperty* m_itemLengthProperty;
+    QtVariantProperty* m_itemColorProperty;
+    QtVariantProperty* m_itemWidthProperty;
     //QtVariantProperty* m_curveSymbolFilledProperty;
 };
 

@@ -45,6 +45,7 @@ QwtPropertyBrowser::QwtPropertyBrowser(PlotSettings* settings, QwtPlot* plot, Qw
     createGlobalProperties();
     createAxisProperties();
     createCurveProperties();
+    createPlotItemProperties();
 
     QVBoxLayout* layout = new QVBoxLayout(this);
     layout->setContentsMargins(0, 0, 0, 0);
@@ -178,7 +179,7 @@ void QwtPropertyBrowser::onValueChanged(QtProperty* property, const QVariant& va
         int index = m_curveTitleProperty->value().toInt();
         int groupId = m_curveGroupProperty->value().toInt();
 
-        if (m_settings->m_bHasgroup)
+        if (m_settings->m_bCurveGroupEditable)
         {
             for (int i = 0; i < m_settings->m_lines.size(); i++)
             {
@@ -202,7 +203,7 @@ void QwtPropertyBrowser::onValueChanged(QtProperty* property, const QVariant& va
     {
         int index = m_curveTitleProperty->value().toInt();
         int groupId = m_curveGroupProperty->value().toInt();
-        if (m_settings->m_bHasgroup)
+        if (m_settings->m_bCurveGroupEditable)
         {
             for (int i = 0; i < m_settings->m_lines.size(); i++)
             {
@@ -217,7 +218,7 @@ void QwtPropertyBrowser::onValueChanged(QtProperty* property, const QVariant& va
         else
         {
             m_settings->m_lines[index].m_style.lineColor = value.value<QColor>();
-            //updateCurveStyle(index);
+            updateCurveStyle(index);
         }
         setCurrentCurve(index);
     }
@@ -225,7 +226,7 @@ void QwtPropertyBrowser::onValueChanged(QtProperty* property, const QVariant& va
     {
         int index = m_curveTitleProperty->value().toInt();
         int groupId = m_curveGroupProperty->value().toInt();
-        if (m_settings->m_bHasgroup)
+        if (m_settings->m_bCurveGroupEditable)
         {
             for (int i = 0; i < m_settings->m_lines.size(); i++)
             {
@@ -240,6 +241,7 @@ void QwtPropertyBrowser::onValueChanged(QtProperty* property, const QVariant& va
         else
         {
             m_settings->m_lines[index].m_style.useCurve = value.toBool();
+            updateCurveStyle(index);
         }
         setCurrentCurve(index);
     }
@@ -247,7 +249,7 @@ void QwtPropertyBrowser::onValueChanged(QtProperty* property, const QVariant& va
     {
         int index = m_curveTitleProperty->value().toInt();
         int groupId = m_curveGroupProperty->value().toInt();
-        if (m_settings->m_bHasgroup)
+        if (m_settings->m_bCurveGroupEditable)
         {
             for (int i = 0; i < m_settings->m_lines.size(); i++)
             {
@@ -262,6 +264,7 @@ void QwtPropertyBrowser::onValueChanged(QtProperty* property, const QVariant& va
         else
         {
             m_settings->m_lines[index].m_style.lineWidth = value.toDouble();
+            updateCurveStyle(index);
         }
         setCurrentCurve(index);
     }
@@ -270,7 +273,7 @@ void QwtPropertyBrowser::onValueChanged(QtProperty* property, const QVariant& va
         int index = m_curveTitleProperty->value().toInt();
         int groupId = m_curveGroupProperty->value().toInt();
         Qt::PenStyle penStyle = (Qt::PenStyle)value.toInt();
-        if (m_settings->m_bHasgroup)
+        if (m_settings->m_bCurveGroupEditable)
         {
             for (int i = 0; i < m_settings->m_lines.size(); i++)
             {
@@ -305,7 +308,7 @@ void QwtPropertyBrowser::onValueChanged(QtProperty* property, const QVariant& va
         int index = m_curveTitleProperty->value().toInt();
         int groupId = m_curveGroupProperty->value().toInt();
         QVector<qreal> pattern = parseDashPattern(value.toString());
-        if (m_settings->m_bHasgroup)
+        if (m_settings->m_bCurveGroupEditable)
         {
             for (int i = 0; i < m_settings->m_lines.size(); i++)
             {
@@ -322,6 +325,8 @@ void QwtPropertyBrowser::onValueChanged(QtProperty* property, const QVariant& va
         {
             m_settings->m_lines[index].m_style.customDashPattern = pattern;
             m_settings->m_lines[index].m_style.lineStyle = Qt::CustomDashLine;
+
+            updateCurveStyle(index);
         }
         setCurrentCurve(index);
         //int index = m_curveTitleProperty->value().toInt();
@@ -334,7 +339,7 @@ void QwtPropertyBrowser::onValueChanged(QtProperty* property, const QVariant& va
     {
         int index = m_curveTitleProperty->value().toInt();
         int groupId = m_curveGroupProperty->value().toInt();
-        if (m_settings->m_bHasgroup)
+        if (m_settings->m_bCurveGroupEditable)
         {
             for (int i = 0; i < m_settings->m_lines.size(); i++)
             {
@@ -516,6 +521,7 @@ void QwtPropertyBrowser::onValueChanged(QtProperty* property, const QVariant& va
             default:
                 break;
             }
+            updateCurveStyle(index);
         }
         setCurrentCurve(index);
 
@@ -613,7 +619,7 @@ void QwtPropertyBrowser::onValueChanged(QtProperty* property, const QVariant& va
         //updateCurveStyle(index);
         int index = m_curveTitleProperty->value().toInt();
         int groupId = m_curveGroupProperty->value().toInt();
-        if (m_settings->m_bHasgroup)
+        if (m_settings->m_bCurveGroupEditable)
         {
             for (int i = 0; i < m_settings->m_lines.size(); i++)
             {
@@ -628,6 +634,7 @@ void QwtPropertyBrowser::onValueChanged(QtProperty* property, const QVariant& va
         else
         {
             m_settings->m_lines[index].m_style.pointSize = value.toDouble();
+            updateCurveStyle(index);
         }
         setCurrentCurve(index);
     }
@@ -638,7 +645,7 @@ void QwtPropertyBrowser::onValueChanged(QtProperty* property, const QVariant& va
         //updateCurveStyle(index);
         int index = m_curveTitleProperty->value().toInt();
         int groupId = m_curveGroupProperty->value().toInt();
-        if (m_settings->m_bHasgroup)
+        if (m_settings->m_bCurveGroupEditable)
         {
             for (int i = 0; i < m_settings->m_lines.size(); i++)
             {
@@ -653,8 +660,13 @@ void QwtPropertyBrowser::onValueChanged(QtProperty* property, const QVariant& va
         else
         {
             m_settings->m_lines[index].m_style.pointColor = value.value<QColor>();
+            updateCurveStyle(index);
         }
         setCurrentCurve(index);
+    }
+    else if (property == m_curveGroupEditableProperty)
+    {
+        m_settings->m_bCurveGroupEditable = value.toBool();
     }
     else if (property == m_axisProps[QwtPlot::xBottom].titleProperty)
     {
@@ -756,7 +768,182 @@ void QwtPropertyBrowser::onValueChanged(QtProperty* property, const QVariant& va
         m_settings->yAxis.visible = value.toBool();
         applyYAxisSettings_plot();
     }
+    else if (property == m_itemGroupEditableProperty)
+    {
+        m_settings->m_bItemGroupEditable = value.toBool();
+    }
+    else if (property == m_itemTitleProperty)
+    {
+        int selectedIndex = value.toInt();  // 枚举值索引
+        loadItemSettings(selectedIndex);
+    }
+    else if (property == m_itemGroupProperty)
+    {
+        int selectedIndex = value.toInt();  // 枚举值索引
 
+        loadItemGroupSettings(selectedIndex);
+    }
+    else if (property == m_itemXProperty)
+    {
+        int index = m_itemTitleProperty->value().toInt();
+        int groupId = m_itemGroupProperty->value().toInt();
+        if (m_settings->m_bItemGroupEditable)
+        {
+            for (int i = 0; i < m_settings->m_items.size(); i++)
+            {
+                MTFPlotItem& item = m_settings->m_items[i];
+                if (item.m_group == groupId)
+                {
+                    item.m_x = value.toDouble();
+                    updateItemStyle(item.index);
+                }
+            }
+        }
+        else
+        {
+            m_settings->m_items[index].m_x = value.toDouble();
+            updateItemStyle(index);
+        }
+        setCurrentItem(index);
+    }
+    else if (property == m_itemYProperty)
+    {
+        int index = m_itemTitleProperty->value().toInt();
+        int groupId = m_itemGroupProperty->value().toInt();
+        if (m_settings->m_bItemGroupEditable)
+        {
+            for (int i = 0; i < m_settings->m_items.size(); i++)
+            {
+                MTFPlotItem& item = m_settings->m_items[i];
+                if (item.m_group == groupId)
+                {
+                    item.m_y = value.toDouble();
+                    updateItemStyle(item.index);
+                }
+            }
+        }
+        else
+        {
+            m_settings->m_items[index].m_y = value.toDouble();
+            updateItemStyle(index);
+        }
+        setCurrentItem(index);
+    }
+    else if (property == m_itemAngleProperty)
+    {
+        int index = m_itemTitleProperty->value().toInt();
+        int groupId = m_itemGroupProperty->value().toInt();
+        if (m_settings->m_bItemGroupEditable)
+        {
+            for (int i = 0; i < m_settings->m_items.size(); i++)
+            {
+                MTFPlotItem& item = m_settings->m_items[i];
+                if (item.m_group == groupId)
+                {
+                    item.m_angle = value.toDouble();
+                    updateItemStyle(item.index);
+                }
+            }
+        }
+        else
+        {
+            m_settings->m_items[index].m_angle = value.toDouble();
+            updateItemStyle(index);
+        }
+        setCurrentItem(index);
+    }
+    else if (property == m_itemLengthProperty)
+    {
+        int index = m_itemTitleProperty->value().toInt();
+        int groupId = m_itemGroupProperty->value().toInt();
+        if (m_settings->m_bItemGroupEditable)
+        {
+            for (int i = 0; i < m_settings->m_items.size(); i++)
+            {
+                MTFPlotItem& item = m_settings->m_items[i];
+                if (item.m_group == groupId)
+                {
+                    item.m_length = value.toDouble();
+                    updateItemStyle(item.index);
+                }
+            }
+        }
+        else
+        {
+            m_settings->m_items[index].m_length = value.toDouble();
+            updateItemStyle(index);
+        }
+        setCurrentItem(index);
+    }
+    else if (property == m_itemColorProperty)
+    {
+        int index = m_itemTitleProperty->value().toInt();
+        int groupId = m_itemGroupProperty->value().toInt();
+        if (m_settings->m_bItemGroupEditable)
+        {
+            for (int i = 0; i < m_settings->m_items.size(); i++)
+            {
+                MTFPlotItem& item = m_settings->m_items[i];
+                if (item.m_group == groupId)
+                {
+                    item.m_color = value.value<QColor>();
+                    updateItemStyle(item.index);
+                }
+            }
+        }
+        else
+        {
+            m_settings->m_items[index].m_color = value.value<QColor>();
+            updateItemStyle(index);
+        }
+        setCurrentItem(index);
+    }
+    else if (property == m_itemWidthProperty)
+    {
+        int index = m_itemTitleProperty->value().toInt();
+        int groupId = m_itemGroupProperty->value().toInt();
+        if (m_settings->m_bItemGroupEditable)
+        {
+            for (int i = 0; i < m_settings->m_items.size(); i++)
+            {
+                MTFPlotItem& item = m_settings->m_items[i];
+                if (item.m_group == groupId)
+                {
+                    item.m_width = value.toDouble();
+                    updateItemStyle(item.index);
+                }
+            }
+        }
+        else
+        {
+            m_settings->m_items[index].m_width = value.toDouble();
+            updateItemStyle(index);
+        }
+        setCurrentItem(index);
+    }
+    else if (property == m_itemVisiableProperty)
+    {
+        int index = m_itemTitleProperty->value().toInt();
+        int groupId = m_itemGroupProperty->value().toInt();
+        if (m_settings->m_bItemGroupEditable)
+        {
+            for (int i = 0; i < m_settings->m_items.size(); i++)
+            {
+                MTFPlotItem& item = m_settings->m_items[i];
+                if (item.m_group == groupId)
+                {
+                    item.visible = value.toBool();
+                    updateItemStyle(item.index);
+                }
+            }
+        }
+        else
+        {
+            m_settings->m_items[index].visible = value.toBool();
+            updateItemStyle(index);
+        }
+        setCurrentItem(index);
+    }
     m_plot->replot();
     emit propertyChanged();
 }
@@ -867,18 +1054,53 @@ void QwtPropertyBrowser::createAxisProperties()
     }
 }
 
+
+void QwtPropertyBrowser::createPlotItemProperties()
+{
+    group_item = m_manager->addProperty(QtVariantPropertyManager::groupTypeId(), "当前图形");
+
+    m_itemTitleProperty = m_manager->addProperty(QtVariantPropertyManager::enumTypeId(), "标题");
+    group_item->addSubProperty(m_itemTitleProperty);
+
+    m_itemGroupProperty = m_manager->addProperty(QtVariantPropertyManager::enumTypeId(), "分组");
+    group_item->addSubProperty(m_itemGroupProperty);
+
+    m_itemGroupEditableProperty = m_manager->addProperty(QVariant::Bool, "是否对全组生效");
+    group_item->addSubProperty(m_itemGroupEditableProperty);
+
+    m_itemVisiableProperty = m_manager->addProperty(QVariant::Bool, "可见");
+    group_item->addSubProperty(m_itemVisiableProperty);
+
+    m_itemXProperty = m_manager->addProperty(QVariant::Double, "X坐标");
+    group_item->addSubProperty(m_itemXProperty);
+
+    m_itemYProperty = m_manager->addProperty(QVariant::Double, "Y坐标");
+    group_item->addSubProperty(m_itemYProperty);
+
+    m_itemAngleProperty = m_manager->addProperty(QVariant::Double, "角度");;
+    group_item->addSubProperty(m_itemAngleProperty);
+
+    m_itemLengthProperty = m_manager->addProperty(QVariant::Double, "长度");
+    group_item->addSubProperty(m_itemLengthProperty);
+
+    m_itemColorProperty = m_manager->addProperty(QVariant::Color, "颜色");
+    group_item->addSubProperty(m_itemColorProperty);
+
+    m_itemWidthProperty = m_manager->addProperty(QVariant::Double, "宽度");
+    group_item->addSubProperty(m_itemWidthProperty);
+
+    m_browser->addProperty(group_item);
+}
 // -------------------- 曲线属性 --------------------
 void QwtPropertyBrowser::createCurveProperties()
 {
-
-
-
     group_curve = m_manager->addProperty(QtVariantPropertyManager::groupTypeId(), "当前曲线");
 
     m_curveGroupProperty = m_manager->addProperty(QtVariantPropertyManager::enumTypeId(), "分组");
     group_curve->addSubProperty(m_curveGroupProperty);
 
-
+    m_curveGroupEditableProperty = m_manager->addProperty(QVariant::Bool, "是否对全组生效");
+    group_curve->addSubProperty(m_curveGroupEditableProperty);
 
     m_curveTitleProperty = m_manager->addProperty(QtVariantPropertyManager::enumTypeId(), "标题");
     group_curve->addSubProperty(m_curveTitleProperty);
@@ -947,7 +1169,36 @@ void QwtPropertyBrowser::createCurveProperties()
     m_browser->addProperty(group_curve);
 }
 
+void QwtPropertyBrowser::updateItemCombo()
+{
+    m_itemTitles.clear();
+    m_itemGroups.clear();
+    for (int i = 0; i < m_settings->m_items.size(); ++i) {
+        const MTFPlotItem& item = m_settings->m_items[i];
+        QString displayName = QString("Item %1").arg(item.index);
+        if (!item.label.isEmpty()) displayName += ": " + item.label;
+        m_itemTitles << displayName;
 
+        if (!m_itemGroups.contains(QString::number(item.m_group)))
+        {
+            m_itemGroups << QString::number(item.m_group);
+        }
+
+    }
+    m_itemTitleProperty->setAttribute("enumNames", m_CurveTitles);
+    m_itemGroups.sort();
+
+    //m_settings->m_bCurveGroupEditable
+    if (m_itemGroups.size() > 0)
+    {
+        m_itemGroupProperty->setEnabled(true);
+        m_itemGroupProperty->setAttribute("enumNames", m_itemGroups);
+    }
+    else
+    {
+        m_itemGroupProperty->setEnabled(false);
+    }
+}
 void QwtPropertyBrowser::updateLineCombo()
 {
     m_CurveTitles.clear();
@@ -967,7 +1218,8 @@ void QwtPropertyBrowser::updateLineCombo()
     m_curveTitleProperty->setAttribute("enumNames", m_CurveTitles);
     m_CurveGroups.sort();
 
-    if (m_settings->m_bHasgroup) 
+    //m_settings->m_bCurveGroupEditable
+    if (m_CurveGroups.size() > 0)
     { 
         m_curveGroupProperty->setEnabled(true); 
         m_curveGroupProperty->setAttribute("enumNames", m_CurveGroups);
@@ -1100,6 +1352,60 @@ void QwtPropertyBrowser::setCurrentCurve(int value)
     //lineCombo->setCurrentIndex(index);
     m_curveTitleProperty->setValue(value);
 }
+
+
+void QwtPropertyBrowser::loadItemSettings(int index)
+{
+    if (index < 0 || index >= m_settings->m_items.size()) return;
+    const MTFPlotItem& item = m_settings->m_items[index];
+
+    m_itemVisiableProperty->setValue(item.visible);
+    m_itemWidthProperty->setValue(item.m_width);
+    m_itemXProperty -> setValue(item.m_x);
+    m_itemYProperty->setValue(item.m_y);
+    m_itemAngleProperty->setValue(item.m_angle);
+    m_itemLengthProperty->setValue(item.m_length);
+    m_itemColorProperty->setValue(item.m_color);
+
+    m_plot->replot();
+}
+void QwtPropertyBrowser::loadItemGroupSettings(int index)
+{
+    if (index < 0 || index >= m_settings->m_items.size()) return;
+
+    m_itemTitles.clear();
+    for (int i = 0; i < m_settings->m_items.size(); ++i) {
+        const MTFPlotItem& item = m_settings->m_items[i];
+        if (item.m_group == index)
+        {
+            QString displayName = QString("Item %1").arg(item.index);
+            if (!item.label.isEmpty()) displayName += ": " + item.label;
+            m_itemTitles << displayName;
+        }
+    }
+    m_itemTitleProperty->setAttribute("enumNames", m_itemTitles);
+
+
+    if (m_itemTitles.size() > 0)
+        setCurrentItem(0);
+}
+void QwtPropertyBrowser::setCurrentItem(int value)
+{
+    m_itemTitleProperty->setValue(value);
+}
+void QwtPropertyBrowser::updateItemStyle(int index)
+{
+    if (index < 0 || index >= m_settings->m_items.size()) return;
+    MTFPlotItem& item = m_settings->m_items[index];
+    if (!item.m_item) return;
+
+
+    loadItemSettings(m_itemTitleProperty->value().toInt());
+
+
+    emit signalUpdateItemStyle(index);
+}
+
 
 void QwtPropertyBrowser::applyXAxisSettings()
 {

@@ -297,6 +297,8 @@
 #include <algorithm>
 #include <qwt_text.h>
 #include <qwt_scale_div.h>
+
+#include <QSplitter>
 #ifndef M_PI
 #define M_PI 3.14159265358979323846
 #endif
@@ -373,13 +375,45 @@ FieldViewWidget::FieldViewWidget(QWidget* parent)
     , maxMagnitude(0.0)
     , minMagnitude(0.0)
 {
-    // 创建布局
-    QVBoxLayout* layout = new QVBoxLayout(this);
-    layout->setContentsMargins(0, 0, 0, 0);
+    //// 创建布局
+    //QVBoxLayout* layout = new QVBoxLayout(this);
+    //layout->setContentsMargins(0, 0, 0, 0);
 
-    // 创建QwtPlot
-    m_plot = new QwtPlot(this);
-    layout->addWidget(m_plot);
+    //// 创建QwtPlot
+    //m_plot = new QwtPlot(this);
+    //layout->addWidget(m_plot);
+
+
+    m_toolBar_plot = new PlotBase(this);
+    m_plot = m_toolBar_plot->m_plot;
+    m_grid = m_toolBar_plot->m_grid;
+    m_legend = m_toolBar_plot->m_legend;
+    m_settings = m_toolBar_plot->m_settings;
+    connect(m_toolBar_plot, SIGNAL(signalFitView()), this, SLOT(fitView()));
+    connect(m_toolBar_plot, SIGNAL(signalZoomIn()), this, SLOT(zoomIn()));
+    connect(m_toolBar_plot, SIGNAL(signalZommOut()), this, SLOT(zoomOut()));
+
+    m_simple_browser = new QwtPropertyBrowser(m_settings, m_plot, m_grid, m_legend, this);
+    connect(m_simple_browser, SIGNAL(signalUpdateItemStyle(int)), this, SLOT(slotUpdateItemStyle(int)));
+    //m_simple_browser = new SimplePropertyBrowser(m_settings,m_plot,this);
+    // 分割器
+    m_splitter = new QSplitter(this);
+    m_splitter->addWidget(m_toolBar_plot);
+    m_splitter->addWidget(m_simple_browser);
+
+    m_splitter->setStretchFactor(0, 1);
+    m_splitter->setStretchFactor(1, 0);
+    m_simple_browser->setMinimumWidth(300);
+    m_simple_browser->setMaximumWidth(400);
+    m_splitter->setCollapsible(1, false);
+    m_splitter->setSizes({ 900, 300 });
+
+
+    QVBoxLayout* mainLayout = new QVBoxLayout(this);
+    mainLayout->setContentsMargins(0, 0, 0, 0);
+
+    mainLayout->addWidget(m_splitter);
+
 
     // 设置图表
     setupFieldViewPlot();
@@ -463,6 +497,23 @@ void FieldViewWidget::setupFieldViewPlot()
     //        Q_UNUSED(event);
     //        resetView();
     //    });
+}
+
+void FieldViewWidget::slotUpdateItemStyle(int index)
+{
+    if (index < 0 || index >= m_settings->m_items.size()) return;
+    MTFPlotItem& item = m_settings->m_items[index];
+    if (!item.m_item) return;    
+
+    ArrowItem* arrow_item = dynamic_cast<ArrowItem*>(item.m_item);
+    arrow_item->setVisible(item.visible);
+    arrow_item->m_width = (item.m_width);
+    arrow_item->m_color = (item.m_color);
+    arrow_item->m_x = (item.m_x);
+    arrow_item->m_y = (item.m_y);
+    arrow_item->m_angle = (item.m_angle);
+    arrow_item->m_length = (item.m_length);
+    m_plot->replot();
 }
 
 void FieldViewWidget::setupInteractions()
@@ -623,6 +674,8 @@ void FieldViewWidget::drawFieldArrows()
     double yRange = m_plot->axisScaleDiv(QwtPlot::yLeft).range();
     double baseArrowLength = qMin(xRange, yRange) * 0.08; // 基准长度为视图范围的8%
 
+    m_settings->m_items.clear();
+    int index = 0;
     for (const FieldData& data : fieldData) {
         // 计算箭头长度（与magnitude成正比）
         double arrowLength = getArrowLength(data.magnitude) * baseArrowLength;
@@ -641,7 +694,22 @@ void FieldViewWidget::drawFieldArrows()
 
         arrow->attach(m_plot);
         m_arrowItems.append(arrow);
+
+        MTFPlotItem item;
+        item.index = index;
+        item.m_x = data.xField;
+        item.m_y = data.yField;
+        item.m_angle = data.angle;
+        item.m_color = arrowColor;
+        item.m_length = arrowLength;
+        item.m_width = arrowPen.widthF();
+        item.m_group = 0;
+        item.m_item = arrow;
+        m_settings->m_items[index] = item;
+
+        index++;
     }
+    m_simple_browser->updateItemCombo();
 }
 
 double FieldViewWidget::getArrowLength(double magnitude)

@@ -60,6 +60,12 @@
 #include <qwt_legend.h>
 #include <qwt_scale_map.h>
 
+
+#include "PlotSetting.h"
+#include "QwtPropertyBrowser.h"
+#include "PlotBase.h"
+class QSplitter;
+//#include <qwt_plot_curve.h>
 struct FieldData {
     int index;
     double xField;
@@ -83,7 +89,7 @@ public:
         const QwtScaleMap& xMap, const QwtScaleMap& yMap,
         const QRectF& canvasRect) const override;
 
-private:
+public:
     double m_x, m_y;
     double m_angle;
     double m_length;
@@ -102,6 +108,9 @@ public:
     bool loadFieldDataFile(const QString& filename);
     void clearData();
     void resetView();
+
+public Q_SLOTS:
+    void slotUpdateItemStyle(int);
 
 private:
     void setupFieldViewPlot();
@@ -128,6 +137,15 @@ private:
 
     // 默认视图范围
     double m_defaultRange = 50.0;
+
+
+    PlotSettings* m_settings;
+    PlotBase* m_toolBar_plot;
+    QwtPlotGrid* m_grid;
+    QwtLegend* m_legend;
+    QToolBar* m_toolBar;
+    QwtPropertyBrowser* m_simple_browser;
+    QSplitter* m_splitter;
 };
 
 #endif // FIELDVIEWWIDGET_H

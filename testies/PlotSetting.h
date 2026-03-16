@@ -44,6 +44,19 @@ struct SLineStyle {
     double pointWidth = 1;                  // 点边框宽度
 
 };
+struct MTFPlotItem
+{
+    int index = 0;
+    int m_group = 0;
+    QString label;
+    double m_x, m_y;
+    double m_angle;
+    double m_length;
+    QColor m_color;
+    double m_width;
+    bool visible = true;
+    QwtPlotItem* m_item;
+};
 struct MTFLine {
     int index = 0;
     int m_group = 0;
@@ -98,9 +111,13 @@ struct PlotSettings {
     enum Origin { BottomLeft, BottomRight, Center };
     Origin origin = BottomLeft;
 
-    bool m_bHasgroup = false;
+    bool m_bCurveGroupEditable = false;
+
+    bool m_bItemGroupEditable = false;
     //bool m_bSettingGroup = true;
     QHash<int, MTFLine> m_lines;
+
+    QHash<int, MTFPlotItem> m_items;
 };
 
 #endif // PLOTSETTING_H

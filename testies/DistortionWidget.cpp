@@ -508,7 +508,7 @@ void DistortionGridWidget::plotGrids()
     clearAllCurves();
 
     m_settings->m_lines.clear();
-    m_settings->m_bHasgroup = true;
+    //m_settings->m_bHasgroup = true;
     int index = 0;
     // 绘制理想网格
     plotIdealGrid(index);
