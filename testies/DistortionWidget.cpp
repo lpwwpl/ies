@@ -282,18 +282,14 @@
 #include <limits>
 #include <algorithm>
 #include <qwt_text.h>
+#include <QSplitter>
 DistortionGridWidget::DistortionGridWidget(QWidget* parent)
     : QWidget(parent)
     , m_plot(nullptr)
     , m_panner(nullptr)
     , m_magnifier(nullptr)
 {
-    // 创建布局和绘图部件
-    QVBoxLayout* layout = new QVBoxLayout(this);
-    layout->setContentsMargins(0, 0, 0, 0);
 
-    m_plot = new QwtPlot(this);
-    layout->addWidget(m_plot);
 
     setupPlot();
     setupInteractions();
@@ -308,6 +304,16 @@ DistortionGridWidget::~DistortionGridWidget()
 
 void DistortionGridWidget::setupPlot()
 {
+    m_toolBar_plot = new PlotBase(this);
+    m_plot = m_toolBar_plot->m_plot;
+    m_grid = m_toolBar_plot->m_grid;
+    m_legend = m_toolBar_plot->m_legend;
+    m_settings = m_toolBar_plot->m_settings;
+    connect(m_toolBar_plot, SIGNAL(signalFitView()), this, SLOT(fitView()));
+    connect(m_toolBar_plot, SIGNAL(signalZoomIn()), this, SLOT(zoomIn()));
+    connect(m_toolBar_plot, SIGNAL(signalZommOut()), this, SLOT(zoomOut()));
+    m_simple_browser = new QwtPropertyBrowser(m_settings, m_plot, m_grid, m_legend, this);
+
     // 设置画布背景
     m_plot->setCanvasBackground(Qt::white);
     //m_plot->canvas()->setPaintAttribute(QwtPlotCanvas::BackingStore, true);
@@ -328,21 +334,20 @@ void DistortionGridWidget::setupPlot()
     m_plot->setAxisMaxMinor(QwtPlot::yLeft, 5);
 
     // 添加网格
-    QwtPlotGrid* grid = new QwtPlotGrid();
-    grid->enableX(true);
-    grid->enableY(true);
-    grid->enableXMin(true);
-    grid->enableYMin(true);
+    m_grid->enableX(true);
+    m_grid->enableY(true);
+    m_grid->enableXMin(true);
+    m_grid->enableYMin(true);
 
     // 设置主网格线样式
     QPen majorGridPen(QColor(200, 200, 200), 1, Qt::SolidLine);
-    grid->setMajorPen(majorGridPen);
+    m_grid->setMajorPen(majorGridPen);
 
     // 设置次网格线样式
     QPen minorGridPen(QColor(220, 220, 220), 1, Qt::DotLine);
-    grid->setMinorPen(minorGridPen);
+    m_grid->setMinorPen(minorGridPen);
 
-    grid->attach(m_plot);
+    m_grid->attach(m_plot);
 
     // 设置坐标轴样式
     QPen axisPen(Qt::black, 2);
@@ -353,6 +358,27 @@ void DistortionGridWidget::setupPlot()
     QPen tickPen(Qt::black, 1);
     //m_plot->setAxisPen(QwtPlot::xBottom, tickPen, true);
     //m_plot->setAxisPen(QwtPlot::yLeft, tickPen, true);
+
+
+
+    //m_simple_browser = new SimplePropertyBrowser(m_settings,m_plot,this);
+    // 分割器
+    m_splitter = new QSplitter(this);
+    m_splitter->addWidget(m_toolBar_plot);
+    m_splitter->addWidget(m_simple_browser);
+
+    m_splitter->setStretchFactor(0, 1);
+    m_splitter->setStretchFactor(1, 0);
+    m_simple_browser->setMinimumWidth(300);
+    m_simple_browser->setMaximumWidth(400);
+    m_splitter->setCollapsible(1, false);
+    m_splitter->setSizes({ 900, 300 });
+
+
+    QVBoxLayout* mainLayout = new QVBoxLayout(this);
+    mainLayout->setContentsMargins(0, 0, 0, 0);
+    mainLayout->addWidget(m_splitter);
+
 }
 
 void DistortionGridWidget::setupInteractions()
@@ -481,12 +507,15 @@ void DistortionGridWidget::plotGrids()
 {
     clearAllCurves();
 
+    m_settings->m_lines.clear();
+    m_settings->m_bHasgroup = true;
+    int index = 0;
     // 绘制理想网格
-    plotIdealGrid();
+    plotIdealGrid(index);
 
     // 绘制畸变网格
-    plotDistortedGrid();
-
+    plotDistortedGrid(index);
+    m_simple_browser->updateLineCombo();
     // 设置坐标范围
     m_plot->setAxisScale(QwtPlot::xBottom, xMin - marginX, xMax + marginX);
     m_plot->setAxisScale(QwtPlot::yLeft, yMin - marginY, yMax + marginY);
@@ -497,7 +526,7 @@ void DistortionGridWidget::plotGrids()
     m_plot->replot();
 }
 
-void DistortionGridWidget::plotIdealGrid()
+void DistortionGridWidget::plotIdealGrid(int& index)
 {
     // 重置范围变量
     xMin = std::numeric_limits<double>::max();
@@ -531,7 +560,24 @@ void DistortionGridWidget::plotIdealGrid()
         curve->attach(m_plot);
 
         m_idealCurves.append(curve);
+
+
+        MTFLine line;
+        line.index = index;
+        line.m_group = 0;
+        line.curve = curve;
+        line.m_style.lineColor = QColor(0, 0, 255, 180);
+        line.m_style.lineStyle = Qt::SolidLine;
+        //line.m_style.lineStyle = circleCurve->style();
+        line.label = curve->title().text();
+        line.curve->setTitle(QString("Line %1%2").arg(line.index)
+            .arg(line.label.isEmpty() ? "" : ": " + line.label));
+        m_settings->m_lines[index++] = line;
     }
+
+
+
+
 
     // 绘制理想网格的垂直线
     for (int y = 0; y < 11; ++y) {
@@ -559,6 +605,19 @@ void DistortionGridWidget::plotIdealGrid()
         curve->attach(m_plot);
 
         m_idealCurves.append(curve);
+
+
+        MTFLine line;
+        line.index = index;
+        line.m_group = 0;
+        line.curve = curve;
+        line.m_style.lineColor = QColor(0, 0, 255, 180);
+        line.m_style.lineStyle = Qt::SolidLine;
+        //line.m_style.lineStyle = circleCurve->style();
+        line.label = curve->title().text();
+        line.curve->setTitle(QString("Line %1%2").arg(line.index)
+            .arg(line.label.isEmpty() ? "" : ": " + line.label));
+        m_settings->m_lines[index++] = line;
     }
 
     // 计算边距
@@ -568,7 +627,7 @@ void DistortionGridWidget::plotIdealGrid()
     marginY = yRange * 0.1;
 }
 
-void DistortionGridWidget::plotDistortedGrid()
+void DistortionGridWidget::plotDistortedGrid(int& index)
 {
     // 绘制畸变网格的水平线
     for (int x = 0; x < 11; ++x) {
@@ -596,6 +655,19 @@ void DistortionGridWidget::plotDistortedGrid()
         curve->attach(m_plot);
 
         m_distortedCurves.append(curve);
+
+
+        MTFLine line;
+        line.index = index;
+        line.m_group = 1;
+        line.curve = curve;
+        line.m_style.lineColor = QColor(255, 0, 0, 200);
+        line.m_style.lineStyle = Qt::SolidLine;
+        //line.m_style.lineStyle = circleCurve->style();
+        line.label = curve->title().text();
+        line.curve->setTitle(QString("Line %1%2").arg(line.index)
+            .arg(line.label.isEmpty() ? "" : ": " + line.label));
+        m_settings->m_lines[index++] = line;
     }
 
     // 绘制畸变网格的垂直线
@@ -624,6 +696,20 @@ void DistortionGridWidget::plotDistortedGrid()
         curve->attach(m_plot);
 
         m_distortedCurves.append(curve);
+
+
+
+        MTFLine line;
+        line.index = index;
+        line.m_group = 1;
+        line.curve = curve;
+        line.m_style.lineColor = QColor(255, 0, 0, 200);
+        line.m_style.lineStyle = Qt::SolidLine;
+        //line.m_style.lineStyle = circleCurve->style();
+        line.label = curve->title().text();
+        line.curve->setTitle(QString("Line %1%2").arg(line.index)
+            .arg(line.label.isEmpty() ? "" : ": " + line.label));
+        m_settings->m_lines[index++] = line;
     }
 
     // 重新计算边距，考虑畸变数据

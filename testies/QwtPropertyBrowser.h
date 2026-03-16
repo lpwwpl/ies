@@ -54,6 +54,7 @@ public:
     //property属性更改,进而更新m_settings和plot
     void updateLineCombo();
     void loadLineSettings(int index);
+    void loadGroupSettings(int index);
     void setCurrentCurve(int);
     void applyXAxisSettings();
     void applyYAxisSettings();
@@ -76,6 +77,10 @@ public:
     void autoXScaleAxes();
     void autoYScaleAxes();
 
+    //void updateGroupLine()
+    //{
+
+    //}
     //更新property进而更新m_settings和plot
     void InitSetupUI();
     QVector<qreal> parseDashPattern(const QString& text);
@@ -129,6 +134,7 @@ public:
 
     // 曲线属性
     QStringList m_CurveTitles;
+    QStringList m_CurveGroups;
     QtVariantProperty* m_curveTitleProperty;
     QtVariantProperty* m_curveVisibleProperty;
     QtVariantProperty* m_curveLineColorProperty;
@@ -137,6 +143,9 @@ public:
     QtVariantProperty* m_curveLineStyleProperty;
     QtVariantProperty* m_curveSymbolStyleProperty;
     QtVariantProperty* m_curveSymbolSizeProperty;
+    //QtVariantProperty* m_curveGroupProperty;
+    QtVariantProperty* m_curveGroupProperty;
+
     QtVariantProperty* m_curveSymbolColorProperty;
     QtVariantProperty* m_curveCustomPatternProperty;
     //QtVariantProperty* m_curveSymbolFilledProperty;

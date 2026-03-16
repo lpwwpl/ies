@@ -73,7 +73,11 @@
 #include <qwt_plot_magnifier.h>
 #include <qwt_point_data.h>
 #include <qwt_legend.h>
+#include "PlotSetting.h"
+#include "QwtPropertyBrowser.h"
+#include "PlotBase.h"
 
+class QSplitter;
 struct DistortionPoint {
     double relXFld;    // 相对X视场
     double relYFld;    // 相对Y视场
@@ -101,8 +105,8 @@ private:
     void setupPlot();
     void setupInteractions();
     void organizeGridData();
-    void plotIdealGrid();
-    void plotDistortedGrid();
+    void plotIdealGrid(int&);
+    void plotDistortedGrid(int&);
     void updateInfoText();
     void clearAllCurves();
 
@@ -131,6 +135,15 @@ private:
     double yRange = 0;
     double marginX = 0;
     double marginY = 0;
+
+
+    PlotSettings* m_settings;
+    PlotBase* m_toolBar_plot;
+    QwtPlotGrid* m_grid;
+    QwtLegend* m_legend;
+    QToolBar* m_toolBar;
+    QwtPropertyBrowser* m_simple_browser;
+    QSplitter* m_splitter;
 };
 
 #endif // DISTORTIONGRIDWIDGET_H

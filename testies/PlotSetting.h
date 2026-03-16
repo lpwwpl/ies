@@ -46,6 +46,7 @@ struct SLineStyle {
 };
 struct MTFLine {
     int index = 0;
+    int m_group = 0;
     QString label;
     QString colorName;          // 原始颜色名称（来自文件）
     bool selected = false;
@@ -97,6 +98,8 @@ struct PlotSettings {
     enum Origin { BottomLeft, BottomRight, Center };
     Origin origin = BottomLeft;
 
+    bool m_bHasgroup = false;
+    //bool m_bSettingGroup = true;
     QHash<int, MTFLine> m_lines;
 };
 
