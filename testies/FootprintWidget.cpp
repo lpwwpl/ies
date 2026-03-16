@@ -210,6 +210,7 @@
 #include <limits>
 #include <algorithm>
 #include <qwt_text.h>
+#include <QSplitter>
 #ifndef M_PI
 #define M_PI 3.14159265358979323846
 #endif
@@ -219,14 +220,11 @@ FootprintWidget::FootprintWidget(QWidget* parent)
     , m_plot(nullptr)
     , m_panner(nullptr)
     , m_magnifier(nullptr)
+    , m_grid(nullptr)
+    ,m_legend(nullptr)
+    //,m_
 {
-    // 创建主布局
-    QVBoxLayout* mainLayout = new QVBoxLayout(this);
-    mainLayout->setContentsMargins(0, 0, 0, 0);
 
-    // 创建QwtPlot实例
-    m_plot = new QwtPlot(this);
-    mainLayout->addWidget(m_plot);
 
     // 设置图表
     setupPlot();
@@ -242,6 +240,22 @@ FootprintWidget::~FootprintWidget()
 
 void FootprintWidget::setupPlot()
 {
+    // 创建QwtPlot实例
+    //m_plot = new QwtPlot(this);
+    m_toolBar_plot = new PlotBase(this);
+    m_plot = m_toolBar_plot->m_plot;
+
+    m_grid = m_toolBar_plot->m_grid;
+    m_legend = m_toolBar_plot->m_legend;
+    m_settings = m_toolBar_plot->m_settings;
+    connect(m_toolBar_plot, SIGNAL(signalFitView()), this, SLOT(fitView()));
+    connect(m_toolBar_plot, SIGNAL(signalZoomIn()), this, SLOT(zoomIn()));
+    connect(m_toolBar_plot, SIGNAL(signalZommOut()), this, SLOT(zoomOut()));
+
+    m_simple_browser = new QwtPropertyBrowser(m_settings, m_plot, m_grid, m_legend, this);
+
+
+
     // 设置画布背景
     m_plot->setCanvasBackground(Qt::white);
     //m_plot->canvas()->setPaintAttribute(QwtPlotCanvas::BackingStore, true);
@@ -260,21 +274,20 @@ void FootprintWidget::setupPlot()
     m_plot->setAxisScale(QwtPlot::yLeft, -85, 10);
 
     // 设置网格
-    QwtPlotGrid* grid = new QwtPlotGrid();
-    grid->enableX(true);
-    grid->enableY(true);
-    grid->enableXMin(true);
-    grid->enableYMin(true);
+    m_grid->enableX(true);
+    m_grid->enableY(true);
+    m_grid->enableXMin(true);
+    m_grid->enableYMin(true);
 
     // 设置主网格线样式
     QPen majorGridPen(QColor(200, 200, 200), 1, Qt::SolidLine);
-    grid->setMajorPen(majorGridPen);
+    m_grid->setMajorPen(majorGridPen);
 
     // 设置次网格线样式
     QPen minorGridPen(QColor(220, 220, 220), 1, Qt::DotLine);
-    grid->setMinorPen(minorGridPen);
+    m_grid->setMinorPen(minorGridPen);
 
-    grid->attach(m_plot);
+    m_grid->attach(m_plot);
 
     // 设置坐标轴样式
     QPen axisPen(Qt::black, 2);
@@ -282,12 +295,37 @@ void FootprintWidget::setupPlot()
     //m_plot->setAxisPen(QwtPlot::yLeft, axisPen);
 
     // 设置图例
-    QwtLegend* legend = new QwtLegend();
-    legend->setDefaultItemMode(QwtLegendData::Checkable);
-    m_plot->insertLegend(legend, QwtPlot::RightLegend);
+    //m_legend->setDefaultItemMode(QwtLegendData::Checkable);
+    //m_plot->insertLegend(m_legend, QwtPlot::RightLegend);
 
-    // 设置图例样式
-    legend->setFont(QFont("Helvetica", 9));
+    //// 设置图例样式
+    //m_legend->setFont(QFont("Helvetica", 9));
+
+
+
+
+
+
+    //m_simple_browser = new SimplePropertyBrowser(m_settings,m_plot,this);
+    // 分割器
+    m_splitter = new QSplitter(this);
+    m_splitter->addWidget(m_toolBar_plot);
+    m_splitter->addWidget(m_simple_browser);
+
+    m_splitter->setStretchFactor(0, 1);
+    m_splitter->setStretchFactor(1, 0);
+    m_simple_browser->setMinimumWidth(300);
+    m_simple_browser->setMaximumWidth(400);
+    m_splitter->setCollapsible(1, false);
+    m_splitter->setSizes({ 900, 300 });
+
+
+    // 创建主布局
+    QVBoxLayout* mainLayout = new QVBoxLayout(this);
+    mainLayout->setContentsMargins(0, 0, 0, 0);
+
+
+    mainLayout->addWidget(m_splitter);
 
     // 启用抗锯齿
     //m_plot->canvas()->setPaintAttribute(QwtPlotCanvas::ImmediatePaint, false);
@@ -474,18 +512,20 @@ void FootprintWidget::plotFootprints()
             maxRadius = std::max(maxRadius, radius);
         }
     }
-
+    int index = 0;
+    m_settings->m_lines.clear();
     // 绘制每个Footprint
     for (const FootprintData& data : m_footprintData) {
         QColor color = getFieldColor(data.field);
         QColor fillColor = color;
         fillColor.setAlpha(50); // 半透明填充
 
+        QwtPlotCurve* circleCurve = nullptr;
         if (data.field == "all") {
             // 绘制整个视场的圆
             QVector<QPointF> circlePoints = createCirclePoints(0, 0, data.radius);
 
-            QwtPlotCurve* circleCurve = new QwtPlotCurve(QString("Field %1").arg(data.field));
+            circleCurve = new QwtPlotCurve(QString("Field %1").arg(data.field));
             circleCurve->setSamples(circlePoints);
 
             // 设置圆样式（虚线）
@@ -497,6 +537,18 @@ void FootprintWidget::plotFootprints()
             circleCurve->attach(m_plot);
 
             m_circleCurves.append(circleCurve);
+
+
+
+            MTFLine line;
+            line.curve = circleCurve;
+            line.m_style.lineColor = color;
+            line.m_style.lineStyle = Qt::DashLine;
+            //line.m_style.lineStyle = circleCurve->style();
+            line.label = circleCurve->title().text();
+            line.curve->setTitle(QString("Line %1%2").arg(line.index)
+                .arg(line.label.isEmpty() ? "" : ": " + line.label));
+            m_settings->m_lines[index++] = line;
         }
         else {
             // 计算圆心和半径
@@ -510,7 +562,7 @@ void FootprintWidget::plotFootprints()
             // 绘制圆
             QVector<QPointF> circlePoints = createCirclePoints(centerX, centerY, radius);
 
-            QwtPlotCurve* circleCurve = new QwtPlotCurve(QString("Field %1").arg(data.field));
+            circleCurve = new QwtPlotCurve(QString("Field %1").arg(data.field));
             circleCurve->setSamples(circlePoints);
 
             // 设置圆样式（虚线）
@@ -523,6 +575,17 @@ void FootprintWidget::plotFootprints()
 
             m_circleCurves.append(circleCurve);
 
+
+            MTFLine line;
+            line.curve = circleCurve;
+            line.m_style.lineColor = color;
+            line.m_style.lineStyle = Qt::DashLine;
+            //line.m_style.lineStyle = circleCurve->style();
+            line.label = circleCurve->title().text();
+            line.curve->setTitle(QString("Line %1%2").arg(line.index)
+                .arg(line.label.isEmpty() ? "" : ": " + line.label));
+            m_settings->m_lines[index++] = line;
+
             // 可选：绘制矩形（如果需要）
             // QVector<QPointF> rectPoints = createRectanglePoints(data.left, data.right, data.top, data.bottom);
             // QwtPlotCurve* rectCurve = new QwtPlotCurve();
@@ -534,20 +597,23 @@ void FootprintWidget::plotFootprints()
         }
 
         // 创建图例项（使用一个不可见的点来创建图例）
-        QwtPlotCurve* legendCurve = new QwtPlotCurve(QString("Field %1").arg(data.field));
-        QVector<QPointF> legendPoint;
-        legendPoint.append(QPointF(0, 0)); // 随便一个点，不显示
+        //QwtPlotCurve* legendCurve = new QwtPlotCurve(QString("Field %1").arg(data.field));
+        //QVector<QPointF> legendPoint;
+        //legendPoint.append(QPointF(0, 0)); // 随便一个点，不显示
 
-        legendCurve->setSamples(legendPoint);
-        legendCurve->setPen(QPen(color, 2));
-        legendCurve->setBrush(QBrush(fillColor));
-        legendCurve->setSymbol(new QwtSymbol(QwtSymbol::NoSymbol));
-        legendCurve->setItemAttribute(QwtPlotItem::Legend, true);
-        legendCurve->setRenderHint(QwtPlotItem::RenderAntialiased);
-        legendCurve->attach(m_plot);
+        //legendCurve->setSamples(legendPoint);
+        //legendCurve->setPen(QPen(color, 2));
+        //legendCurve->setBrush(QBrush(fillColor));
+        //legendCurve->setSymbol(new QwtSymbol(QwtSymbol::NoSymbol));
+        //legendCurve->setItemAttribute(QwtPlotItem::Legend, true);
+        //legendCurve->setRenderHint(QwtPlotItem::RenderAntialiased);
+        //legendCurve->attach(m_plot);
 
-        m_legendCurves.append(legendCurve);
+        //m_legendCurves.append(legendCurve);
+        //m_simple_browser->updateCurveStyle(index);  // 应用样式
     }
+    m_simple_browser->updateLineCombo();
+    m_simple_browser->setCurrentCurve(0);
 
     // 计算总体范围（包括所有圆）
     double range = maxRadius;

@@ -58,6 +58,12 @@
 #include <qwt_legend.h>
 #include <qwt_symbol.h>
 
+
+#include "PlotSetting.h"
+#include "QwtPropertyBrowser.h"
+#include "PlotBase.h"
+class QSplitter;
+
 struct FootprintData {
     QString field;
     double left;
@@ -97,6 +103,15 @@ private:
     QList<QwtPlotCurve*> m_legendCurves;
 
     QVector<FootprintData> m_footprintData;
+
+
+    QwtPlotGrid* m_grid;
+    QwtLegend* m_legend;
+    QToolBar* m_toolBar;
+    QwtPropertyBrowser* m_simple_browser;
+    QSplitter* m_splitter;
+    PlotSettings* m_settings;
+    PlotBase* m_toolBar_plot;
 };
 
 #endif // FOOTPRINTWIDGET_H

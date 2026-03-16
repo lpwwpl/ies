@@ -160,8 +160,6 @@ private:
     QwtPlotGrid* m_grid;
     QwtLegend* m_legend;
     QToolBar* m_toolBar;
-    //QwtPropertyBrowser* m_browser;
-    //SimplePropertyBrowser* m_simple_browser;
     QwtPropertyBrowser* m_simple_browser;
     QSplitter* m_splitter;
 

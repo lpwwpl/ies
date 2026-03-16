@@ -129,7 +129,10 @@
 #include <qwt_plot_panner.h>
 #include <qwt_plot_magnifier.h>
 #include <qwt_text.h>
-
+#include "PlotSetting.h"
+#include "QwtPropertyBrowser.h"
+#include "PlotBase.h"
+class QSplitter;
 // 数据结构
 struct AberrationData {
     QString chartName;
@@ -170,6 +173,19 @@ private:
 
     // 交互相关的对象
     QList<QwtPlotCurve*> m_curves;
+
+    /// <summary>
+    /// 
+    /// </summary>
+    //QwtPlot* m_plot;
+    //QString m_currentFile;
+    //QwtPlotGrid* m_grid;
+    //QwtLegend* m_legend;
+    //QToolBar* m_toolBar;
+    //QwtPropertyBrowser* m_simple_browser;
+    //QSplitter* m_splitter;
+    //PlotSettings* m_settings;
+    //PlotBase* m_toolBar_plot;
 
     // 按chartName分组数据
     static QMap<QString, QVector<AberrationData>> groupByChartName(const QVector<AberrationData>& data) {

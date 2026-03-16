@@ -211,6 +211,7 @@ AberrationWidget::AberrationWidget(QWidget* parent)
     , m_mainLayout(nullptr)
 {
     setupUI();
+
 }
 
 AberrationWidget::~AberrationWidget()
@@ -220,6 +221,15 @@ AberrationWidget::~AberrationWidget()
 
 void AberrationWidget::setupUI()
 {
+    //m_toolBar_plot = new PlotBase(this);
+    //m_plot = m_toolBar_plot->m_plot;
+    //m_grid = m_toolBar_plot->m_grid;
+    //m_legend = m_toolBar_plot->m_legend;
+    //m_settings = m_toolBar_plot->m_settings;
+    //connect(m_toolBar_plot, SIGNAL(signalFitView()), this, SLOT(fitView()));
+    //connect(m_toolBar_plot, SIGNAL(signalZoomIn()), this, SLOT(zoomIn()));
+    //connect(m_toolBar_plot, SIGNAL(signalZommOut()), this, SLOT(zoomOut()));
+
     m_mainLayout = new QGridLayout(this);
     m_mainLayout->setSpacing(10);
     m_mainLayout->setContentsMargins(10, 10, 10, 10);
