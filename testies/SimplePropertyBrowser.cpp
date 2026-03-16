@@ -950,6 +950,7 @@ void SimplePropertyBrowser::applyLegendSettings()
     else
     {
         // 隐藏图例：从 Plot 中移除，完全消失
+        delete m_legend;
         m_plot->insertLegend(nullptr);
         m_legend = NULL;
         // 如果 m_legend 是你管理的成员，可以保留对象以便下次快速显示，

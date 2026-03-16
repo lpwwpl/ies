@@ -135,7 +135,7 @@ void QwtPropertyBrowser::onValueChanged(QtProperty* property, const QVariant& va
     else if (property == m_originProperty)
     {
         m_settings->origin = static_cast<PlotSettings::Origin>(value.toInt());
-        applyOrigin();
+        applyOrigin_plot();
     }
     else if (property == m_titleFontProperty)
     {
@@ -429,6 +429,7 @@ void QwtPropertyBrowser::onValueChanged(QtProperty* property, const QVariant& va
         m_settings->yAxis.visible = value.toBool();
         applyYAxisSettings_plot();
     }
+
     m_plot->replot();
     emit propertyChanged();
 }
@@ -659,7 +660,7 @@ void QwtPropertyBrowser::updateCurveStyle(int index)
         line.curve->setSymbol(nullptr);
     }
 
-    if ((line.m_style.pointStyle != QwtSymbol::NoSymbol) && (lineStyle == Qt::DotLine || lineStyle == Qt::DashDotLine || lineStyle == Qt::DashDotDotLine)) {
+    if ((line.m_style.pointStyle != QwtSymbol::NoSymbol) && (lineStyle == Qt::DotLine || (lineStyle == Qt::CustomDashLine + 1) || lineStyle == Qt::DashDotLine || lineStyle == Qt::DashDotDotLine)) {
         QwtSymbol* sym = new QwtSymbol(line.m_style.pointStyle);
         sym->setSize(line.m_style.pointSize);
         sym->setColor(line.m_style.pointColor);
@@ -961,6 +962,7 @@ void QwtPropertyBrowser::applyLegendSettings_plot()
     else
     {
         // 隐藏图例：从 Plot 中移除，完全消失
+        delete m_legend;
         m_plot->insertLegend(nullptr);
         m_legend = NULL;
         // 如果 m_legend 是你管理的成员，可以保留对象以便下次快速显示，
