@@ -542,6 +542,7 @@ void FootprintWidget::plotFootprints()
 
             MTFLine line;
             line.curve = circleCurve;
+            line.index = index;
             line.m_style.lineColor = color;
             line.m_style.lineStyle = Qt::DashLine;
             //line.m_style.lineStyle = circleCurve->style();
@@ -579,6 +580,7 @@ void FootprintWidget::plotFootprints()
             MTFLine line;
             line.curve = circleCurve;
             line.m_style.lineColor = color;
+            line.index = index;
             line.m_style.lineStyle = Qt::DashLine;
             //line.m_style.lineStyle = circleCurve->style();
             line.label = circleCurve->title().text();
