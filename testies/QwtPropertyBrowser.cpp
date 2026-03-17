@@ -121,12 +121,19 @@ void QwtPropertyBrowser::onValueChanged(QtProperty* property, const QVariant& va
     // 只处理我们关心的 "标题" 属性
     if (property == m_curveGroupProperty) {
         int selectedIndex = value.toInt();  // 枚举值索引
-
         loadGroupSettings(selectedIndex);
     }
-    else  if (property == m_curveTitleProperty) {
+    else  if (property == m_curveTitleProperty) 
+    {      
         int selectedIndex = value.toInt();  // 枚举值索引
-        loadLineSettings(selectedIndex);
+
+        if (m_CurveTitles.size() > 0 && m_CurveTitles.size() > selectedIndex) 
+        {
+            auto it = std::next(m_CurveTitles.begin(), selectedIndex); // N-1 转换为 0-based 索引
+            m_curveGroupEditableProperty->setValue(false);
+            loadLineSettings(it.key());
+            
+        }
     }
     else if (property == m_backgroundColorProperty)
     {
@@ -176,159 +183,204 @@ void QwtPropertyBrowser::onValueChanged(QtProperty* property, const QVariant& va
     }
     else if (property == m_curveVisibleProperty)
     {
-        int index = m_curveTitleProperty->value().toInt();
-        int groupId = m_curveGroupProperty->value().toInt();
+        int selectedIndex = m_curveTitleProperty->value().toInt();  // 枚举值索引
 
-        if (m_settings->m_bCurveGroupEditable)
+        if (m_CurveTitles.size() > 0 && m_CurveTitles.size() > selectedIndex)
         {
-            for (int i = 0; i < m_settings->m_lines.size(); i++)
+            auto it = std::next(m_CurveTitles.begin(), selectedIndex); // N-1 转换为 0-based 索引
+
+            int index = it.key();
+            int groupId = m_curveGroupProperty->value().toInt();
+
+            if (m_settings->m_bCurveGroupEditable)
             {
-                MTFLine& line = m_settings->m_lines[i];
-                if (line.m_group == groupId)
+                for (int i = 0; i < m_settings->m_lines.size(); i++)
                 {
-                    line.m_style.visible = value.toBool();
-                    updateCurveStyle(line.index);
+                    MTFLine& line = m_settings->m_lines[i];
+                    if (line.m_group == groupId)
+                    {
+                        line.m_style.visible = value.toBool();
+                        updateCurveStyle(line.index);
+                    }
                 }
             }
+            else
+            {
+                m_settings->m_lines[index].m_style.visible = value.toBool();
+                updateCurveStyle(index);
+            }
         }
-        else
-        {
-            m_settings->m_lines[index].m_style.visible = value.toBool();
-            updateCurveStyle(index);
-        }
-
-        setCurrentCurve(index);
+        //updateCurveStyle(index);
     }
     else if (property == m_curveLineColorProperty)
     {
-        int index = m_curveTitleProperty->value().toInt();
-        int groupId = m_curveGroupProperty->value().toInt();
-        if (m_settings->m_bCurveGroupEditable)
+        int selectedIndex = m_curveTitleProperty->value().toInt();  // 枚举值索引
+
+        if (m_CurveTitles.size() > 0 && m_CurveTitles.size() > selectedIndex)
         {
-            for (int i = 0; i < m_settings->m_lines.size(); i++)
+            auto it = std::next(m_CurveTitles.begin(), selectedIndex); // N-1 转换为 0-based 索引
+
+            int index = it.key();
+            int groupId = m_curveGroupProperty->value().toInt();
+            if (m_settings->m_bCurveGroupEditable)
             {
-                MTFLine& line = m_settings->m_lines[i];
-                if (line.m_group == groupId)
+                for (int i = 0; i < m_settings->m_lines.size(); i++)
                 {
-                    line.m_style.lineColor = value.value<QColor>();
-                    updateCurveStyle(line.index);
+                    MTFLine& line = m_settings->m_lines[i];
+                    if (line.m_group == groupId)
+                    {
+                        line.m_style.lineColor = value.value<QColor>();
+                        updateCurveStyle(line.index);
+                    }
                 }
             }
+            else
+            {
+                m_settings->m_lines[index].m_style.lineColor = value.value<QColor>();
+                updateCurveStyle(index);
+            }
+            setCurrentCurve(index);
         }
-        else
-        {
-            m_settings->m_lines[index].m_style.lineColor = value.value<QColor>();
-            updateCurveStyle(index);
-        }
-        setCurrentCurve(index);
+        //updateCurveStyle(index);
     }
     else if (property == m_curveLineCurveProperty)
     {
-        int index = m_curveTitleProperty->value().toInt();
-        int groupId = m_curveGroupProperty->value().toInt();
-        if (m_settings->m_bCurveGroupEditable)
+        int selectedIndex = m_curveTitleProperty->value().toInt();  // 枚举值索引
+
+        if (m_CurveTitles.size() > 0 && m_CurveTitles.size() > selectedIndex)
         {
-            for (int i = 0; i < m_settings->m_lines.size(); i++)
+            auto it = std::next(m_CurveTitles.begin(), selectedIndex); // N-1 转换为 0-based 索引
+
+            int index = it.key();
+            int groupId = m_curveGroupProperty->value().toInt();
+            if (m_settings->m_bCurveGroupEditable)
             {
-                MTFLine& line = m_settings->m_lines[i];
-                if (line.m_group == groupId)
+                for (int i = 0; i < m_settings->m_lines.size(); i++)
                 {
-                    line.m_style.useCurve = value.toBool();
-                    updateCurveStyle(line.index);
+                    MTFLine& line = m_settings->m_lines[i];
+                    if (line.m_group == groupId)
+                    {
+                        line.m_style.useCurve = value.toBool();
+                        updateCurveStyle(line.index);
+                    }
                 }
             }
+            else
+            {
+                m_settings->m_lines[index].m_style.useCurve = value.toBool();
+                updateCurveStyle(index);
+            }
+            setCurrentCurve(index);
         }
-        else
-        {
-            m_settings->m_lines[index].m_style.useCurve = value.toBool();
-            updateCurveStyle(index);
-        }
-        setCurrentCurve(index);
+        //setCurrentCurve(index);
     }
     else if (property == m_curveLineWidthProperty)
     {
-        int index = m_curveTitleProperty->value().toInt();
-        int groupId = m_curveGroupProperty->value().toInt();
-        if (m_settings->m_bCurveGroupEditable)
+        int selectedIndex = m_curveTitleProperty->value().toInt();  // 枚举值索引
+
+        if (m_CurveTitles.size() > 0 && m_CurveTitles.size() > selectedIndex)
         {
-            for (int i = 0; i < m_settings->m_lines.size(); i++)
+            auto it = std::next(m_CurveTitles.begin(), selectedIndex); // N-1 转换为 0-based 索引
+
+            int index = it.key();
+            int groupId = m_curveGroupProperty->value().toInt();
+            if (m_settings->m_bCurveGroupEditable)
             {
-                MTFLine& line = m_settings->m_lines[i];
-                if (line.m_group == groupId)
+                for (int i = 0; i < m_settings->m_lines.size(); i++)
                 {
-                    line.m_style.lineWidth = value.toDouble();
-                    updateCurveStyle(line.index);
+                    MTFLine& line = m_settings->m_lines[i];
+                    if (line.m_group == groupId)
+                    {
+                        line.m_style.lineWidth = value.toDouble();
+                        updateCurveStyle(line.index);
+                    }
                 }
             }
+            else
+            {
+                m_settings->m_lines[index].m_style.lineWidth = value.toDouble();
+                updateCurveStyle(index);
+            }
+            setCurrentCurve(index);
         }
-        else
-        {
-            m_settings->m_lines[index].m_style.lineWidth = value.toDouble();
-            updateCurveStyle(index);
-        }
-        setCurrentCurve(index);
+        //setCurrentCurve(index);
     }
     else if (property == m_curveLineStyleProperty)
     {
-        int index = m_curveTitleProperty->value().toInt();
-        int groupId = m_curveGroupProperty->value().toInt();
-        Qt::PenStyle penStyle = (Qt::PenStyle)value.toInt();
-        if (m_settings->m_bCurveGroupEditable)
+        int selectedIndex = m_curveTitleProperty->value().toInt();  // 枚举值索引
+
+        if (m_CurveTitles.size() > 0 && m_CurveTitles.size() > selectedIndex)
         {
-            for (int i = 0; i < m_settings->m_lines.size(); i++)
+            auto it = std::next(m_CurveTitles.begin(), selectedIndex); // N-1 转换为 0-based 索引
+
+            int index = it.key();
+            int groupId = m_curveGroupProperty->value().toInt();
+            Qt::PenStyle penStyle = (Qt::PenStyle)value.toInt();
+            if (m_settings->m_bCurveGroupEditable)
             {
-                MTFLine& line = m_settings->m_lines[i];
-                if (line.m_group == groupId)
+                for (int i = 0; i < m_settings->m_lines.size(); i++)
                 {
-                    line.m_style.lineStyle = penStyle;
-                    updateCurveStyle(line.index);
+                    MTFLine& line = m_settings->m_lines[i];
+                    if (line.m_group == groupId)
+                    {
+                        line.m_style.lineStyle = penStyle;
+                        updateCurveStyle(line.index);
+                    }
+                }
+                if (penStyle == Qt::CustomDashLine)
+                {
+                    m_curveCustomPatternProperty->setEnabled(true);
                 }
             }
-            if (penStyle == Qt::CustomDashLine)
+            else
             {
-                m_curveCustomPatternProperty->setEnabled(true);
-            }
-        }
-        else
-        {
-            m_curveCustomPatternProperty->setEnabled(false);
-            m_settings->m_lines[index].m_style.lineStyle = penStyle;
-            updateCurveStyle(index);
+                m_curveCustomPatternProperty->setEnabled(false);
+                m_settings->m_lines[index].m_style.lineStyle = penStyle;
+                updateCurveStyle(index);
 
-            if (penStyle == Qt::CustomDashLine)
-            {
-                m_curveCustomPatternProperty->setEnabled(true);
+                if (penStyle == Qt::CustomDashLine)
+                {
+                    m_curveCustomPatternProperty->setEnabled(true);
+                }
             }
+            setCurrentCurve(index);
         }
-
-        setCurrentCurve(index);
+        //setCurrentCurve(index);
     }
     else if (property == m_curveCustomPatternProperty)
     {
-        int index = m_curveTitleProperty->value().toInt();
-        int groupId = m_curveGroupProperty->value().toInt();
-        QVector<qreal> pattern = parseDashPattern(value.toString());
-        if (m_settings->m_bCurveGroupEditable)
+        int selectedIndex = m_curveTitleProperty->value().toInt();  // 枚举值索引
+
+        if (m_CurveTitles.size() > 0 && m_CurveTitles.size() > selectedIndex)
         {
-            for (int i = 0; i < m_settings->m_lines.size(); i++)
+            auto it = std::next(m_CurveTitles.begin(), selectedIndex); // N-1 转换为 0-based 索引
+
+            int index = it.key();
+            int groupId = m_curveGroupProperty->value().toInt();
+            QVector<qreal> pattern = parseDashPattern(value.toString());
+            if (m_settings->m_bCurveGroupEditable)
             {
-                MTFLine& line = m_settings->m_lines[i];
-                if (line.m_group == groupId)
+                for (int i = 0; i < m_settings->m_lines.size(); i++)
                 {
-                    line.m_style.customDashPattern = pattern;
-                    line.m_style.lineStyle = Qt::CustomDashLine;
-                    updateCurveStyle(line.index);
+                    MTFLine& line = m_settings->m_lines[i];
+                    if (line.m_group == groupId)
+                    {
+                        line.m_style.customDashPattern = pattern;
+                        line.m_style.lineStyle = Qt::CustomDashLine;
+                        updateCurveStyle(line.index);
+                    }
                 }
             }
-        }
-        else
-        {
-            m_settings->m_lines[index].m_style.customDashPattern = pattern;
-            m_settings->m_lines[index].m_style.lineStyle = Qt::CustomDashLine;
+            else
+            {
+                m_settings->m_lines[index].m_style.customDashPattern = pattern;
+                m_settings->m_lines[index].m_style.lineStyle = Qt::CustomDashLine;
 
-            updateCurveStyle(index);
+                updateCurveStyle(index);
+            }
+            setCurrentCurve(index);
         }
-        setCurrentCurve(index);
+        //setCurrentCurve(index);
         //int index = m_curveTitleProperty->value().toInt();
         //QVector<qreal> pattern = parseDashPattern(value.toString());
         //m_settings->m_lines[index].m_style.customDashPattern = pattern;
@@ -337,332 +389,261 @@ void QwtPropertyBrowser::onValueChanged(QtProperty* property, const QVariant& va
     }
     else if (property == m_curveSymbolStyleProperty)
     {
-        int index = m_curveTitleProperty->value().toInt();
-        int groupId = m_curveGroupProperty->value().toInt();
-        if (m_settings->m_bCurveGroupEditable)
+        int selectedIndex = m_curveTitleProperty->value().toInt();  // 枚举值索引
+
+        if (m_CurveTitles.size() > 0 && m_CurveTitles.size() > selectedIndex)
         {
-            for (int i = 0; i < m_settings->m_lines.size(); i++)
+            auto it = std::next(m_CurveTitles.begin(), selectedIndex); // N-1 转换为 0-based 索引
+
+            int index = it.key();
+            int groupId = m_curveGroupProperty->value().toInt();
+            if (m_settings->m_bCurveGroupEditable)
             {
-                MTFLine& line = m_settings->m_lines[i];
-                if (line.m_group == groupId)
+                for (int i = 0; i < m_settings->m_lines.size(); i++)
                 {
-                    line.m_style.fillPointStyle = (FillPointType)value.toInt();
-                    switch (line.m_style.fillPointStyle)
+                    MTFLine& line = m_settings->m_lines[i];
+                    if (line.m_group == groupId)
                     {
-                    case eSmallEllipse:
-                    {
-                        line.m_style.pointStyle = QwtSymbol::Ellipse;
-                        line.m_style.pointFilled = true;
-                    }
-                    break;
-                    case eXCross:
-                    {
-                        line.m_style.pointStyle = QwtSymbol::XCross;
-                        line.m_style.pointFilled = false;
-                    }
-                    break;
-                    case eCross:
-                    {
-                        line.m_style.pointStyle = QwtSymbol::Cross;
-                        line.m_style.pointFilled = false;
-                    }
-                    break;
-                    case eEllipse:
-                    {
-                        line.m_style.pointStyle = QwtSymbol::Ellipse;
-                        line.m_style.pointFilled = false;
-                    }
-                    break;
-                    case eFillEllipse:
-                    {
-                        line.m_style.pointStyle = QwtSymbol::Ellipse;
-                        line.m_style.pointFilled = true;
-                    }
-                    break;
-                    case eRect:
-                    {
-                        line.m_style.pointStyle = QwtSymbol::Rect;
-                        line.m_style.pointFilled = false;
-                    }
-                    break;
-                    case eFillRect:
-                    {
-                        line.m_style.pointStyle = QwtSymbol::Rect;
-                        line.m_style.pointFilled = true;
-                    }
-                    break;
-                    case eDTriangle:
-                    {
-                        line.m_style.pointStyle = QwtSymbol::DTriangle;
-                        line.m_style.pointFilled = false;
-                    }
-                    break;
-                    case eFillDTriangle:
-                    {
-                        line.m_style.pointStyle = QwtSymbol::DTriangle;
-                        line.m_style.pointFilled = true;
-                    }
-                    break;
-                    case eDiamond:
-                    {
-                        line.m_style.pointStyle = QwtSymbol::Diamond;
-                        line.m_style.pointFilled = false;
-                    }
-                    break;
-                    case eFillDiamond:
-                    {
-                        line.m_style.pointStyle = QwtSymbol::Diamond;
-                        line.m_style.pointFilled = true;
-                    }
-                    break;
-                    case eStart1:
-                    {
-                        line.m_style.pointStyle = QwtSymbol::Star1;
-                        line.m_style.pointFilled = false;
-                    }
-                    break;
-                    case eFillStart1:
-                    {
-                        line.m_style.pointStyle = QwtSymbol::Star1;
-                        line.m_style.pointFilled = true;
-                    }
-                    break;
-                    default:
+                        line.m_style.fillPointStyle = (FillPointType)value.toInt();
+                        switch (line.m_style.fillPointStyle)
+                        {
+                        case eSmallEllipse:
+                        {
+                            line.m_style.pointStyle = QwtSymbol::Ellipse;
+                            line.m_style.pointFilled = true;
+                        }
                         break;
+                        case eXCross:
+                        {
+                            line.m_style.pointStyle = QwtSymbol::XCross;
+                            line.m_style.pointFilled = false;
+                        }
+                        break;
+                        case eCross:
+                        {
+                            line.m_style.pointStyle = QwtSymbol::Cross;
+                            line.m_style.pointFilled = false;
+                        }
+                        break;
+                        case eEllipse:
+                        {
+                            line.m_style.pointStyle = QwtSymbol::Ellipse;
+                            line.m_style.pointFilled = false;
+                        }
+                        break;
+                        case eFillEllipse:
+                        {
+                            line.m_style.pointStyle = QwtSymbol::Ellipse;
+                            line.m_style.pointFilled = true;
+                        }
+                        break;
+                        case eRect:
+                        {
+                            line.m_style.pointStyle = QwtSymbol::Rect;
+                            line.m_style.pointFilled = false;
+                        }
+                        break;
+                        case eFillRect:
+                        {
+                            line.m_style.pointStyle = QwtSymbol::Rect;
+                            line.m_style.pointFilled = true;
+                        }
+                        break;
+                        case eDTriangle:
+                        {
+                            line.m_style.pointStyle = QwtSymbol::DTriangle;
+                            line.m_style.pointFilled = false;
+                        }
+                        break;
+                        case eFillDTriangle:
+                        {
+                            line.m_style.pointStyle = QwtSymbol::DTriangle;
+                            line.m_style.pointFilled = true;
+                        }
+                        break;
+                        case eDiamond:
+                        {
+                            line.m_style.pointStyle = QwtSymbol::Diamond;
+                            line.m_style.pointFilled = false;
+                        }
+                        break;
+                        case eFillDiamond:
+                        {
+                            line.m_style.pointStyle = QwtSymbol::Diamond;
+                            line.m_style.pointFilled = true;
+                        }
+                        break;
+                        case eStart1:
+                        {
+                            line.m_style.pointStyle = QwtSymbol::Star1;
+                            line.m_style.pointFilled = false;
+                        }
+                        break;
+                        case eFillStart1:
+                        {
+                            line.m_style.pointStyle = QwtSymbol::Star1;
+                            line.m_style.pointFilled = true;
+                        }
+                        break;
+                        default:
+                            break;
+                        }
+                        updateCurveStyle(line.index);
                     }
-                    updateCurveStyle(line.index);
                 }
             }
-        }
-        else
-        {
-            int index = m_curveTitleProperty->value().toInt();
-            m_settings->m_lines[index].m_style.fillPointStyle = (FillPointType)value.toInt();
-            switch (m_settings->m_lines[index].m_style.fillPointStyle)
+            else
             {
-            case eSmallEllipse:
-            {
-                m_settings->m_lines[index].m_style.pointStyle = QwtSymbol::Ellipse;
-                m_settings->m_lines[index].m_style.pointFilled = true;
-            }
-            break;
-            case eXCross:
-            {
-                m_settings->m_lines[index].m_style.pointStyle = QwtSymbol::XCross;
-                m_settings->m_lines[index].m_style.pointFilled = false;
-            }
-            break;
-            case eCross:
-            {
-                m_settings->m_lines[index].m_style.pointStyle = QwtSymbol::Cross;
-                m_settings->m_lines[index].m_style.pointFilled = false;
-            }
-            break;
-            case eEllipse:
-            {
-                m_settings->m_lines[index].m_style.pointStyle = QwtSymbol::Ellipse;
-                m_settings->m_lines[index].m_style.pointFilled = false;
-            }
-            break;
-            case eFillEllipse:
-            {
-                m_settings->m_lines[index].m_style.pointStyle = QwtSymbol::Ellipse;
-                m_settings->m_lines[index].m_style.pointFilled = true;
-            }
-            break;
-            case eRect:
-            {
-                m_settings->m_lines[index].m_style.pointStyle = QwtSymbol::Rect;
-                m_settings->m_lines[index].m_style.pointFilled = false;
-            }
-            break;
-            case eFillRect:
-            {
-                m_settings->m_lines[index].m_style.pointStyle = QwtSymbol::Rect;
-                m_settings->m_lines[index].m_style.pointFilled = true;
-            }
-            break;
-            case eDTriangle:
-            {
-                m_settings->m_lines[index].m_style.pointStyle = QwtSymbol::DTriangle;
-                m_settings->m_lines[index].m_style.pointFilled = false;
-            }
-            break;
-            case eFillDTriangle:
-            {
-                m_settings->m_lines[index].m_style.pointStyle = QwtSymbol::DTriangle;
-                m_settings->m_lines[index].m_style.pointFilled = true;
-            }
-            break;
-            case eDiamond:
-            {
-                m_settings->m_lines[index].m_style.pointStyle = QwtSymbol::Diamond;
-                m_settings->m_lines[index].m_style.pointFilled = false;
-            }
-            break;
-            case eFillDiamond:
-            {
-                m_settings->m_lines[index].m_style.pointStyle = QwtSymbol::Diamond;
-                m_settings->m_lines[index].m_style.pointFilled = true;
-            }
-            break;
-            case eStart1:
-            {
-                m_settings->m_lines[index].m_style.pointStyle = QwtSymbol::Star1;
-                m_settings->m_lines[index].m_style.pointFilled = false;
-            }
-            break;
-            case eFillStart1:
-            {
-                m_settings->m_lines[index].m_style.pointStyle = QwtSymbol::Star1;
-                m_settings->m_lines[index].m_style.pointFilled = true;
-            }
-            break;
-            default:
+                int index = m_curveTitleProperty->value().toInt();
+                m_settings->m_lines[index].m_style.fillPointStyle = (FillPointType)value.toInt();
+                switch (m_settings->m_lines[index].m_style.fillPointStyle)
+                {
+                case eSmallEllipse:
+                {
+                    m_settings->m_lines[index].m_style.pointStyle = QwtSymbol::Ellipse;
+                    m_settings->m_lines[index].m_style.pointFilled = true;
+                }
                 break;
+                case eXCross:
+                {
+                    m_settings->m_lines[index].m_style.pointStyle = QwtSymbol::XCross;
+                    m_settings->m_lines[index].m_style.pointFilled = false;
+                }
+                break;
+                case eCross:
+                {
+                    m_settings->m_lines[index].m_style.pointStyle = QwtSymbol::Cross;
+                    m_settings->m_lines[index].m_style.pointFilled = false;
+                }
+                break;
+                case eEllipse:
+                {
+                    m_settings->m_lines[index].m_style.pointStyle = QwtSymbol::Ellipse;
+                    m_settings->m_lines[index].m_style.pointFilled = false;
+                }
+                break;
+                case eFillEllipse:
+                {
+                    m_settings->m_lines[index].m_style.pointStyle = QwtSymbol::Ellipse;
+                    m_settings->m_lines[index].m_style.pointFilled = true;
+                }
+                break;
+                case eRect:
+                {
+                    m_settings->m_lines[index].m_style.pointStyle = QwtSymbol::Rect;
+                    m_settings->m_lines[index].m_style.pointFilled = false;
+                }
+                break;
+                case eFillRect:
+                {
+                    m_settings->m_lines[index].m_style.pointStyle = QwtSymbol::Rect;
+                    m_settings->m_lines[index].m_style.pointFilled = true;
+                }
+                break;
+                case eDTriangle:
+                {
+                    m_settings->m_lines[index].m_style.pointStyle = QwtSymbol::DTriangle;
+                    m_settings->m_lines[index].m_style.pointFilled = false;
+                }
+                break;
+                case eFillDTriangle:
+                {
+                    m_settings->m_lines[index].m_style.pointStyle = QwtSymbol::DTriangle;
+                    m_settings->m_lines[index].m_style.pointFilled = true;
+                }
+                break;
+                case eDiamond:
+                {
+                    m_settings->m_lines[index].m_style.pointStyle = QwtSymbol::Diamond;
+                    m_settings->m_lines[index].m_style.pointFilled = false;
+                }
+                break;
+                case eFillDiamond:
+                {
+                    m_settings->m_lines[index].m_style.pointStyle = QwtSymbol::Diamond;
+                    m_settings->m_lines[index].m_style.pointFilled = true;
+                }
+                break;
+                case eStart1:
+                {
+                    m_settings->m_lines[index].m_style.pointStyle = QwtSymbol::Star1;
+                    m_settings->m_lines[index].m_style.pointFilled = false;
+                }
+                break;
+                case eFillStart1:
+                {
+                    m_settings->m_lines[index].m_style.pointStyle = QwtSymbol::Star1;
+                    m_settings->m_lines[index].m_style.pointFilled = true;
+                }
+                break;
+                default:
+                    break;
+                }
+                updateCurveStyle(index);
             }
-            updateCurveStyle(index);
+            setCurrentCurve(index); 
         }
-        setCurrentCurve(index);
-
-        //int index = m_curveTitleProperty->value().toInt();
-        //m_settings->m_lines[index].m_style.fillPointStyle = (FillPointType)value.toInt();
-        //switch (m_settings->m_lines[index].m_style.fillPointStyle)
-        //{
-        //case eSmallEllipse:
-        //{
-        //    m_settings->m_lines[index].m_style.pointStyle = QwtSymbol::Ellipse;
-        //    m_settings->m_lines[index].m_style.pointFilled = true;
-        //}
-        //    break;
-        //case eXCross:
-        //{
-        //    m_settings->m_lines[index].m_style.pointStyle = QwtSymbol::XCross;
-        //    m_settings->m_lines[index].m_style.pointFilled = false;
-        //}
-        //    break;
-        //case eCross:
-        //{
-        //    m_settings->m_lines[index].m_style.pointStyle = QwtSymbol::Cross;
-        //    m_settings->m_lines[index].m_style.pointFilled = false;
-        //}
-        //    break;
-        //case eEllipse:
-        //{
-        //    m_settings->m_lines[index].m_style.pointStyle = QwtSymbol::Ellipse;
-        //    m_settings->m_lines[index].m_style.pointFilled = false;
-        //}
-        //    break;
-        //case eFillEllipse:
-        //{
-        //    m_settings->m_lines[index].m_style.pointStyle = QwtSymbol::Ellipse;
-        //    m_settings->m_lines[index].m_style.pointFilled = true;
-        //}
-        //    break;
-        //case eRect:
-        //{
-        //    m_settings->m_lines[index].m_style.pointStyle = QwtSymbol::Rect;
-        //    m_settings->m_lines[index].m_style.pointFilled = false;
-        //}
-        //    break;
-        //case eFillRect:
-        //{
-        //    m_settings->m_lines[index].m_style.pointStyle = QwtSymbol::Rect;
-        //    m_settings->m_lines[index].m_style.pointFilled = true;
-        //}
-        //    break;
-        //case eDTriangle:
-        //{
-        //    m_settings->m_lines[index].m_style.pointStyle = QwtSymbol::DTriangle;
-        //    m_settings->m_lines[index].m_style.pointFilled = false;
-        //}
-        //    break;
-        //case eFillDTriangle:
-        //{
-        //    m_settings->m_lines[index].m_style.pointStyle = QwtSymbol::DTriangle;
-        //    m_settings->m_lines[index].m_style.pointFilled = true;
-        //}
-        //    break;
-        //case eDiamond:
-        //{
-        //    m_settings->m_lines[index].m_style.pointStyle = QwtSymbol::Diamond;
-        //    m_settings->m_lines[index].m_style.pointFilled = false;
-        //}
-        //    break;
-        //case eFillDiamond:
-        //{
-        //    m_settings->m_lines[index].m_style.pointStyle = QwtSymbol::Diamond;
-        //    m_settings->m_lines[index].m_style.pointFilled = true;
-        //}
-        //    break;
-        //case eStart1:
-        //{
-        //    m_settings->m_lines[index].m_style.pointStyle = QwtSymbol::Star1;
-        //    m_settings->m_lines[index].m_style.pointFilled = false;
-        //}
-        //    break;
-        //case eFillStart1:
-        //{
-        //    m_settings->m_lines[index].m_style.pointStyle = QwtSymbol::Star1;
-        //    m_settings->m_lines[index].m_style.pointFilled = true;
-        //}
-        //    break;
-        //default:
-        //    break;
-        //}
-        //updateCurveStyle(index);
     }
     else if (property == m_curveSymbolSizeProperty)
     {
-        //int index = m_curveTitleProperty->value().toInt();
-        //m_settings->m_lines[index].m_style.pointSize = value.toDouble();
-        //updateCurveStyle(index);
-        int index = m_curveTitleProperty->value().toInt();
-        int groupId = m_curveGroupProperty->value().toInt();
-        if (m_settings->m_bCurveGroupEditable)
+        int selectedIndex = m_curveTitleProperty->value().toInt();  // 枚举值索引
+
+        if (m_CurveTitles.size() > 0 && m_CurveTitles.size() > selectedIndex)
         {
-            for (int i = 0; i < m_settings->m_lines.size(); i++)
+            auto it = std::next(m_CurveTitles.begin(), selectedIndex); // N-1 转换为 0-based 索引
+
+            int index = it.key();
+            int groupId = m_curveGroupProperty->value().toInt();
+            if (m_settings->m_bCurveGroupEditable)
             {
-                MTFLine& line = m_settings->m_lines[i];
-                if (line.m_group == groupId)
+                for (int i = 0; i < m_settings->m_lines.size(); i++)
                 {
-                    line.m_style.pointSize = value.toDouble();
-                    updateCurveStyle(line.index);
+                    MTFLine& line = m_settings->m_lines[i];
+                    if (line.m_group == groupId)
+                    {
+                        line.m_style.pointSize = value.toDouble();
+                        updateCurveStyle(line.index);
+                    }
                 }
             }
+            else
+            {
+                m_settings->m_lines[index].m_style.pointSize = value.toDouble();
+                updateCurveStyle(index);
+            }
+            setCurrentCurve(index);
         }
-        else
-        {
-            m_settings->m_lines[index].m_style.pointSize = value.toDouble();
-            updateCurveStyle(index);
-        }
-        setCurrentCurve(index);
     }
     else if (property == m_curveSymbolColorProperty)
     {
-        //int index = m_curveTitleProperty->value().toInt();
-        //m_settings->m_lines[index].m_style.pointColor = value.value<QColor>();
-        //updateCurveStyle(index);
-        int index = m_curveTitleProperty->value().toInt();
-        int groupId = m_curveGroupProperty->value().toInt();
-        if (m_settings->m_bCurveGroupEditable)
+        int selectedIndex = m_curveTitleProperty->value().toInt();  // 枚举值索引
+
+        if (m_CurveTitles.size() > 0 && m_CurveTitles.size() > selectedIndex)
         {
-            for (int i = 0; i < m_settings->m_lines.size(); i++)
+            auto it = std::next(m_CurveTitles.begin(), selectedIndex); // N-1 转换为 0-based 索引
+
+            int index = it.key();
+            int groupId = m_curveGroupProperty->value().toInt();
+            if (m_settings->m_bCurveGroupEditable)
             {
-                MTFLine& line = m_settings->m_lines[i];
-                if (line.m_group == groupId)
+                for (int i = 0; i < m_settings->m_lines.size(); i++)
                 {
-                    line.m_style.pointColor = value.value<QColor>();
-                    updateCurveStyle(line.index);
+                    MTFLine& line = m_settings->m_lines[i];
+                    if (line.m_group == groupId)
+                    {
+                        line.m_style.pointColor = value.value<QColor>();
+                        updateCurveStyle(line.index);
+                    }
                 }
             }
+            else
+            {
+                m_settings->m_lines[index].m_style.pointColor = value.value<QColor>();
+                updateCurveStyle(index);
+            }
+            setCurrentCurve(index);
         }
-        else
-        {
-            m_settings->m_lines[index].m_style.pointColor = value.value<QColor>();
-            updateCurveStyle(index);
-        }
-        setCurrentCurve(index);
+        //setCurrentCurve(index);
     }
     else if (property == m_curveGroupEditableProperty)
     {
@@ -775,7 +756,13 @@ void QwtPropertyBrowser::onValueChanged(QtProperty* property, const QVariant& va
     else if (property == m_itemTitleProperty)
     {
         int selectedIndex = value.toInt();  // 枚举值索引
-        loadItemSettings(selectedIndex);
+
+        if (m_itemTitles.size() > 0 && m_itemTitles.size() > selectedIndex)
+        {
+            auto it = std::next(m_itemTitles.begin(), selectedIndex); // N-1 转换为 0-based 索引
+            m_itemGroupEditableProperty->setValue(false);
+            loadItemSettings(it.key());
+        }
     }
     else if (property == m_itemGroupProperty)
     {
@@ -785,164 +772,214 @@ void QwtPropertyBrowser::onValueChanged(QtProperty* property, const QVariant& va
     }
     else if (property == m_itemXProperty)
     {
-        int index = m_itemTitleProperty->value().toInt();
-        int groupId = m_itemGroupProperty->value().toInt();
-        if (m_settings->m_bItemGroupEditable)
+        int selectedIndex = m_itemTitleProperty->value().toInt();  // 枚举值索引
+
+        if (m_itemTitles.size() > 0 && m_itemTitles.size() > selectedIndex)
         {
-            for (int i = 0; i < m_settings->m_items.size(); i++)
+            auto it = std::next(m_itemTitles.begin(), selectedIndex); // N-1 转换为 0-based 索引
+
+            int index = it.key();
+            int groupId = m_itemGroupProperty->value().toInt();
+            if (m_settings->m_bItemGroupEditable)
             {
-                MTFPlotItem& item = m_settings->m_items[i];
-                if (item.m_group == groupId)
+                for (int i = 0; i < m_settings->m_items.size(); i++)
                 {
-                    item.m_x = value.toDouble();
-                    updateItemStyle(item.index);
+                    MTFPlotItem& item = m_settings->m_items[i];
+                    if (item.m_group == groupId)
+                    {
+                        item.m_x = value.toDouble();
+                        updateItemStyle(item.index);
+                    }
                 }
             }
+            else
+            {
+                m_settings->m_items[index].m_x = value.toDouble();
+                updateItemStyle(index);
+            }
+
+            setCurrentItem(index);
         }
-        else
-        {
-            m_settings->m_items[index].m_x = value.toDouble();
-            updateItemStyle(index);
-        }
-        setCurrentItem(index);
     }
     else if (property == m_itemYProperty)
     {
-        int index = m_itemTitleProperty->value().toInt();
-        int groupId = m_itemGroupProperty->value().toInt();
-        if (m_settings->m_bItemGroupEditable)
+        int selectedIndex = m_itemTitleProperty->value().toInt();  // 枚举值索引
+
+        if (m_itemTitles.size() > 0 && m_itemTitles.size() > selectedIndex)
         {
-            for (int i = 0; i < m_settings->m_items.size(); i++)
+            auto it = std::next(m_itemTitles.begin(), selectedIndex); // N-1 转换为 0-based 索引
+
+            int index = it.key();
+            int groupId = m_itemGroupProperty->value().toInt();
+            if (m_settings->m_bItemGroupEditable)
             {
-                MTFPlotItem& item = m_settings->m_items[i];
-                if (item.m_group == groupId)
+                for (int i = 0; i < m_settings->m_items.size(); i++)
                 {
-                    item.m_y = value.toDouble();
-                    updateItemStyle(item.index);
+                    MTFPlotItem& item = m_settings->m_items[i];
+                    if (item.m_group == groupId)
+                    {
+                        item.m_y = value.toDouble();
+                        updateItemStyle(item.index);
+                    }
                 }
             }
+            else
+            {
+                m_settings->m_items[index].m_y = value.toDouble();
+                updateItemStyle(index);
+            }
+            setCurrentItem(index);
         }
-        else
-        {
-            m_settings->m_items[index].m_y = value.toDouble();
-            updateItemStyle(index);
-        }
-        setCurrentItem(index);
     }
     else if (property == m_itemAngleProperty)
     {
-        int index = m_itemTitleProperty->value().toInt();
-        int groupId = m_itemGroupProperty->value().toInt();
-        if (m_settings->m_bItemGroupEditable)
+        int selectedIndex = m_itemTitleProperty->value().toInt();  // 枚举值索引
+
+        if (m_itemTitles.size() > 0 && m_itemTitles.size() > selectedIndex)
         {
-            for (int i = 0; i < m_settings->m_items.size(); i++)
+            auto it = std::next(m_itemTitles.begin(), selectedIndex); // N-1 转换为 0-based 索引
+
+            int index = it.key();
+            int groupId = m_itemGroupProperty->value().toInt();
+            if (m_settings->m_bItemGroupEditable)
             {
-                MTFPlotItem& item = m_settings->m_items[i];
-                if (item.m_group == groupId)
+                for (int i = 0; i < m_settings->m_items.size(); i++)
                 {
-                    item.m_angle = value.toDouble();
-                    updateItemStyle(item.index);
+                    MTFPlotItem& item = m_settings->m_items[i];
+                    if (item.m_group == groupId)
+                    {
+                        item.m_angle = value.toDouble();
+                        updateItemStyle(item.index);
+                    }
                 }
             }
+            else
+            {
+                m_settings->m_items[index].m_angle = value.toDouble();
+                updateItemStyle(index);
+            }
+            setCurrentItem(index);
         }
-        else
-        {
-            m_settings->m_items[index].m_angle = value.toDouble();
-            updateItemStyle(index);
-        }
-        setCurrentItem(index);
     }
     else if (property == m_itemLengthProperty)
     {
-        int index = m_itemTitleProperty->value().toInt();
-        int groupId = m_itemGroupProperty->value().toInt();
-        if (m_settings->m_bItemGroupEditable)
+        int selectedIndex = m_itemTitleProperty->value().toInt();  // 枚举值索引
+
+        if (m_itemTitles.size() > 0 && m_itemTitles.size() > selectedIndex)
         {
-            for (int i = 0; i < m_settings->m_items.size(); i++)
+            auto it = std::next(m_itemTitles.begin(), selectedIndex); // N-1 转换为 0-based 索引
+
+            int index = it.key();
+            int groupId = m_itemGroupProperty->value().toInt();
+            if (m_settings->m_bItemGroupEditable)
             {
-                MTFPlotItem& item = m_settings->m_items[i];
-                if (item.m_group == groupId)
+                for (int i = 0; i < m_settings->m_items.size(); i++)
                 {
-                    item.m_length = value.toDouble();
-                    updateItemStyle(item.index);
+                    MTFPlotItem& item = m_settings->m_items[i];
+                    if (item.m_group == groupId)
+                    {
+                        item.m_length = value.toDouble();
+                        updateItemStyle(item.index);
+                    }
                 }
             }
+            else
+            {
+                m_settings->m_items[index].m_length = value.toDouble();
+                updateItemStyle(index);
+            }
+            setCurrentItem(index);
         }
-        else
-        {
-            m_settings->m_items[index].m_length = value.toDouble();
-            updateItemStyle(index);
-        }
-        setCurrentItem(index);
     }
     else if (property == m_itemColorProperty)
     {
-        int index = m_itemTitleProperty->value().toInt();
-        int groupId = m_itemGroupProperty->value().toInt();
-        if (m_settings->m_bItemGroupEditable)
+        int selectedIndex = m_itemTitleProperty->value().toInt();  // 枚举值索引
+
+        if (m_itemTitles.size() > 0 && m_itemTitles.size() > selectedIndex)
         {
-            for (int i = 0; i < m_settings->m_items.size(); i++)
+            auto it = std::next(m_itemTitles.begin(), selectedIndex); // N-1 转换为 0-based 索引
+
+            int index = it.key();
+            int groupId = m_itemGroupProperty->value().toInt();
+            if (m_settings->m_bItemGroupEditable)
             {
-                MTFPlotItem& item = m_settings->m_items[i];
-                if (item.m_group == groupId)
+                for (int i = 0; i < m_settings->m_items.size(); i++)
                 {
-                    item.m_color = value.value<QColor>();
-                    updateItemStyle(item.index);
+                    MTFPlotItem& item = m_settings->m_items[i];
+                    if (item.m_group == groupId)
+                    {
+                        item.m_color = value.value<QColor>();
+                        updateItemStyle(item.index);
+                    }
                 }
             }
+            else
+            {
+                m_settings->m_items[index].m_color = value.value<QColor>();
+                updateItemStyle(index);
+            }
+            setCurrentItem(index);
         }
-        else
-        {
-            m_settings->m_items[index].m_color = value.value<QColor>();
-            updateItemStyle(index);
-        }
-        setCurrentItem(index);
     }
     else if (property == m_itemWidthProperty)
     {
-        int index = m_itemTitleProperty->value().toInt();
-        int groupId = m_itemGroupProperty->value().toInt();
-        if (m_settings->m_bItemGroupEditable)
+        int selectedIndex = m_itemTitleProperty->value().toInt();  // 枚举值索引
+
+        if (m_itemTitles.size() > 0 && m_itemTitles.size() > selectedIndex)
         {
-            for (int i = 0; i < m_settings->m_items.size(); i++)
+            auto it = std::next(m_itemTitles.begin(), selectedIndex); // N-1 转换为 0-based 索引
+
+            int index = it.key();
+            int groupId = m_itemGroupProperty->value().toInt();
+            if (m_settings->m_bItemGroupEditable)
             {
-                MTFPlotItem& item = m_settings->m_items[i];
-                if (item.m_group == groupId)
+                for (int i = 0; i < m_settings->m_items.size(); i++)
                 {
-                    item.m_width = value.toDouble();
-                    updateItemStyle(item.index);
+                    MTFPlotItem& item = m_settings->m_items[i];
+                    if (item.m_group == groupId)
+                    {
+                        item.m_width = value.toDouble();
+                        updateItemStyle(item.index);
+                    }
                 }
             }
+            else
+            {
+                m_settings->m_items[index].m_width = value.toDouble();
+                updateItemStyle(index);
+            }
+            setCurrentItem(index);
         }
-        else
-        {
-            m_settings->m_items[index].m_width = value.toDouble();
-            updateItemStyle(index);
-        }
-        setCurrentItem(index);
     }
     else if (property == m_itemVisiableProperty)
     {
-        int index = m_itemTitleProperty->value().toInt();
-        int groupId = m_itemGroupProperty->value().toInt();
-        if (m_settings->m_bItemGroupEditable)
+        int selectedIndex = m_itemTitleProperty->value().toInt();  // 枚举值索引
+
+        if (m_itemTitles.size() > 0 && m_itemTitles.size() > selectedIndex)
         {
-            for (int i = 0; i < m_settings->m_items.size(); i++)
+            auto it = std::next(m_itemTitles.begin(), selectedIndex); // N-1 转换为 0-based 索引
+
+            int index = it.key();
+            int groupId = m_itemGroupProperty->value().toInt();
+            if (m_settings->m_bItemGroupEditable)
             {
-                MTFPlotItem& item = m_settings->m_items[i];
-                if (item.m_group == groupId)
+                for (int i = 0; i < m_settings->m_items.size(); i++)
                 {
-                    item.visible = value.toBool();
-                    updateItemStyle(item.index);
+                    MTFPlotItem& item = m_settings->m_items[i];
+                    if (item.m_group == groupId)
+                    {
+                        item.visible = value.toBool();
+                        updateItemStyle(item.index);
+                    }
                 }
             }
+            else
+            {
+                m_settings->m_items[index].visible = value.toBool();
+                updateItemStyle(index);
+            }
+            setCurrentItem(index);
         }
-        else
-        {
-            m_settings->m_items[index].visible = value.toBool();
-            updateItemStyle(index);
-        }
-        setCurrentItem(index);
     }
     m_plot->replot();
     emit propertyChanged();
@@ -1177,7 +1214,7 @@ void QwtPropertyBrowser::updateItemCombo()
         const MTFPlotItem& item = m_settings->m_items[i];
         QString displayName = QString("Item %1").arg(item.index);
         if (!item.label.isEmpty()) displayName += ": " + item.label;
-        m_itemTitles << displayName;
+        m_itemTitles[item.index] = displayName;
 
         if (!m_itemGroups.contains(QString::number(item.m_group)))
         {
@@ -1185,7 +1222,7 @@ void QwtPropertyBrowser::updateItemCombo()
         }
 
     }
-    m_itemTitleProperty->setAttribute("enumNames", m_CurveTitles);
+    m_itemTitleProperty->setAttribute("enumNames", QStringList(m_itemTitles.values()));
     m_itemGroups.sort();
 
     //m_settings->m_bCurveGroupEditable
@@ -1207,7 +1244,7 @@ void QwtPropertyBrowser::updateLineCombo()
         const MTFLine& line = m_settings->m_lines[i];
         QString displayName = QString("Line %1").arg(line.index);
         if (!line.label.isEmpty()) displayName += ": " + line.label;
-        m_CurveTitles << displayName;
+        m_CurveTitles[line.index] = displayName;
 
         if (!m_CurveGroups.contains(QString::number(line.m_group)))
         {
@@ -1215,7 +1252,8 @@ void QwtPropertyBrowser::updateLineCombo()
         }
 
     }
-    m_curveTitleProperty->setAttribute("enumNames", m_CurveTitles);
+    
+    m_curveTitleProperty->setAttribute("enumNames", QStringList(m_CurveTitles.values()));
     m_CurveGroups.sort();
 
     //m_settings->m_bCurveGroupEditable
@@ -1237,7 +1275,7 @@ void QwtPropertyBrowser::updateCurveStyle(int index)
     MTFLine& line = m_settings->m_lines[index];
     if (!line.curve) return;
 
-    loadLineSettings(m_curveTitleProperty->value().toInt());
+    //loadLineSettings(index);
 
     //DotLine,       DashDotLine,        DashDotDotLine,
     Qt::PenStyle lineStyle = line.m_style.lineStyle;
@@ -1300,20 +1338,22 @@ void QwtPropertyBrowser::loadGroupSettings(int index)
     if (index < 0 || index >= m_settings->m_lines.size()) return;
 
     m_CurveTitles.clear();
+  
     for (int i = 0; i < m_settings->m_lines.size(); ++i) {
         const MTFLine& line = m_settings->m_lines[i];
         if (line.m_group == index)
         {
             QString displayName = QString("Line %1").arg(line.index);
             if (!line.label.isEmpty()) displayName += ": " + line.label;
-            m_CurveTitles << displayName;
+            m_CurveTitles[line.index] = displayName;
         }
     }
-    m_curveTitleProperty->setAttribute("enumNames", m_CurveTitles);
-
+    
+    m_curveTitleProperty->setAttribute("enumNames", QStringList(m_CurveTitles.values()));
 
     if (m_CurveTitles.size() > 0)
-        setCurrentCurve(0);
+        setCurrentCurve(m_CurveTitles.keys()[0]);
+
 }
 void QwtPropertyBrowser::loadLineSettings(int index) 
 {
@@ -1351,6 +1391,7 @@ void QwtPropertyBrowser::setCurrentCurve(int value)
 {
     //lineCombo->setCurrentIndex(index);
     m_curveTitleProperty->setValue(value);
+    //onValueChanged(m_curveTitleProperty, value);
 }
 
 
@@ -1380,10 +1421,10 @@ void QwtPropertyBrowser::loadItemGroupSettings(int index)
         {
             QString displayName = QString("Item %1").arg(item.index);
             if (!item.label.isEmpty()) displayName += ": " + item.label;
-            m_itemTitles << displayName;
+            m_itemTitles[item.index] = displayName;
         }
     }
-    m_itemTitleProperty->setAttribute("enumNames", m_itemTitles);
+    m_itemTitleProperty->setAttribute("enumNames", QStringList(m_itemTitles.values()));
 
 
     if (m_itemTitles.size() > 0)
@@ -1400,7 +1441,7 @@ void QwtPropertyBrowser::updateItemStyle(int index)
     if (!item.m_item) return;
 
 
-    loadItemSettings(m_itemTitleProperty->value().toInt());
+    //loadItemSettings(m_itemTitleProperty->value().toInt());
 
 
     emit signalUpdateItemStyle(index);

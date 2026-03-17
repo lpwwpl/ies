@@ -142,7 +142,7 @@ public:
     QMap<int, AxisProperties> m_axisProps;
 
     // 曲线属性
-    QStringList m_CurveTitles;
+    QMap<int,QString> m_CurveTitles;
     QStringList m_CurveGroups;
     QtVariantProperty* m_curveGroupEditableProperty;
     QtVariantProperty* m_curveTitleProperty;
@@ -158,7 +158,7 @@ public:
     QtVariantProperty* m_curveCustomPatternProperty;
 
     QStringList m_itemGroups;
-    QStringList m_itemTitles;
+    QMap< int, QString> m_itemTitles;
     QtVariantProperty* m_itemGroupEditableProperty;
     QtVariantProperty* m_itemTitleProperty;
     QtVariantProperty* m_itemVisiableProperty;
