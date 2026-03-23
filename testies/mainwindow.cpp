@@ -922,6 +922,11 @@ void MainWindow::on_actionOpen_triggered()
 
     populateTableFromIESData();
 
+    if (IESLoader::instance().light.candela_hv.size() > 0)
+    {
+        double value = IESLoader::instance().computeTotalFlux();
+        ui->dsbFlux->setValue(value);
+    }
     m_fileState = eFile_clean;
     m_filepath = filename;
     QFileInfo fileInfo(m_filepath);

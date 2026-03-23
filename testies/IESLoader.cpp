@@ -440,6 +440,53 @@ void IESLoader::loadIES(QString filename)
 
     fillData();
 }
+double IESLoader::computeTotalFlux(
+    //const std::vector<double>& v_deg,    // 垂直角度（度）
+    //const std::vector<double>& h_deg,    // 水平角度（度）
+    //const std::vector<std::vector<double>>& I_raw, // 原始光强矩阵 [Nh][Nv]
+    //double multiplier,
+    //double ballast
+) {
+    int Nh = light.horizontal_angles.size();
+    int Nv = light.vertical_angles.size();
+
+    // 角度转弧度
+    std::vector<double> v_rad(Nv), h_rad(Nh);
+    for (int j = 0; j < Nv; ++j) v_rad[j] = light.vertical_angles[j] * M_PI / 180.0;
+    for (int i = 0; i < Nh; ++i) h_rad[i] = light.horizontal_angles[i] * M_PI / 180.0;
+
+    // 步骤1：计算每个水平角上的垂直积分 V_i
+    std::vector<double> V(Nh, 0.0);
+    for (int i = 0; i < Nh; ++i) {
+        double integral = 0.0;
+        for (int j = 0; j < Nv - 1; ++j) {
+            double theta1 = v_rad[j];
+            double theta2 = v_rad[j + 1];
+            double I1 = light.candela_hv[i][j] * light.multiplier * light.ballast_factor;
+            double I2 = light.candela_hv[i][j + 1] * light.multiplier * light.ballast_factor;
+            double f1 = I1 * sin(theta1);
+            double f2 = I2 * sin(theta2);
+            integral += (f1 + f2) * (theta2 - theta1) / 2.0;
+        }
+        V[i] = integral; // 单位：cd·rad，即 dΦ/dφ
+    }
+
+    // 步骤2：水平积分，处理周期性
+    double totalFlux = 0.0;
+    // 检查水平角是否覆盖 0~2π
+    bool has2Pi = (std::abs(h_rad.back() - 2 * M_PI) < 1e-6);
+    int nIntervals = has2Pi ? Nh - 1 : Nh; // 若不包含2π，则需要额外区间
+
+    for (int i = 0; i < nIntervals; ++i) {
+        double phi1 = h_rad[i];
+        double phi2 = (i < Nh - 1) ? h_rad[i + 1] : 2 * M_PI; // 最后一个区间到2π
+        double V1 = V[i];
+        double V2 = (i < Nh - 1) ? V[i + 1] : V[0]; // 周期性：最后一个点对应0°
+        totalFlux += (V1 + V2) * (phi2 - phi1) / 2.0;
+    }
+
+    return totalFlux;
+}
 int IESLoader::findClosestIndex(const std::vector<double>& array, double value)
 {
     if (array.empty()) return -1;

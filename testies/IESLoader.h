@@ -46,7 +46,7 @@ public:
     double getCandelaValue(double vertical, double horizontal) ;
     int findClosestIndex(const std::vector<double>& array, double value);
 
-
+    double computeTotalFlux();
     // 计算函数
     void calculateXZPlaneIlluminance();
     void calculateYZPlaneIlluminance();
