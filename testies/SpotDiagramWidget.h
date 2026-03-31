@@ -276,7 +276,7 @@ private:
     QwtPlotZoomer* m_zoomer;                    // 缩放工具
     QwtPlotPanner* m_panner;                    // 平移工具
     QwtPlotGrid* m_grid;                        // 网格
-    QwtLegend* m_legend;
+    //QwtLegend* m_legend;
     // 自定义刻度绘制器
     MultiLineScaleDraw* m_leftScaleDraw;
     MultiLineScaleDraw* m_rightScaleDraw;

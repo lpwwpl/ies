@@ -221,7 +221,6 @@ FootprintWidget::FootprintWidget(QWidget* parent)
     , m_panner(nullptr)
     , m_magnifier(nullptr)
     , m_grid(nullptr)
-    ,m_legend(nullptr)
     //,m_
 {
 
@@ -246,13 +245,13 @@ void FootprintWidget::setupPlot()
     m_plot = m_toolBar_plot->m_plot;
 
     m_grid = m_toolBar_plot->m_grid;
-    m_legend = m_toolBar_plot->m_legend;
+    //m_legend = m_toolBar_plot->m_legend;
     m_settings = m_toolBar_plot->m_settings;
     connect(m_toolBar_plot, SIGNAL(signalFitView()), this, SLOT(fitView()));
     connect(m_toolBar_plot, SIGNAL(signalZoomIn()), this, SLOT(zoomIn()));
     connect(m_toolBar_plot, SIGNAL(signalZommOut()), this, SLOT(zoomOut()));
 
-    m_simple_browser = new QwtPropertyBrowser(m_settings, m_plot, m_grid, m_legend, this);
+    m_simple_browser = new QwtPropertyBrowser(m_settings, m_plot, m_grid, m_toolBar_plot->m_legend, this);
 
 
 

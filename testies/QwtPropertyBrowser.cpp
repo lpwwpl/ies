@@ -1677,6 +1677,7 @@ void QwtPropertyBrowser::applyLegendSettings_plot()
             // 可能需要对图例进行一些初始化设置
         }
         m_plot->insertLegend(m_legend, m_settings->legend.position);
+        
         m_legend->setVisible(true);
         updateLegendItemsStyle();
     }

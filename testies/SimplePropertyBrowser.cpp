@@ -160,7 +160,28 @@ void SimplePropertyBrowser::initSimplePropertyWidget()
     globalLayout->addRow(tr("显示图例:"), legendVisibleCheck);
     connect(legendVisibleCheck, &QCheckBox::toggled, this, [this](bool) {
         m_settings->legend.visible = legendVisibleCheck->isChecked();
-        m_legend->setVisible(m_settings->legend.visible);
+        if (m_settings->legend.visible)
+        {
+            // 显示图例：如果之前移除了，需要重新插入；如果已存在，直接显示并更新样式
+            if (!m_legend) {
+                m_legend = new QwtLegend();
+                // 可能需要对图例进行一些初始化设置
+            }
+            m_plot->insertLegend(m_legend, m_settings->legend.position);
+
+            m_legend->setVisible(true);
+            updateLegendItemsStyle();
+        }
+        else
+        {
+            // 隐藏图例：从 Plot 中移除，完全消失
+            delete m_legend;
+            m_plot->insertLegend(nullptr);
+            m_legend = NULL;
+            // 如果 m_legend 是你管理的成员，可以保留对象以便下次快速显示，
+            // 或者直接删除并置空（取决于你的内存管理策略）
+            // 这里假设保留 m_legend 对象，仅从 plot 中移除
+        }
         });
 
     // 图例位置

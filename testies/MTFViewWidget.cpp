@@ -573,13 +573,13 @@ void MTFViewer::setupUI()
     m_toolBar_plot = new PlotBase(this);
     m_plot = m_toolBar_plot->m_plot;
     m_grid = m_toolBar_plot->m_grid;
-    m_legend = m_toolBar_plot->m_legend;
+    //m_legend = m_toolBar_plot->m_legend;
     m_settings = m_toolBar_plot->m_settings;
     connect(m_toolBar_plot, SIGNAL(signalFitView()), this, SLOT(fitView()));
     connect(m_toolBar_plot, SIGNAL(signalZoomIn()), this, SLOT(zoomIn()));
     connect(m_toolBar_plot, SIGNAL(signalZommOut()), this, SLOT(zoomOut()));
 
-    m_simple_browser = new QwtPropertyBrowser(m_settings, m_plot,m_grid,m_legend, this);
+    m_simple_browser = new QwtPropertyBrowser(m_settings, m_plot,m_grid, m_toolBar_plot->m_legend, this);
     //m_simple_browser = new SimplePropertyBrowser(m_settings,m_plot,this);
     // 分割器
     m_splitter = new QSplitter(this);
@@ -751,10 +751,10 @@ void MTFViewer::plotData()
     }
 
     // 图例点击连接
-    if (m_legend) {
-        disconnect(m_legend, SIGNAL(checked(const QVariant&, bool, int)),
+    if (m_toolBar_plot->m_legend) {
+        disconnect(m_toolBar_plot->m_legend, SIGNAL(checked(const QVariant&, bool, int)),
             this, SLOT(onLegendChecked(const QVariant&, bool, int)));
-        connect(m_legend, SIGNAL(checked(const QVariant&, bool, int)),
+        connect(m_toolBar_plot->m_legend, SIGNAL(checked(const QVariant&, bool, int)),
             this, SLOT(onLegendChecked(const QVariant&, bool, int)));
     }
 
@@ -842,8 +842,8 @@ void MTFViewer::clearAllSelections()
 
 void MTFViewer::updateLegendSelection(QwtPlotCurve* curve, bool selected)
 {
-    if (!m_legend || !curve) return;
-    QList<QwtLegendLabel*> labels = m_legend->findChildren<QwtLegendLabel*>();
+    if (!m_toolBar_plot->m_legend || !curve) return;
+    QList<QwtLegendLabel*> labels = m_toolBar_plot->m_legend->findChildren<QwtLegendLabel*>();
     for (QwtLegendLabel* label : labels) {
         if (label->text() == curve->title().text()) {
             QFont f = label->font();
@@ -1030,8 +1030,8 @@ void MTFViewer::showContextMenu(const QPoint& pos)
     menu.addAction(tr("重置视图"), this, &MTFViewer::fitView);
     menu.addAction(tr("图例在左侧"), [this]() { setLegendPosition(true); });
     menu.addAction(tr("图例在右侧"), [this]() { setLegendPosition(false); });
-    menu.addAction(m_legend->isVisible() ? tr("隐藏图例") : tr("显示图例"),
-        [this]() { showLegend(!m_legend->isVisible()); });
+    menu.addAction(m_toolBar_plot->m_legend->isVisible() ? tr("隐藏图例") : tr("显示图例"),
+        [this]() { showLegend(!m_toolBar_plot->m_legend->isVisible()); });
     menu.addAction(tr("清除选择"), this, &MTFViewer::clearAllSelections);
     menu.addSeparator();
     menu.addAction(tr("保存SVG..."), [this]() {

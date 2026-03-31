@@ -307,12 +307,12 @@ void DistortionGridWidget::setupPlot()
     m_toolBar_plot = new PlotBase(this);
     m_plot = m_toolBar_plot->m_plot;
     m_grid = m_toolBar_plot->m_grid;
-    m_legend = m_toolBar_plot->m_legend;
+    //m_legend = m_toolBar_plot->m_legend;
     m_settings = m_toolBar_plot->m_settings;
     connect(m_toolBar_plot, SIGNAL(signalFitView()), this, SLOT(fitView()));
     connect(m_toolBar_plot, SIGNAL(signalZoomIn()), this, SLOT(zoomIn()));
     connect(m_toolBar_plot, SIGNAL(signalZommOut()), this, SLOT(zoomOut()));
-    m_simple_browser = new QwtPropertyBrowser(m_settings, m_plot, m_grid, m_legend, this);
+    m_simple_browser = new QwtPropertyBrowser(m_settings, m_plot, m_grid, m_toolBar_plot->m_legend, this);
 
     // 设置画布背景
     m_plot->setCanvasBackground(Qt::white);

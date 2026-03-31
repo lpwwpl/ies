@@ -574,7 +574,7 @@ SpotDiagramPlotter::SpotDiagramPlotter(QWidget* parent)
     //QVBoxLayout* mainLayout = new QVBoxLayout(this);
     m_toolbar_plot = new PlotBase(this);
     m_plot = m_toolbar_plot->m_plot;
-    m_legend = m_toolbar_plot->m_legend;
+    //m_legend = m_toolbar_plot->m_legend;
     m_grid = m_toolbar_plot->m_grid;
     m_settings = m_toolbar_plot->m_settings;
 
@@ -585,7 +585,7 @@ SpotDiagramPlotter::SpotDiagramPlotter(QWidget* parent)
     setupPlot();
 
     m_settings = new PlotSettings();
-    m_simple_browser = new SimplePropertyBrowser(m_settings, m_plot, m_grid, m_legend, this);
+    m_simple_browser = new SimplePropertyBrowser(m_settings, m_plot, m_grid, m_toolbar_plot->m_legend, this);
     // 分割器
     m_splitter = new QSplitter(this);
     m_splitter->addWidget(m_toolbar_plot);
@@ -1340,8 +1340,8 @@ void SpotDiagramPlotter::showContextMenu(const QPoint& pos)
     menu.addAction(tr("重置视图"), this, &SpotDiagramPlotter::fitView);
     menu.addAction(tr("图例在左侧"), [this]() { setLegendPosition(true); });
     menu.addAction(tr("图例在右侧"), [this]() { setLegendPosition(false); });
-    menu.addAction(m_legend->isVisible() ? tr("隐藏图例") : tr("显示图例"),
-        [this]() { showLegend(!m_legend->isVisible()); });
+    menu.addAction(m_toolbar_plot->m_legend->isVisible() ? tr("隐藏图例") : tr("显示图例"),
+        [this]() { showLegend(!m_toolbar_plot->m_legend->isVisible()); });
     //menu.addAction(tr("清除选择"), this, &SpotDiagramPlotter::clearAllSelections);
     menu.addSeparator();
     menu.addAction(tr("保存SVG..."), [this]() {
