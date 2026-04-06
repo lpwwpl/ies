@@ -116,9 +116,9 @@ void SimplePropertyBrowser::initSimplePropertyWidget()
     connect(originCombo, &QComboBox::currentTextChanged, this, [this](const QString&) {
         m_settings->origin = static_cast<PlotSettings::Origin>(originCombo->currentData().toInt());
         applyOrigin();
-        //signalUpdateScaleDiv();
-        applyXAxisSettings();
-        applyYAxisSettings();
+        signalUpdateScaleDiv();
+        //applyXAxisSettings();
+        //applyYAxisSettings();
         });
 
 
@@ -1103,8 +1103,8 @@ void SimplePropertyBrowser::applyOrigin()
         //}
         double xRange = xDiv.upperBound() - xDiv.lowerBound() ;
         double yRange = yDiv.upperBound()- yDiv.lowerBound() ;
-        m_plot->setAxisScale(QwtPlot::xBottom, -xRange, xRange);
-        m_plot->setAxisScale(QwtPlot::yLeft, -yRange, yRange);
+        m_plot->setAxisScale(QwtPlot::xBottom, -xRange/2, xRange/2);
+        m_plot->setAxisScale(QwtPlot::yLeft, -yRange/2, yRange/2);
     }
     break;
     }

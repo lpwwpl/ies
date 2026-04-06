@@ -1771,40 +1771,44 @@ void QwtPropertyBrowser::applyOrigin_plot()
         m_plot->axisScaleEngine(QwtPlot::yLeft)->setAttribute(QwtScaleEngine::Inverted, false);
 
         // 计算数据范围（与之前相同）
-        double xMin, xMax, yMin, yMax;
-        if (m_settings->m_lines.isEmpty()) {
-            xMin = m_defaultXMin;
-            xMax = m_defaultXMax;
-            yMin = m_defaultYMin;
-            yMax = m_defaultYMax;
-        }
-        else {
-            xMin = std::numeric_limits<double>::max();
-            xMax = std::numeric_limits<double>::lowest();
-            yMin = std::numeric_limits<double>::max();
-            yMax = std::numeric_limits<double>::lowest();
-            bool hasData = false;
-            for (const MTFLine& line : m_settings->m_lines) {
-                if (!line.m_style.visible || line.data.isEmpty()) continue;
-                hasData = true;
-                for (const QPointF& p : line.data) {
-                    if (p.x() < xMin) xMin = p.x();
-                    if (p.x() > xMax) xMax = p.x();
-                    if (p.y() < yMin) yMin = p.y();
-                    if (p.y() > yMax) yMax = p.y();
-                }
-            }
-            if (!hasData) {
-                xMin = m_defaultXMin;
-                xMax = m_defaultXMax;
-                yMin = m_defaultYMin;
-                yMax = m_defaultYMax;
-            }
-        }
-        double xRange = qMax(qAbs(xMin), qAbs(xMax)) * 1.05;
-        double yRange = qMax(qAbs(yMin), qAbs(yMax)) * 1.05;
-        m_plot->setAxisScale(QwtPlot::xBottom, -xRange, xRange);
-        m_plot->setAxisScale(QwtPlot::yLeft, -yRange, yRange);
+        //double xMin, xMax, yMin, yMax;
+        //if (m_settings->m_lines.isEmpty()) {
+        //    xMin = m_defaultXMin;
+        //    xMax = m_defaultXMax;
+        //    yMin = m_defaultYMin;
+        //    yMax = m_defaultYMax;
+        //}
+        //else {
+        //    xMin = std::numeric_limits<double>::max();
+        //    xMax = std::numeric_limits<double>::lowest();
+        //    yMin = std::numeric_limits<double>::max();
+        //    yMax = std::numeric_limits<double>::lowest();
+        //    bool hasData = false;
+        //    for (const MTFLine& line : m_settings->m_lines) {
+        //        if (!line.m_style.visible || line.data.isEmpty()) continue;
+        //        hasData = true;
+        //        for (const QPointF& p : line.data) {
+        //            if (p.x() < xMin) xMin = p.x();
+        //            if (p.x() > xMax) xMax = p.x();
+        //            if (p.y() < yMin) yMin = p.y();
+        //            if (p.y() > yMax) yMax = p.y();
+        //        }
+        //    }
+        //    if (!hasData) {
+        //        xMin = m_defaultXMin;
+        //        xMax = m_defaultXMax;
+        //        yMin = m_defaultYMin;
+        //        yMax = m_defaultYMax;
+        //    }
+        //}
+        //double xRange = qMax(qAbs(xMin), qAbs(xMax)) * 1.05;
+        //double yRange = qMax(qAbs(yMin), qAbs(yMax)) * 1.05;
+        //m_plot->setAxisScale(QwtPlot::xBottom, -xRange, xRange);
+        //m_plot->setAxisScale(QwtPlot::yLeft, -yRange, yRange);
+        double xRange = xDiv.upperBound() - xDiv.lowerBound();
+        double yRange = yDiv.upperBound() - yDiv.lowerBound();
+        m_plot->setAxisScale(QwtPlot::xBottom, -xRange/2, xRange/2);
+        m_plot->setAxisScale(QwtPlot::yLeft, -yRange/2, yRange/2);
     }
     break;
     }

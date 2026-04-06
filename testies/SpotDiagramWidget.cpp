@@ -590,7 +590,7 @@ SpotDiagramPlotter::SpotDiagramPlotter(QWidget* parent)
     connect(m_toolbar_plot, SIGNAL(signalFitView()), this, SLOT(fitView()));
     connect(m_toolbar_plot, SIGNAL(signalZoomIn()), this, SLOT(zoomIn()));
     connect(m_toolbar_plot, SIGNAL(signalZoomOut()), this, SLOT(zoomOut()));
-    //connect(m_simple_browser, SIGNAL(signalUpdateScaleDiv()), this, SLOT(updateLabelsForCurrentView()));
+    connect(m_simple_browser, SIGNAL(signalUpdateScaleDiv()), this, SLOT(updateLabelsForCurrentView()));
     connect(m_simple_browser, SIGNAL(signalXScaleAxes()), this, SLOT(updateXScaleAxes()));
     connect(m_simple_browser, SIGNAL(signalYScaleAxes()), this, SLOT(updateYScaleAxes()));
     // 分割器
