@@ -211,6 +211,8 @@
 #include <algorithm>
 #include <qwt_text.h>
 #include <QSplitter>
+#include <qwt_scale_div.h>
+ 
 #ifndef M_PI
 #define M_PI 3.14159265358979323846
 #endif
@@ -249,10 +251,11 @@ void FootprintWidget::setupPlot()
     m_settings = m_toolBar_plot->m_settings;
     connect(m_toolBar_plot, SIGNAL(signalFitView()), this, SLOT(fitView()));
     connect(m_toolBar_plot, SIGNAL(signalZoomIn()), this, SLOT(zoomIn()));
-    connect(m_toolBar_plot, SIGNAL(signalZommOut()), this, SLOT(zoomOut()));
+    connect(m_toolBar_plot, SIGNAL(signalZoomOut()), this, SLOT(zoomOut()));
 
     m_simple_browser = new QwtPropertyBrowser(m_settings, m_plot, m_grid, m_toolBar_plot->m_legend, this);
-
+    connect(m_simple_browser, SIGNAL(signalXScaleAxes()), this, SLOT(updateXScaleAxes()));
+    connect(m_simple_browser, SIGNAL(signalYScaleAxes()), this, SLOT(updateYScaleAxes()));
 
 
     // 设置画布背景
@@ -482,12 +485,6 @@ void FootprintWidget::plotFootprints()
     clearAllCurves();
 
     // 计算总体范围
-    double minX = std::numeric_limits<double>::max();
-    double maxX = std::numeric_limits<double>::lowest();
-    double minY = std::numeric_limits<double>::max();
-    double maxY = std::numeric_limits<double>::lowest();
-    double maxRadius = 0;
-
     for (const FootprintData& data : m_footprintData) {
         if (data.field == "all") {
             // 对于"all"字段，圆心在(0,0)，半径为data.radius
@@ -628,6 +625,179 @@ void FootprintWidget::plotFootprints()
     m_plot->setAxisScale(QwtPlot::xBottom, -range - margin, range + margin);
     m_plot->setAxisScale(QwtPlot::yLeft, -range - margin, range + margin);
 
+
     // 重新绘制
     m_plot->replot();
+
+    saveInitialView();
+}
+
+void FootprintWidget::zoomOut()
+{
+    m_initialXMin = m_initialXMin * 1.1;
+    m_initialXMax = m_initialXMax * 1.1;
+    m_initialYMax = m_initialYMax * 1.1;
+    m_initialYMin = m_initialYMin * 1.1;
+    // 恢复初始视图范围
+    m_plot->setAxisScale(QwtPlot::xBottom, m_initialXMin, m_initialXMax);
+    m_plot->setAxisScale(QwtPlot::yLeft, m_initialYMin, m_initialYMax);
+    m_plot->setAxisScale(QwtPlot::yRight, m_initialYMin, m_initialYMax);
+
+    m_current_factor = m_current_factor * 1.1;
+    m_simple_browser->applyXAxisSettings();
+    m_simple_browser->applyYAxisSettings();
+    // 重新绘制
+    m_plot->replot();
+    //m_plot->setAxisScale(QwtPlot::xBottom,
+    //    m_plot->axisScaleDiv(QwtPlot::xBottom).lowerBound() * 1.1,
+    //    m_plot->axisScaleDiv(QwtPlot::xBottom).upperBound() * 1.1);
+    //m_plot->setAxisScale(QwtPlot::yLeft,
+    //    m_plot->axisScaleDiv(QwtPlot::yLeft).lowerBound() * 1.1,
+    //    m_plot->axisScaleDiv(QwtPlot::yLeft).upperBound() * 1.1);
+    //m_plot->replot();
+
+    //m_settings->xAxis.min = m_plot->axisScaleDiv(QwtPlot::xBottom).lowerBound();
+    //m_settings->xAxis.max = m_plot->axisScaleDiv(QwtPlot::xBottom).upperBound();
+
+    //m_settings->yAxis.min = m_plot->axisScaleDiv(QwtPlot::yLeft).lowerBound();
+    //m_settings->yAxis.max = m_plot->axisScaleDiv(QwtPlot::yLeft).upperBound();
+
+    //m_simple_browser->applyXAxisSettings();
+    //m_simple_browser->applyYAxisSettings();
+}
+
+void FootprintWidget::fitView()
+{
+    autoScaleAxes();
+    m_plot->replot();
+}
+
+void FootprintWidget::autoScaleAxes()
+{
+    m_initialXMin = m_initialXMin_orig;
+    m_initialXMax = m_initialXMax_orig;
+    m_initialYMin = m_initialYMin_orig;
+    m_initialYMax = m_initialYMax_orig;
+
+    // 恢复初始视图范围
+    m_plot->setAxisScale(QwtPlot::xBottom, m_initialXMin, m_initialXMax);
+    m_plot->setAxisScale(QwtPlot::yLeft, m_initialYMin, m_initialYMax);
+    m_plot->setAxisScale(QwtPlot::yRight, m_initialYMin, m_initialYMax);
+
+    m_current_factor = 1;
+
+    // 重新绘制
+    m_plot->replot();
+
+    m_simple_browser->applyXAxisSettings();
+    m_simple_browser->applyYAxisSettings();
+    //for (const FootprintData& data : m_footprintData) {
+    //    if (data.field == "all") {
+    //        // 对于"all"字段，圆心在(0,0)，半径为data.radius
+    //        maxRadius = std::max(maxRadius, std::abs(data.radius));
+    //        minX = std::min(minX, -data.radius);
+    //        maxX = std::max(maxX, data.radius);
+    //        minY = std::min(minY, -data.radius);
+    //        maxY = std::max(maxY, data.radius);
+    //    }
+    //    else {
+    //        // 对于其他字段，计算包围矩形
+    //        minX = std::min(minX, data.left);
+    //        maxX = std::max(maxX, data.right);
+    //        minY = std::min(minY, data.bottom);
+    //        maxY = std::max(maxY, data.top);
+
+    //        // 计算半径（取矩形半宽和半高中较大的一个）
+    //        double xHalfRange = (data.right - data.left) / 2;
+    //        double yHalfRange = (data.top - data.bottom) / 2;
+    //        double radius = std::max(xHalfRange, yHalfRange);
+    //        maxRadius = std::max(maxRadius, radius);
+    //    }
+    //}
+    //double range = maxRadius;
+    //range = std::max(range, std::max(std::abs(minX), std::abs(maxX)));
+    //range = std::max(range, std::max(std::abs(minY), std::abs(maxY)));
+
+    //// 添加边距
+    //double margin = range * 0.1;
+
+    //// 设置坐标轴范围
+    //m_plot->setAxisScale(QwtPlot::xBottom, -range - margin, range + margin);
+    //m_plot->setAxisScale(QwtPlot::yLeft, -range - margin, range + margin);
+    //m_plot->replot();
+}
+
+void FootprintWidget::zoomIn()
+{
+    m_initialXMin = m_initialXMin * 0.9;
+    m_initialXMax = m_initialXMax * 0.9;
+    m_initialYMax = m_initialYMax * 0.9;
+    m_initialYMin = m_initialYMin * 0.9;
+    // 恢复初始视图范围
+    m_plot->setAxisScale(QwtPlot::xBottom, m_initialXMin, m_initialXMax);
+    m_plot->setAxisScale(QwtPlot::yLeft, m_initialYMin, m_initialYMax);
+    m_plot->setAxisScale(QwtPlot::yRight, m_initialYMin, m_initialYMax);
+    // 更新点列位置
+    m_current_factor = m_current_factor * 0.9;
+    m_simple_browser->applyXAxisSettings();
+    m_simple_browser->applyYAxisSettings();
+    // 重新绘制
+    m_plot->replot();
+    //m_plot->setAxisScale(QwtPlot::xBottom,
+    //    m_plot->axisScaleDiv(QwtPlot::xBottom).lowerBound() * 0.9,
+    //    m_plot->axisScaleDiv(QwtPlot::xBottom).upperBound() * 0.9);
+    //m_plot->setAxisScale(QwtPlot::yLeft,
+    //    m_plot->axisScaleDiv(QwtPlot::yLeft).lowerBound() * 0.9,
+    //    m_plot->axisScaleDiv(QwtPlot::yLeft).upperBound() * 0.9);
+    //m_plot->replot();
+
+    //m_settings->xAxis.min = m_plot->axisScaleDiv(QwtPlot::xBottom).lowerBound();
+    //m_settings->xAxis.max = m_plot->axisScaleDiv(QwtPlot::xBottom).upperBound();
+
+    //m_settings->yAxis.min = m_plot->axisScaleDiv(QwtPlot::yLeft).lowerBound();
+    //m_settings->yAxis.max = m_plot->axisScaleDiv(QwtPlot::yLeft).upperBound();
+
+    //m_simple_browser->applyXAxisSettings();
+    //m_simple_browser->applyYAxisSettings();
+}
+
+void FootprintWidget::updateXScaleAxes()
+{
+    m_initialXMin = m_initialXMin_orig * m_current_factor;
+    m_initialXMax = m_initialXMax_orig * m_current_factor;
+    // 恢复初始视图范围
+    m_plot->setAxisScale(QwtPlot::xBottom, m_initialXMin, m_initialXMax);
+
+    // 重新绘制
+    m_plot->replot();
+}
+void FootprintWidget::updateYScaleAxes()
+{
+    m_initialYMin = m_initialYMin_orig * m_current_factor;
+    m_initialYMax = m_initialYMax_orig * m_current_factor;
+
+    m_plot->setAxisScale(QwtPlot::yLeft, m_initialYMin, m_initialYMax);
+    m_plot->setAxisScale(QwtPlot::yRight, m_initialYMin, m_initialYMax);
+
+    // 重新绘制
+    m_plot->replot();
+}
+
+void FootprintWidget::saveInitialView()
+{
+    // 保存初始视图范围
+    QwtScaleDiv xScaleDiv = m_plot->axisScaleDiv(QwtPlot::xBottom);
+    QwtScaleDiv yScaleDiv = m_plot->axisScaleDiv(QwtPlot::yLeft);
+
+    m_initialXMin = xScaleDiv.lowerBound();
+    m_initialXMax = xScaleDiv.upperBound();
+    m_initialYMin = yScaleDiv.lowerBound();
+    m_initialYMax = yScaleDiv.upperBound();
+
+    m_initialXMin_orig = xScaleDiv.lowerBound();
+    m_initialXMax_orig = xScaleDiv.upperBound();
+    m_initialYMin_orig = yScaleDiv.lowerBound();
+    m_initialYMax_orig = yScaleDiv.upperBound();
+
+    m_current_factor = 1;
 }

@@ -189,6 +189,7 @@ public:
     void plotSpotDiagrams();
     void setLegendPosition(bool leftSide);
     void showLegend(bool show);
+    void autoScaleAxes();
 
 private slots:
     // 缩放完成后的处理
@@ -233,14 +234,8 @@ private:
     // 计算点列的实际范围
     void calculateSpotDataRange();
 
-    // 同步左右Y轴刻度
-    void synchronizeAxisTicks();
-
     // 获取视场名称
     QString getFieldName(int fieldIndex) const;
-
-    // 更新刻度线显示
-    void updateAxisTicks();
 
     // 重新应用自定义刻度绘制
     void reapplyScaleDraws();
@@ -248,16 +243,21 @@ private:
     // 更新刻度标签位置
     void updateTickLabelPositions();
 
-    // 根据当前Y轴位置更新标签
-    void updateLabelsForCurrentView();
 
-    // 自动缩放
-    void autoScaleAxes();
+
+    // 同步左右Y轴刻度
+    void synchronizeAxisTicks();
+    // 更新刻度线显示
+    void updateAxisTicks();
 
 public Q_SLOTS:
     void zoomIn();
     void zoomOut();
     void fitView();
+    // 根据当前Y轴位置更新标签
+    void updateLabelsForCurrentView();
+    void updateXScaleAxes();
+    void updateYScaleAxes();
 private:
     QwtPlot* m_plot;                            // 图表控件
     QVector<SpotData> m_spotData;               // 点列图数据
@@ -288,6 +288,9 @@ private:
     double m_initialXMin, m_initialXMax;        // 初始X轴范围
     double m_initialYMin, m_initialYMax;        // 初始Y轴范围
 
+    double m_initialXMin_orig, m_initialXMax_orig;        // 初始X轴范围
+    double m_initialYMin_orig, m_initialYMax_orig;        // 初始Y轴范围
+
     // 点列的实际范围（相对于中心的最大偏移）
     double m_maxSpotXRange;                     // 最大X方向范围
     double m_maxSpotYRange;                     // 最大Y方向范围
@@ -313,6 +316,7 @@ private:
 
     double m_defaultXMin = 0.0, m_defaultXMax = 200.0;
     double m_defaultYMin = 0.0, m_defaultYMax = 1.1;
+    double m_current_factor = 1;
 };
 
 

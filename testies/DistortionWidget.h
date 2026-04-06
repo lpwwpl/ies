@@ -100,7 +100,15 @@ public:
     // 公共接口
     bool loadDistortionData(const QString& filename);
     void plotGrids();
+    void autoScaleAxes();
+    void saveInitialView();
 
+public Q_SLOTS:
+    void zoomIn();
+    void zoomOut();
+    void fitView();
+    void updateXScaleAxes();
+    void updateYScaleAxes();
 private:
     void setupPlot();
     void setupInteractions();
@@ -136,6 +144,9 @@ private:
     double marginX = 0;
     double marginY = 0;
 
+    // 默认范围
+    double m_defaultXMin = 0.0, m_defaultXMax = 200.0;
+    double m_defaultYMin = 0.0, m_defaultYMax = 1.1;
 
     PlotSettings* m_settings;
     PlotBase* m_toolBar_plot;
@@ -144,6 +155,13 @@ private:
     QToolBar* m_toolBar;
     QwtPropertyBrowser* m_simple_browser;
     QSplitter* m_splitter;
+
+    double m_current_factor = 1;
+    double m_initialXMin, m_initialXMax;        // 初始X轴范围
+    double m_initialYMin, m_initialYMax;        // 初始Y轴范围
+
+    double m_initialXMin_orig, m_initialXMax_orig;        // 初始X轴范围
+    double m_initialYMin_orig, m_initialYMax_orig;        // 初始Y轴范围
 };
 
 #endif // DISTORTIONGRIDWIDGET_H

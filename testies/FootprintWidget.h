@@ -83,7 +83,14 @@ public:
 
     bool loadDataFromFile(const QString& filename);
     void plotFootprints();
-
+    void autoScaleAxes();
+    void saveInitialView();
+public Q_SLOTS:
+    void zoomIn();
+    void zoomOut();
+    void fitView();
+    void updateXScaleAxes();
+    void updateYScaleAxes();
 private:
     void setupPlot();
     void setupInteractions();
@@ -104,6 +111,9 @@ private:
 
     QVector<FootprintData> m_footprintData;
 
+    // 默认范围
+    double m_defaultXMin = 0.0, m_defaultXMax = 200.0;
+    double m_defaultYMin = 0.0, m_defaultYMax = 1.1;
 
     QwtPlotGrid* m_grid;
     //QwtLegend* m_legend;
@@ -112,6 +122,21 @@ private:
     QSplitter* m_splitter;
     PlotSettings* m_settings;
     PlotBase* m_toolBar_plot;
+
+
+    double minX = std::numeric_limits<double>::max();
+    double maxX = std::numeric_limits<double>::lowest();
+    double minY = std::numeric_limits<double>::max();
+    double maxY = std::numeric_limits<double>::lowest();
+    double maxRadius = 0;
+
+
+    double m_current_factor = 1;
+    double m_initialXMin, m_initialXMax;        // 初始X轴范围
+    double m_initialYMin, m_initialYMax;        // 初始Y轴范围
+
+    double m_initialXMin_orig, m_initialXMax_orig;        // 初始X轴范围
+    double m_initialYMin_orig, m_initialYMax_orig;        // 初始Y轴范围
 };
 
 #endif // FOOTPRINTWIDGET_H

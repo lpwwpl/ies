@@ -577,9 +577,11 @@ void MTFViewer::setupUI()
     m_settings = m_toolBar_plot->m_settings;
     connect(m_toolBar_plot, SIGNAL(signalFitView()), this, SLOT(fitView()));
     connect(m_toolBar_plot, SIGNAL(signalZoomIn()), this, SLOT(zoomIn()));
-    connect(m_toolBar_plot, SIGNAL(signalZommOut()), this, SLOT(zoomOut()));
+    connect(m_toolBar_plot, SIGNAL(signalZoomOut()), this, SLOT(zoomOut()));
 
     m_simple_browser = new QwtPropertyBrowser(m_settings, m_plot,m_grid, m_toolBar_plot->m_legend, this);
+    connect(m_simple_browser, SIGNAL(signalXScaleAxes()), this, SLOT(updateXScaleAxes()));
+    connect(m_simple_browser, SIGNAL(signalYScaleAxes()), this, SLOT(updateYScaleAxes()));
     //m_simple_browser = new SimplePropertyBrowser(m_settings,m_plot,this);
     // 分割器
     m_splitter = new QSplitter(this);
@@ -700,6 +702,7 @@ bool MTFViewer::loadFromString(const QString& data)
 
     if (hasValidData) {   
         plotData();
+
         m_simple_browser->updateLineCombo();
         m_simple_browser->setCurrentCurve(0);
         emit dataLoaded(true);
@@ -757,10 +760,15 @@ void MTFViewer::plotData()
         connect(m_toolBar_plot->m_legend, SIGNAL(checked(const QVariant&, bool, int)),
             this, SLOT(onLegendChecked(const QVariant&, bool, int)));
     }
+    m_simple_browser->updateLegendItemsStyle();
+   
 
     autoScaleAxes();
-    m_simple_browser->updateLegendItemsStyle();
+
     m_plot->replot();
+   
+    saveInitialView();
+    fitView();
     //syncBrowserFromPlot();
 }
 
@@ -905,13 +913,11 @@ void MTFViewer::autoScaleAxes()
 
         m_settings->xAxis.step = ticks[1]-ticks[0];
 
-
         m_settings->yAxis.min = minY - yMargin;
         m_settings->yAxis.max = maxY + yMargin;
         temp = m_plot->axisScaleDiv(QwtPlot::yLeft);
         ticks = temp.ticks(QwtScaleDiv::MajorTick);
-        m_settings->yAxis.step = ticks[1] - ticks[0];
-
+        m_settings->yAxis.step = ticks[1] - ticks[0];      
     }
     else {
         m_settings->xAxis.min = m_defaultXMin;
@@ -980,48 +986,91 @@ bool MTFViewer::eventFilter(QObject* object, QEvent* event)
 
 void MTFViewer::zoomIn()
 {
-    m_plot->setAxisScale(QwtPlot::xBottom,
-        m_plot->axisScaleDiv(QwtPlot::xBottom).lowerBound() * 0.9,
-        m_plot->axisScaleDiv(QwtPlot::xBottom).upperBound() * 0.9);
-    m_plot->setAxisScale(QwtPlot::yLeft,
-        m_plot->axisScaleDiv(QwtPlot::yLeft).lowerBound() * 0.9,
-        m_plot->axisScaleDiv(QwtPlot::yLeft).upperBound() * 0.9);
-    m_plot->replot();
-
-    m_settings->xAxis.min = m_plot->axisScaleDiv(QwtPlot::xBottom).lowerBound();
-    m_settings->xAxis.max = m_plot->axisScaleDiv(QwtPlot::xBottom).upperBound();
-
-    m_settings->yAxis.min = m_plot->axisScaleDiv(QwtPlot::yLeft).lowerBound();
-    m_settings->yAxis.max = m_plot->axisScaleDiv(QwtPlot::yLeft).upperBound();
-
+    m_initialXMin = m_initialXMin * 0.9;
+    m_initialXMax = m_initialXMax * 0.9;
+    m_initialYMax = m_initialYMax * 0.9;
+    m_initialYMin = m_initialYMin * 0.9;
+    // 恢复初始视图范围
+    m_plot->setAxisScale(QwtPlot::xBottom, m_initialXMin, m_initialXMax);
+    m_plot->setAxisScale(QwtPlot::yLeft, m_initialYMin, m_initialYMax);
+    m_plot->setAxisScale(QwtPlot::yRight, m_initialYMin, m_initialYMax);
+    // 更新点列位置
+    m_current_factor = m_current_factor * 0.9;
     m_simple_browser->applyXAxisSettings();
     m_simple_browser->applyYAxisSettings();
+    // 重新绘制
+    m_plot->replot();
+    //m_plot->setAxisScale(QwtPlot::xBottom,
+    //    m_plot->axisScaleDiv(QwtPlot::xBottom).lowerBound() * 0.9,
+    //    m_plot->axisScaleDiv(QwtPlot::xBottom).upperBound() * 0.9);
+    //m_plot->setAxisScale(QwtPlot::yLeft,
+    //    m_plot->axisScaleDiv(QwtPlot::yLeft).lowerBound() * 0.9,
+    //    m_plot->axisScaleDiv(QwtPlot::yLeft).upperBound() * 0.9);
+    //m_plot->replot();
+
+    //m_settings->xAxis.min = m_plot->axisScaleDiv(QwtPlot::xBottom).lowerBound();
+    //m_settings->xAxis.max = m_plot->axisScaleDiv(QwtPlot::xBottom).upperBound();
+
+    //m_settings->yAxis.min = m_plot->axisScaleDiv(QwtPlot::yLeft).lowerBound();
+    //m_settings->yAxis.max = m_plot->axisScaleDiv(QwtPlot::yLeft).upperBound();
+
+    //m_simple_browser->applyXAxisSettings();
+    //m_simple_browser->applyYAxisSettings();
 }
 
 void MTFViewer::zoomOut()
 {
-    m_plot->setAxisScale(QwtPlot::xBottom,
-        m_plot->axisScaleDiv(QwtPlot::xBottom).lowerBound() * 1.1,
-        m_plot->axisScaleDiv(QwtPlot::xBottom).upperBound() * 1.1);
-    m_plot->setAxisScale(QwtPlot::yLeft,
-        m_plot->axisScaleDiv(QwtPlot::yLeft).lowerBound() * 1.1,
-        m_plot->axisScaleDiv(QwtPlot::yLeft).upperBound() * 1.1);
-    m_plot->replot();
+    m_initialXMin = m_initialXMin * 1.1;
+    m_initialXMax = m_initialXMax * 1.1;
+    m_initialYMax = m_initialYMax * 1.1;
+    m_initialYMin = m_initialYMin * 1.1;
+    // 恢复初始视图范围
+    m_plot->setAxisScale(QwtPlot::xBottom, m_initialXMin, m_initialXMax);
+    m_plot->setAxisScale(QwtPlot::yLeft, m_initialYMin, m_initialYMax);
+    m_plot->setAxisScale(QwtPlot::yRight, m_initialYMin, m_initialYMax);
 
-    m_settings->xAxis.min = m_plot->axisScaleDiv(QwtPlot::xBottom).lowerBound();
-    m_settings->xAxis.max = m_plot->axisScaleDiv(QwtPlot::xBottom).upperBound();
-
-    m_settings->yAxis.min = m_plot->axisScaleDiv(QwtPlot::yLeft).lowerBound();
-    m_settings->yAxis.max = m_plot->axisScaleDiv(QwtPlot::yLeft).upperBound();
-
+    m_current_factor = m_current_factor * 1.1;
     m_simple_browser->applyXAxisSettings();
     m_simple_browser->applyYAxisSettings();
+    // 重新绘制
+    m_plot->replot();
+    //m_plot->setAxisScale(QwtPlot::xBottom,
+    //    m_plot->axisScaleDiv(QwtPlot::xBottom).lowerBound() * 1.1,
+    //    m_plot->axisScaleDiv(QwtPlot::xBottom).upperBound() * 1.1);
+    //m_plot->setAxisScale(QwtPlot::yLeft,
+    //    m_plot->axisScaleDiv(QwtPlot::yLeft).lowerBound() * 1.1,
+    //    m_plot->axisScaleDiv(QwtPlot::yLeft).upperBound() * 1.1);
+    //m_plot->replot();
+
+    //m_settings->xAxis.min = m_plot->axisScaleDiv(QwtPlot::xBottom).lowerBound();
+    //m_settings->xAxis.max = m_plot->axisScaleDiv(QwtPlot::xBottom).upperBound();
+
+    //m_settings->yAxis.min = m_plot->axisScaleDiv(QwtPlot::yLeft).lowerBound();
+    //m_settings->yAxis.max = m_plot->axisScaleDiv(QwtPlot::yLeft).upperBound();
+
+    //m_simple_browser->applyXAxisSettings();
+    //m_simple_browser->applyYAxisSettings();
 }
 
 void MTFViewer::fitView()
 {
-    autoScaleAxes();
+    m_initialXMin = m_initialXMin_orig;
+    m_initialXMax = m_initialXMax_orig;
+    m_initialYMin = m_initialYMin_orig;
+    m_initialYMax = m_initialYMax_orig;
+
+    // 恢复初始视图范围
+    m_plot->setAxisScale(QwtPlot::xBottom, m_initialXMin, m_initialXMax);
+    m_plot->setAxisScale(QwtPlot::yLeft, m_initialYMin, m_initialYMax);
+    m_plot->setAxisScale(QwtPlot::yRight, m_initialYMin, m_initialYMax);
+
+    m_current_factor = 1;
+
+    // 重新绘制
     m_plot->replot();
+
+    m_simple_browser->applyXAxisSettings();
+    m_simple_browser->applyYAxisSettings();
 }
 
 void MTFViewer::showContextMenu(const QPoint& pos)
@@ -1039,4 +1088,41 @@ void MTFViewer::showContextMenu(const QPoint& pos)
         if (!fn.isEmpty()) m_toolBar_plot->saveAsSVG(fn);
         });
     menu.exec(m_plot->canvas()->mapToGlobal(pos));
+}
+
+void MTFViewer::updateXScaleAxes()
+{
+    m_initialXMin = m_initialXMin_orig * m_current_factor;
+    m_initialXMax = m_initialXMax_orig * m_current_factor;
+    // 恢复初始视图范围
+    m_plot->setAxisScale(QwtPlot::xBottom, m_initialXMin, m_initialXMax);
+
+    // 重新绘制
+    m_plot->replot();
+}
+void MTFViewer::updateYScaleAxes()
+{
+    m_initialYMin = m_initialYMin_orig * m_current_factor;
+    m_initialYMax = m_initialYMax_orig * m_current_factor;
+
+    m_plot->setAxisScale(QwtPlot::yLeft, m_initialYMin, m_initialYMax);
+    m_plot->setAxisScale(QwtPlot::yRight, m_initialYMin, m_initialYMax);
+
+    // 重新绘制
+    m_plot->replot();
+}
+void MTFViewer::saveInitialView()
+{
+    // 保存初始视图范围
+    m_initialXMin = m_settings->xAxis.min;
+    m_initialXMax = m_settings->xAxis.max;
+    m_initialYMin = m_settings->yAxis.min;
+    m_initialYMax = m_settings->yAxis.max;
+
+    m_initialXMin_orig = m_initialXMin;
+    m_initialXMax_orig = m_initialXMax;
+    m_initialYMin_orig = m_initialYMin;
+    m_initialYMax_orig = m_initialYMax;
+
+    m_current_factor = 1;
 }

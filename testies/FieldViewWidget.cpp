@@ -391,10 +391,12 @@ FieldViewWidget::FieldViewWidget(QWidget* parent)
     m_settings = m_toolBar_plot->m_settings;
     connect(m_toolBar_plot, SIGNAL(signalFitView()), this, SLOT(fitView()));
     connect(m_toolBar_plot, SIGNAL(signalZoomIn()), this, SLOT(zoomIn()));
-    connect(m_toolBar_plot, SIGNAL(signalZommOut()), this, SLOT(zoomOut()));
+    connect(m_toolBar_plot, SIGNAL(signalZoomOut()), this, SLOT(zoomOut()));
 
     m_simple_browser = new QwtPropertyBrowser(m_settings, m_plot, m_grid, m_toolBar_plot->m_legend, this);
     connect(m_simple_browser, SIGNAL(signalUpdateItemStyle(int)), this, SLOT(slotUpdateItemStyle(int)));
+    connect(m_simple_browser, SIGNAL(signalXScaleAxes()), this, SLOT(updateXScaleAxes()));
+    connect(m_simple_browser, SIGNAL(signalYScaleAxes()), this, SLOT(updateYScaleAxes()));
     //m_simple_browser = new SimplePropertyBrowser(m_settings,m_plot,this);
     // 分割器
     m_splitter = new QSplitter(this);
@@ -597,7 +599,9 @@ bool FieldViewWidget::loadFieldDataFile(const QString& filename)
 
     file.close();
 
+
     if (hasValidData) {
+        saveInitialView();
         updatePlot();
         return true;
     }
@@ -754,4 +758,186 @@ QColor FieldViewWidget::getArrowColor(double magnitude)
     int blueValue = 100 + static_cast<int>(155 * normalized);
     int greenValue = static_cast<int>(100 * (1.0 - normalized));
     return QColor(0, greenValue, blueValue);
+}
+
+void FieldViewWidget::zoomOut()
+{
+    //m_plot->setAxisScale(QwtPlot::xBottom,
+    //    m_plot->axisScaleDiv(QwtPlot::xBottom).lowerBound() * 1.1,
+    //    m_plot->axisScaleDiv(QwtPlot::xBottom).upperBound() * 1.1);
+    //m_plot->setAxisScale(QwtPlot::yLeft,
+    //    m_plot->axisScaleDiv(QwtPlot::yLeft).lowerBound() * 1.1,
+    //    m_plot->axisScaleDiv(QwtPlot::yLeft).upperBound() * 1.1);
+    //m_plot->replot();
+
+    //m_settings->xAxis.min = m_plot->axisScaleDiv(QwtPlot::xBottom).lowerBound();
+    //m_settings->xAxis.max = m_plot->axisScaleDiv(QwtPlot::xBottom).upperBound();
+
+    //m_settings->yAxis.min = m_plot->axisScaleDiv(QwtPlot::yLeft).lowerBound();
+    //m_settings->yAxis.max = m_plot->axisScaleDiv(QwtPlot::yLeft).upperBound();
+
+    //m_simple_browser->applyXAxisSettings();
+    //m_simple_browser->applyYAxisSettings();
+    m_initialXMin = m_initialXMin * 1.1;
+    m_initialXMax = m_initialXMax * 1.1;
+    m_initialYMax = m_initialYMax * 1.1;
+    m_initialYMin = m_initialYMin * 1.1;
+    // 恢复初始视图范围
+    m_plot->setAxisScale(QwtPlot::xBottom, m_initialXMin, m_initialXMax);
+    m_plot->setAxisScale(QwtPlot::yLeft, m_initialYMin, m_initialYMax);
+    m_plot->setAxisScale(QwtPlot::yRight, m_initialYMin, m_initialYMax);
+
+    m_current_factor = m_current_factor * 1.1;
+    m_simple_browser->applyXAxisSettings();
+    m_simple_browser->applyYAxisSettings();
+    // 重新绘制
+    m_plot->replot();
+}
+
+void FieldViewWidget::fitView()
+{
+    autoScaleAxes();
+    m_plot->replot();
+}
+
+void FieldViewWidget::autoScaleAxes()
+{
+    m_initialXMin = m_initialXMin_orig;
+    m_initialXMax = m_initialXMax_orig;
+    m_initialYMin = m_initialYMin_orig;
+    m_initialYMax = m_initialYMax_orig;
+
+    // 恢复初始视图范围
+    m_plot->setAxisScale(QwtPlot::xBottom, m_initialXMin, m_initialXMax);
+    m_plot->setAxisScale(QwtPlot::yLeft, m_initialYMin, m_initialYMax);
+    m_plot->setAxisScale(QwtPlot::yRight, m_initialYMin, m_initialYMax);
+
+    m_current_factor = 1;
+
+    // 重新绘制
+    m_plot->replot();
+
+    m_simple_browser->applyXAxisSettings();
+    m_simple_browser->applyYAxisSettings();
+    //if (!fieldData.isEmpty()) {
+    //    double xMin = 1e9, xMax = -1e9, yMin = 1e9, yMax = -1e9;
+    //    for (const FieldData& data : fieldData) {
+    //        if (data.xField < xMin) xMin = data.xField;
+    //        if (data.xField > xMax) xMax = data.xField;
+    //        if (data.yField < yMin) yMin = data.yField;
+    //        if (data.yField > yMax) yMax = data.yField;
+    //    }
+
+    //    // 添加边距
+    //    double xRange = xMax - xMin;
+    //    double yRange = yMax - yMin;
+    //    double marginX = xRange * 0.1;
+    //    double marginY = yRange * 0.1;
+
+    //    // 如果数据范围很小，使用默认范围
+    //    if (xRange < 1e-6 || yRange < 1e-6) {
+    //        m_plot->setAxisScale(QwtPlot::xBottom, -m_defaultRange, m_defaultRange);
+    //        m_plot->setAxisScale(QwtPlot::yLeft, -m_defaultRange, m_defaultRange);
+
+
+    //        m_settings->yAxis.min = -m_defaultRange/2;
+    //        m_settings->yAxis.max = m_defaultRange / 2;
+    //        m_settings->yAxis.min = -m_defaultRange / 2;
+    //        m_settings->yAxis.max = m_defaultRange / 2;
+    //    }
+    //    else {
+    //        m_plot->setAxisScale(QwtPlot::xBottom, xMin - marginX, xMax + marginX);
+    //        m_plot->setAxisScale(QwtPlot::yLeft, yMin - marginY, yMax + marginY);
+
+    //        m_settings->yAxis.min = xMin - marginX;
+    //        m_settings->yAxis.max = xMax + marginX;
+    //        m_settings->yAxis.min = yMin - marginY;
+    //        m_settings->yAxis.max = yMax + marginY;
+    //    }
+    //}
+    //else {
+    //    // 没有数据时使用默认范围
+    //    resetView();
+    //    return;
+    //}
+
+    //m_simple_browser->applyXAxisSettings();
+    //m_simple_browser->applyYAxisSettings();
+}
+
+void FieldViewWidget::zoomIn()
+{
+    //m_plot->setAxisScale(QwtPlot::xBottom,
+    //    m_plot->axisScaleDiv(QwtPlot::xBottom).lowerBound() * 0.9,
+    //    m_plot->axisScaleDiv(QwtPlot::xBottom).upperBound() * 0.9);
+    //m_plot->setAxisScale(QwtPlot::yLeft,
+    //    m_plot->axisScaleDiv(QwtPlot::yLeft).lowerBound() * 0.9,
+    //    m_plot->axisScaleDiv(QwtPlot::yLeft).upperBound() * 0.9);
+    //m_plot->replot();
+
+    //m_settings->xAxis.min = m_plot->axisScaleDiv(QwtPlot::xBottom).lowerBound();
+    //m_settings->xAxis.max = m_plot->axisScaleDiv(QwtPlot::xBottom).upperBound();
+
+    //m_settings->yAxis.min = m_plot->axisScaleDiv(QwtPlot::yLeft).lowerBound();
+    //m_settings->yAxis.max = m_plot->axisScaleDiv(QwtPlot::yLeft).upperBound();
+
+    //m_simple_browser->applyXAxisSettings();
+    //m_simple_browser->applyYAxisSettings();
+
+    m_initialXMin = m_initialXMin * 0.9;
+    m_initialXMax = m_initialXMax * 0.9;
+    m_initialYMax = m_initialYMax * 0.9;
+    m_initialYMin = m_initialYMin * 0.9;
+    // 恢复初始视图范围
+    m_plot->setAxisScale(QwtPlot::xBottom, m_initialXMin, m_initialXMax);
+    m_plot->setAxisScale(QwtPlot::yLeft, m_initialYMin, m_initialYMax);
+    m_plot->setAxisScale(QwtPlot::yRight, m_initialYMin, m_initialYMax);
+    // 更新点列位置
+    m_current_factor = m_current_factor * 0.9;
+    m_simple_browser->applyXAxisSettings();
+    m_simple_browser->applyYAxisSettings();
+    // 重新绘制
+    m_plot->replot();
+}
+
+
+void FieldViewWidget::updateXScaleAxes()
+{
+    m_initialXMin = m_initialXMin_orig * m_current_factor;
+    m_initialXMax = m_initialXMax_orig * m_current_factor;
+    // 恢复初始视图范围
+    m_plot->setAxisScale(QwtPlot::xBottom, m_initialXMin, m_initialXMax);
+
+    // 重新绘制
+    m_plot->replot();
+}
+void FieldViewWidget::updateYScaleAxes()
+{
+    m_initialYMin = m_initialYMin_orig * m_current_factor;
+    m_initialYMax = m_initialYMax_orig * m_current_factor;
+
+    m_plot->setAxisScale(QwtPlot::yLeft, m_initialYMin, m_initialYMax);
+    m_plot->setAxisScale(QwtPlot::yRight, m_initialYMin, m_initialYMax);
+
+    // 重新绘制
+    m_plot->replot();
+}
+
+void FieldViewWidget::saveInitialView()
+{
+    // 保存初始视图范围
+    QwtScaleDiv xScaleDiv = m_plot->axisScaleDiv(QwtPlot::xBottom);
+    QwtScaleDiv yScaleDiv = m_plot->axisScaleDiv(QwtPlot::yLeft);
+
+    m_initialXMin = xScaleDiv.lowerBound();
+    m_initialXMax = xScaleDiv.upperBound();
+    m_initialYMin = yScaleDiv.lowerBound();
+    m_initialYMax = yScaleDiv.upperBound();
+
+    m_initialXMin_orig = xScaleDiv.lowerBound();
+    m_initialXMax_orig = xScaleDiv.upperBound();
+    m_initialYMin_orig = yScaleDiv.lowerBound();
+    m_initialYMax_orig = yScaleDiv.upperBound();
+
+    m_current_factor = 1;
 }

@@ -29,8 +29,10 @@ public:
 public:
     void initSimplePropertyWidget();
 
-private slots:
-
+Q_SIGNALS:
+    void signalXScaleAxes();
+    void signalYScaleAxes();
+    void signalUpdateScaleDiv();
 
 public:
     void applyBackgroundColor();

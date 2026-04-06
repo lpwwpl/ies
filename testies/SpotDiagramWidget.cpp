@@ -586,6 +586,13 @@ SpotDiagramPlotter::SpotDiagramPlotter(QWidget* parent)
 
     m_settings = new PlotSettings();
     m_simple_browser = new SimplePropertyBrowser(m_settings, m_plot, m_grid, m_toolbar_plot->m_legend, this);
+
+    connect(m_toolbar_plot, SIGNAL(signalFitView()), this, SLOT(fitView()));
+    connect(m_toolbar_plot, SIGNAL(signalZoomIn()), this, SLOT(zoomIn()));
+    connect(m_toolbar_plot, SIGNAL(signalZoomOut()), this, SLOT(zoomOut()));
+    //connect(m_simple_browser, SIGNAL(signalUpdateScaleDiv()), this, SLOT(updateLabelsForCurrentView()));
+    connect(m_simple_browser, SIGNAL(signalXScaleAxes()), this, SLOT(updateXScaleAxes()));
+    connect(m_simple_browser, SIGNAL(signalYScaleAxes()), this, SLOT(updateYScaleAxes()));
     // 分割器
     m_splitter = new QSplitter(this);
     m_splitter->addWidget(m_toolbar_plot);
@@ -609,6 +616,7 @@ SpotDiagramPlotter::~SpotDiagramPlotter()
     if (m_leftScaleDraw) delete m_leftScaleDraw;
     if (m_rightScaleDraw) delete m_rightScaleDraw;
 }
+
 
 bool SpotDiagramPlotter::loadDataFromFile(const QString& filename)
 {
@@ -1201,7 +1209,7 @@ void SpotDiagramPlotter::updateTickLabelPositions()
         int fieldIndex = fieldIndices[i];
 
         // 原始中心位置
-        double originalCenter = m_originalFieldCenters[fieldIndex];
+        double originalCenter = m_originalFieldCenters[fieldIndex] * m_current_factor;
 
         // 计算当前视场中心应该显示的位置
         // 如果视场中心在当前可见范围内，就显示该标签
@@ -1212,7 +1220,7 @@ void SpotDiagramPlotter::updateTickLabelPositions()
             QString leftLabel = QString("%1\nX:%2\nY:%3")
                 .arg(getFieldName(fieldIndex))
                 .arg(center.first, 0, 'f', 4)
-                .arg(center.second + FIELD_SPACING*i /*LEFT_AXIS_OFFSET*/, 0, 'f', 4);
+                .arg(center.second + FIELD_SPACING * m_current_factor *i /*LEFT_AXIS_OFFSET*/, 0, 'f', 4);
             newLeftTickLabels[originalCenter] = leftLabel;
 
             // 右侧标签
@@ -1228,8 +1236,33 @@ void SpotDiagramPlotter::updateTickLabelPositions()
 
     m_currentLeftTickLabels = newLeftTickLabels;
     m_currentRightTickLabels = newRightTickLabels;
+    m_leftScaleDraw->updateTickLabels(m_currentLeftTickLabels);
+    m_rightScaleDraw->updateTickLabels(m_currentRightTickLabels);
 }
+void SpotDiagramPlotter::updateXScaleAxes()
+{
+    m_initialXMin = m_initialXMin_orig * m_current_factor;
+    m_initialXMax = m_initialXMax_orig * m_current_factor;
+    // 恢复初始视图范围
+    m_plot->setAxisScale(QwtPlot::xBottom, m_initialXMin, m_initialXMax);
 
+    // 重新绘制
+    m_plot->replot();
+}
+void SpotDiagramPlotter::updateYScaleAxes()
+{
+    m_initialYMin = m_initialYMin_orig * m_current_factor;
+    m_initialYMax = m_initialYMax_orig * m_current_factor;
+
+    m_plot->setAxisScale(QwtPlot::yLeft, m_initialYMin, m_initialYMax);
+    m_plot->setAxisScale(QwtPlot::yRight, m_initialYMin, m_initialYMax);
+
+    // 更新点列位置
+    updateSpotPositions();
+
+    // 重新绘制
+    m_plot->replot();
+}
 void SpotDiagramPlotter::updateLabelsForCurrentView()
 {
     // 更新标签位置
@@ -1361,14 +1394,28 @@ void SpotDiagramPlotter::saveInitialView()
     m_initialXMax = xScaleDiv.upperBound();
     m_initialYMin = yScaleDiv.lowerBound();
     m_initialYMax = yScaleDiv.upperBound();
+
+    m_initialXMin_orig = xScaleDiv.lowerBound();
+    m_initialXMax_orig = xScaleDiv.upperBound();
+    m_initialYMin_orig = yScaleDiv.lowerBound();
+    m_initialYMax_orig = yScaleDiv.upperBound();
+
+    m_current_factor = 1;
 }
 
 void SpotDiagramPlotter::restoreInitialView()
 {
+    m_initialXMin = m_initialXMin_orig;
+    m_initialXMax = m_initialXMax_orig;
+    m_initialYMin = m_initialYMin_orig;
+    m_initialYMax = m_initialYMax_orig;
+
     // 恢复初始视图范围
     m_plot->setAxisScale(QwtPlot::xBottom, m_initialXMin, m_initialXMax);
     m_plot->setAxisScale(QwtPlot::yLeft, m_initialYMin, m_initialYMax);
     m_plot->setAxisScale(QwtPlot::yRight, m_initialYMin, m_initialYMax);
+
+    m_current_factor = 1;
 
     // 更新点列位置
     updateSpotPositions();
@@ -1390,42 +1437,77 @@ void SpotDiagramPlotter::showLegend(bool show)
 }
 void SpotDiagramPlotter::zoomIn()
 {
-    m_plot->setAxisScale(QwtPlot::xBottom,
-        m_plot->axisScaleDiv(QwtPlot::xBottom).lowerBound() * 0.9,
-        m_plot->axisScaleDiv(QwtPlot::xBottom).upperBound() * 0.9);
-    m_plot->setAxisScale(QwtPlot::yLeft,
-        m_plot->axisScaleDiv(QwtPlot::yLeft).lowerBound() * 0.9,
-        m_plot->axisScaleDiv(QwtPlot::yLeft).upperBound() * 0.9);
-    m_plot->replot();
+    //m_plot->setAxisScale(QwtPlot::xBottom,
+    //    m_plot->axisScaleDiv(QwtPlot::xBottom).lowerBound() * 0.9,
+    //    m_plot->axisScaleDiv(QwtPlot::xBottom).upperBound() * 0.9);
+    //m_plot->setAxisScale(QwtPlot::yLeft,
+    //    m_plot->axisScaleDiv(QwtPlot::yLeft).lowerBound() * 0.9,
+    //    m_plot->axisScaleDiv(QwtPlot::yLeft).upperBound() * 0.9);
+    //m_plot->replot();
 
-    m_settings->xAxis.min = m_plot->axisScaleDiv(QwtPlot::xBottom).lowerBound();
-    m_settings->xAxis.max = m_plot->axisScaleDiv(QwtPlot::xBottom).upperBound();
+    //m_settings->xAxis.min = m_plot->axisScaleDiv(QwtPlot::xBottom).lowerBound();
+    //m_settings->xAxis.max = m_plot->axisScaleDiv(QwtPlot::xBottom).upperBound();
 
-    m_settings->yAxis.min = m_plot->axisScaleDiv(QwtPlot::yLeft).lowerBound();
-    m_settings->yAxis.max = m_plot->axisScaleDiv(QwtPlot::yLeft).upperBound();
+    //m_settings->yAxis.min = m_plot->axisScaleDiv(QwtPlot::yLeft).lowerBound();
+    //m_settings->yAxis.max = m_plot->axisScaleDiv(QwtPlot::yLeft).upperBound();
 
+    //m_simple_browser->applyXAxisSettings();
+    //m_simple_browser->applyYAxisSettings();
+
+
+    m_initialXMin = m_initialXMin * 0.9;
+    m_initialXMax = m_initialXMax * 0.9;
+    m_initialYMax = m_initialYMax * 0.9;
+    m_initialYMin = m_initialYMin * 0.9;
+    // 恢复初始视图范围
+    m_plot->setAxisScale(QwtPlot::xBottom, m_initialXMin, m_initialXMax);
+    m_plot->setAxisScale(QwtPlot::yLeft, m_initialYMin, m_initialYMax);
+    m_plot->setAxisScale(QwtPlot::yRight, m_initialYMin, m_initialYMax);
+    // 更新点列位置
+    m_current_factor = m_current_factor * 0.9;
+    updateSpotPositions();
     m_simple_browser->applyXAxisSettings();
     m_simple_browser->applyYAxisSettings();
+    // 重新绘制
+    m_plot->replot();
 }
 
 void SpotDiagramPlotter::zoomOut()
 {
-    m_plot->setAxisScale(QwtPlot::xBottom,
-        m_plot->axisScaleDiv(QwtPlot::xBottom).lowerBound() * 1.1,
-        m_plot->axisScaleDiv(QwtPlot::xBottom).upperBound() * 1.1);
-    m_plot->setAxisScale(QwtPlot::yLeft,
-        m_plot->axisScaleDiv(QwtPlot::yLeft).lowerBound() * 1.1,
-        m_plot->axisScaleDiv(QwtPlot::yLeft).upperBound() * 1.1);
-    m_plot->replot();
+    //m_plot->setAxisScale(QwtPlot::xBottom,
+    //    m_plot->axisScaleDiv(QwtPlot::xBottom).lowerBound() * 1.1,
+    //    m_plot->axisScaleDiv(QwtPlot::xBottom).upperBound() * 1.1);
+    //m_plot->setAxisScale(QwtPlot::yLeft,
+    //    m_plot->axisScaleDiv(QwtPlot::yLeft).lowerBound() * 1.1,
+    //    m_plot->axisScaleDiv(QwtPlot::yLeft).upperBound() * 1.1);
+    //m_plot->replot();
 
-    m_settings->xAxis.min = m_plot->axisScaleDiv(QwtPlot::xBottom).lowerBound();
-    m_settings->xAxis.max = m_plot->axisScaleDiv(QwtPlot::xBottom).upperBound();
+    //m_settings->xAxis.min = m_plot->axisScaleDiv(QwtPlot::xBottom).lowerBound();
+    //m_settings->xAxis.max = m_plot->axisScaleDiv(QwtPlot::xBottom).upperBound();
 
-    m_settings->yAxis.min = m_plot->axisScaleDiv(QwtPlot::yLeft).lowerBound();
-    m_settings->yAxis.max = m_plot->axisScaleDiv(QwtPlot::yLeft).upperBound();
+    //m_settings->yAxis.min = m_plot->axisScaleDiv(QwtPlot::yLeft).lowerBound();
+    //m_settings->yAxis.max = m_plot->axisScaleDiv(QwtPlot::yLeft).upperBound();
 
+    //m_simple_browser->applyXAxisSettings();
+    //m_simple_browser->applyYAxisSettings();
+
+    m_initialXMin = m_initialXMin * 1.1;
+    m_initialXMax = m_initialXMax * 1.1;
+    m_initialYMax = m_initialYMax * 1.1;
+    m_initialYMin = m_initialYMin * 1.1;
+    // 恢复初始视图范围
+    m_plot->setAxisScale(QwtPlot::xBottom, m_initialXMin, m_initialXMax);
+    m_plot->setAxisScale(QwtPlot::yLeft, m_initialYMin, m_initialYMax);
+    m_plot->setAxisScale(QwtPlot::yRight, m_initialYMin, m_initialYMax);
+
+    m_current_factor = m_current_factor * 1.1;
+    // 更新点列位置
+    updateSpotPositions();
     m_simple_browser->applyXAxisSettings();
     m_simple_browser->applyYAxisSettings();
+    // 重新绘制
+    m_plot->replot();
+
 }
 
 void SpotDiagramPlotter::fitView()

@@ -124,7 +124,7 @@ public:
     void setTitle(const QString& title);
     void setLegendPosition(bool leftSide);
     void showLegend(bool show);
-
+    void saveInitialView();
     // 自动缩放
     void autoScaleAxes();
 
@@ -139,6 +139,9 @@ private slots:
     bool eventFilter(QObject* object, QEvent* event);
     void onLegendChecked(const QVariant& itemInfo, bool on, int);
     void showContextMenu(const QPoint& pos);
+
+    void updateXScaleAxes();
+    void updateYScaleAxes();
 
 public Q_SLOTS:
     void zoomIn();
@@ -177,6 +180,13 @@ private:
 
     PlotSettings* m_settings;
     PlotBase* m_toolBar_plot;
+
+    double m_current_factor = 1;
+    double m_initialXMin, m_initialXMax;        // 初始X轴范围
+    double m_initialYMin, m_initialYMax;        // 初始Y轴范围
+
+    double m_initialXMin_orig, m_initialXMax_orig;        // 初始X轴范围
+    double m_initialYMin_orig, m_initialYMax_orig;        // 初始Y轴范围
 };
 
 #endif // MTFVIEWWIDGET_H

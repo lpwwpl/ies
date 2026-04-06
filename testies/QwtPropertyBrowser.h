@@ -38,6 +38,9 @@ public:
 signals:
     void propertyChanged();
     void signalUpdateItemStyle(int);
+    void signalXScaleAxes();
+    void signalYScaleAxes();
+    void signalUpdateScaleDiv();
 
 private slots:
     //property属性更改，则更新m_settings和plot

@@ -667,6 +667,9 @@ void QwtPropertyBrowser::onValueChanged(QtProperty* property, const QVariant& va
     else if (property == m_axisProps[QwtPlot::xBottom].autoRangeProperty)
     {
         m_settings->xAxis.autoRange = value.toBool();
+        m_axisProps[QwtPlot::xBottom].minProperty->setEnabled(!value.toBool());
+        m_axisProps[QwtPlot::xBottom].maxProperty->setEnabled(!value.toBool());
+        m_axisProps[QwtPlot::xBottom].stepProperty->setEnabled(!value.toBool());
         applyXAxisSettings_plot();
     }
     else if (property == m_axisProps[QwtPlot::xBottom].minProperty)
@@ -717,6 +720,9 @@ void QwtPropertyBrowser::onValueChanged(QtProperty* property, const QVariant& va
     else if (property == m_axisProps[QwtPlot::yLeft].autoRangeProperty)
     {
         m_settings->yAxis.autoRange = value.toBool();
+        m_axisProps[QwtPlot::yLeft].minProperty->setEnabled(!value.toBool());
+        m_axisProps[QwtPlot::yLeft].maxProperty->setEnabled(!value.toBool());
+        m_axisProps[QwtPlot::yLeft].stepProperty->setEnabled(!value.toBool());
         applyYAxisSettings_plot();
     }
     else if (property == m_axisProps[QwtPlot::yLeft].minProperty)
@@ -1511,65 +1517,67 @@ void QwtPropertyBrowser::applyOrigin()
 }
 void QwtPropertyBrowser::autoXScaleAxes()
 {
-    double minX = std::numeric_limits<double>::max();
-    double maxX = std::numeric_limits<double>::lowest();
-    bool hasData = false;
-    for (const MTFLine& line : m_settings->m_lines) {
-        if (!line.m_style.visible || line.data.isEmpty()) continue;
-        hasData = true;
-        for (const QPointF& p : line.data) {
-            if (p.x() < minX) minX = p.x();
-            if (p.x() > maxX) maxX = p.x();
-        }
-    }
-    if (hasData) {
-        double xMargin = (maxX - minX) * 0.05;
-        if (xMargin <= 0) xMargin = 1.0;
+    signalXScaleAxes();
+    //double minX = std::numeric_limits<double>::max();
+    //double maxX = std::numeric_limits<double>::lowest();
+    //bool hasData = false;
+    //for (const MTFLine& line : m_settings->m_lines) {
+    //    if (!line.m_style.visible || line.data.isEmpty()) continue;
+    //    hasData = true;
+    //    for (const QPointF& p : line.data) {
+    //        if (p.x() < minX) minX = p.x();
+    //        if (p.x() > maxX) maxX = p.x();
+    //    }
+    //}
+    //if (hasData) {
+    //    double xMargin = (maxX - minX) * 0.05;
+    //    if (xMargin <= 0) xMargin = 1.0;
 
-        m_plot->setAxisScale(QwtPlot::xBottom, minX - xMargin, maxX + xMargin);
-        QwtScaleDiv temp = m_plot->axisScaleDiv(QwtPlot::xBottom);
-        QList<double> ticks = temp.ticks(QwtScaleDiv::MajorTick);
-        m_settings->xAxis.min = minX - xMargin;
-        m_settings->xAxis.max = maxX + xMargin;
+    //    m_plot->setAxisScale(QwtPlot::xBottom, minX - xMargin, maxX + xMargin);
+    //    QwtScaleDiv temp = m_plot->axisScaleDiv(QwtPlot::xBottom);
+    //    QList<double> ticks = temp.ticks(QwtScaleDiv::MajorTick);
+    //    m_settings->xAxis.min = minX - xMargin;
+    //    m_settings->xAxis.max = maxX + xMargin;
 
-        m_settings->xAxis.step = ticks[1] - ticks[0];
-    }
-    else {
-        m_settings->xAxis.min = m_defaultXMin;
-        m_settings->xAxis.max = m_defaultXMax;
-    }
+    //    m_settings->xAxis.step = ticks[1] - ticks[0];
+    //}
+    //else {
+    //    m_settings->xAxis.min = m_defaultXMin;
+    //    m_settings->xAxis.max = m_defaultXMax;
+    //}
 }
 void QwtPropertyBrowser::autoYScaleAxes()
 {
-    double minY = std::numeric_limits<double>::max();
-    double maxY = std::numeric_limits<double>::lowest();
-    bool hasData = false;
-    for (const MTFLine& line : m_settings->m_lines) {
-        if (!line.m_style.visible || line.data.isEmpty()) continue;
-        hasData = true;
-        for (const QPointF& p : line.data) {
-            if (p.y() < minY) minY = p.y();
-            if (p.y() > maxY) maxY = p.y();
-        }
-    }
-    if (hasData) {
-        double yMargin = (maxY - minY) * 0.05;
-        if (yMargin <= 0) yMargin = 0.1;
-        m_plot->setAxisScale(QwtPlot::yLeft, std::max(0.0, minY - yMargin), maxY + yMargin);
-        QwtScaleDiv temp = m_plot->axisScaleDiv(QwtPlot::xBottom);
-        QList<double> ticks = temp.ticks(QwtScaleDiv::MajorTick);
+    signalYScaleAxes();
+    //double minY = std::numeric_limits<double>::max();
+    //double maxY = std::numeric_limits<double>::lowest();
+    //bool hasData = false;
+    //for (const MTFLine& line : m_settings->m_lines) {
+    //    if (!line.m_style.visible || line.data.isEmpty()) continue;
+    //    hasData = true;
+    //    for (const QPointF& p : line.data) {
+    //        if (p.y() < minY) minY = p.y();
+    //        if (p.y() > maxY) maxY = p.y();
+    //    }
+    //}
+    //if (hasData) {
+    //    double yMargin = (maxY - minY) * 0.05;
+    //    if (yMargin <= 0) yMargin = 0.1;
+    //    m_plot->setAxisScale(QwtPlot::yLeft, std::max(0.0, minY - yMargin), maxY + yMargin);
+    //    QwtScaleDiv temp = m_plot->axisScaleDiv(QwtPlot::xBottom);
+    //    QList<double> ticks = temp.ticks(QwtScaleDiv::MajorTick);
 
-        m_settings->yAxis.min = minY - yMargin;
-        m_settings->yAxis.max = maxY + yMargin;
-        temp = m_plot->axisScaleDiv(QwtPlot::yLeft);
-        ticks = temp.ticks(QwtScaleDiv::MajorTick);
-        m_settings->yAxis.step = ticks[1] - ticks[0];
+    //    m_settings->yAxis.min = minY - yMargin;
+    //    m_settings->yAxis.max = maxY + yMargin;
+    //    temp = m_plot->axisScaleDiv(QwtPlot::yLeft);
+    //    ticks = temp.ticks(QwtScaleDiv::MajorTick);
+    //    m_settings->yAxis.step = ticks[1] - ticks[0];
 
-    }
-    else {
-        m_settings->yAxis.min = m_defaultYMin;
-        m_settings->yAxis.max = m_defaultYMax;
-    }
+    //}
+    //else {
+    //    m_settings->yAxis.min = m_defaultYMin;
+    //    m_settings->yAxis.max = m_defaultYMax;
+    //}
 }
 
 void QwtPropertyBrowser::applyGridSettings()
@@ -1709,8 +1717,6 @@ void QwtPropertyBrowser::applyOrigin_plot()
 {
     QwtScaleDiv xDiv = m_plot->axisScaleDiv(QwtPlot::xBottom);
     QwtScaleDiv yDiv = m_plot->axisScaleDiv(QwtPlot::yLeft);
-
-
     switch (m_settings->origin) {
     case PlotSettings::BottomLeft:
     {
@@ -1802,6 +1808,7 @@ void QwtPropertyBrowser::applyOrigin_plot()
     }
     break;
     }
+
 
     m_plot->replot();
 }

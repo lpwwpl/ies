@@ -116,6 +116,9 @@ void SimplePropertyBrowser::initSimplePropertyWidget()
     connect(originCombo, &QComboBox::currentTextChanged, this, [this](const QString&) {
         m_settings->origin = static_cast<PlotSettings::Origin>(originCombo->currentData().toInt());
         applyOrigin();
+        //signalUpdateScaleDiv();
+        applyXAxisSettings();
+        applyYAxisSettings();
         });
 
 
@@ -259,7 +262,6 @@ void SimplePropertyBrowser::initSimplePropertyWidget()
         });
 
     xAutoRange = new QCheckBox();
-    xAutoRange->setChecked(m_settings->xAxis.autoRange);
     connect(xAutoRange, &QCheckBox::toggled, this, [this](bool) {
         m_settings->xAxis.autoRange = xAutoRange->isChecked();
             xMin->setEnabled(!xAutoRange->isChecked());
@@ -267,6 +269,7 @@ void SimplePropertyBrowser::initSimplePropertyWidget()
             xStep->setEnabled(!xAutoRange->isChecked());
         applyXAxisSettings();
         });
+
     xLayout->addRow(tr("自动范围:"), xAutoRange);
     xMin = new QDoubleSpinBox();
     xMin->setRange(-1e6, 1e6);
@@ -381,7 +384,6 @@ void SimplePropertyBrowser::initSimplePropertyWidget()
         applyYAxisSettings();
         });
     yAutoRange = new QCheckBox();
-    yAutoRange->setChecked(m_settings->yAxis.autoRange);
     yLayout->addRow(tr("自动范围:"), yAutoRange);
     connect(yAutoRange, &QCheckBox::toggled, this, [this](bool) {
         m_settings->yAxis.autoRange = yAutoRange->isChecked();
@@ -664,6 +666,9 @@ void SimplePropertyBrowser::initSimplePropertyWidget()
     tabWidget->addTab(axisTab, "坐标系");
     tabWidget->addTab(curveTab, "线属性");
 
+    xAutoRange->setChecked(m_settings->xAxis.autoRange);
+    yAutoRange->setChecked(m_settings->yAxis.autoRange);
+
     QVBoxLayout* mainLayout = new QVBoxLayout(this);
     mainLayout->addWidget(tabWidget);
 }
@@ -750,22 +755,6 @@ void SimplePropertyBrowser::applyBackgroundColor()
 
 void SimplePropertyBrowser::applyYAxisSettings()
 {
-    axisTab->blockSignals(true);
-    yVisible->setChecked(m_settings->yAxis.visible);
-    yTitle->setText(m_settings->yAxis.title);
-    QFont font = m_settings->yAxis.tickFont;
-    yTitleFontLabel->setText(font.family());
-    QColor color = m_settings->yAxis.titleColor;
-    yTitleColorLabel->setPalette(QPalette(color));
-    yAutoRange->setChecked(m_settings->yAxis.autoRange);
-    yMin->setValue(m_settings->yAxis.min);
-    yMax->setValue(m_settings->yAxis.max);
-    yStep->setValue(m_settings->yAxis.step);
-    font = m_settings->yAxis.tickFont;
-    yTickFontLabel->setText(font.family());
-    color = m_settings->yAxis.tickColor;
-    yTickColorLabel->setPalette(QPalette(color));
-    axisTab->blockSignals(false);
     // Y轴
     if (m_settings->yAxis.visible)
     {
@@ -790,29 +779,34 @@ void SimplePropertyBrowser::applyYAxisSettings()
             autoYScaleAxes();
         }
     }
-    else {
+    else 
+    {
         m_plot->enableAxis(QwtPlot::yLeft, false);
     }
+
+    //signalUpdateScaleDiv();
+
+    axisTab->blockSignals(true);
+    yVisible->setChecked(m_settings->yAxis.visible);
+    yTitle->setText(m_settings->yAxis.title);
+    QFont font = m_settings->yAxis.tickFont;
+    yTitleFontLabel->setText(font.family());
+    QColor color = m_settings->yAxis.titleColor;
+    yTitleColorLabel->setPalette(QPalette(color));
+    yAutoRange->setChecked(m_settings->yAxis.autoRange);
+    yMin->setValue(m_settings->yAxis.min);
+    yMax->setValue(m_settings->yAxis.max);
+    yStep->setValue(m_settings->yAxis.step);
+    font = m_settings->yAxis.tickFont;
+    yTickFontLabel->setText(font.family());
+    color = m_settings->yAxis.tickColor;
+    yTickColorLabel->setPalette(QPalette(color));
+    axisTab->blockSignals(false);
+
     m_plot->replot();
 }
 void SimplePropertyBrowser::applyXAxisSettings()
 {
-    axisTab->blockSignals(true);
-    xVisible->setChecked(m_settings->xAxis.visible);
-    xTitle->setText(m_settings->xAxis.title);
-    QFont font = m_settings->xAxis.tickFont;
-    xTitleFontLabel->setText(font.family());
-    QColor color = m_settings->xAxis.titleColor;
-    xTitleColorLabel->setPalette(QPalette(color));
-    xAutoRange->setChecked(m_settings->xAxis.autoRange);
-    xMin->setValue(m_settings->xAxis.min);
-    xMax->setValue(m_settings->xAxis.max);
-    xStep->setValue(m_settings->xAxis.step);
-    font = m_settings->xAxis.tickFont;
-    xTickFontLabel->setText(font.family());
-    color = m_settings->xAxis.tickColor;
-    xTickColorLabel->setPalette(QPalette(color));
-    axisTab->blockSignals(false);
     // X轴
     if (m_settings->xAxis.visible) 
     {
@@ -835,76 +829,98 @@ void SimplePropertyBrowser::applyXAxisSettings()
         else
         {
             autoXScaleAxes();
-            //m_plot->setAxisScale(QwtPlot::xBottom, m_settings->xAxis.min, m_settings->xAxis.max);
         }
     }
-    else {
+    else 
+    {
         m_plot->enableAxis(QwtPlot::xBottom, false);
     }
+
+    //signalUpdateScaleDiv();
+
+    axisTab->blockSignals(true);
+    xVisible->setChecked(m_settings->xAxis.visible);
+    xTitle->setText(m_settings->xAxis.title);
+    QFont font = m_settings->xAxis.tickFont;
+    xTitleFontLabel->setText(font.family());
+    QColor color = m_settings->xAxis.titleColor;
+    xTitleColorLabel->setPalette(QPalette(color));
+    xAutoRange->setChecked(m_settings->xAxis.autoRange);
+    xMin->setValue(m_settings->xAxis.min);
+    xMax->setValue(m_settings->xAxis.max);
+    xStep->setValue(m_settings->xAxis.step);
+    font = m_settings->xAxis.tickFont;
+    xTickFontLabel->setText(font.family());
+    color = m_settings->xAxis.tickColor;
+    xTickColorLabel->setPalette(QPalette(color));
+    axisTab->blockSignals(false);
+
     m_plot->replot();
 }
 
 void SimplePropertyBrowser::autoXScaleAxes()
 {
-    double minX = std::numeric_limits<double>::max();
-    double maxX = std::numeric_limits<double>::lowest();
-    bool hasData = false;
-    for (const MTFLine& line : m_settings->m_lines) {
-        if (!line.m_style.visible || line.data.isEmpty()) continue;
-        hasData = true;
-        for (const QPointF& p : line.data) {
-            if (p.x() < minX) minX = p.x();
-            if (p.x() > maxX) maxX = p.x();
-        }
-    }
-    if (hasData) {
-        double xMargin = (maxX - minX) * 0.05;
-        if (xMargin <= 0) xMargin = 1.0;
+    signalXScaleAxes();
+    //double minX = std::numeric_limits<double>::max();
+    //double maxX = std::numeric_limits<double>::lowest();
+    //bool hasData = false;
+    //for (const MTFLine& line : m_settings->m_lines) {
+    //    if (!line.m_style.visible || line.data.isEmpty()) continue;
+    //    hasData = true;
+    //    for (const QPointF& p : line.data) {
+    //        if (p.x() < minX) minX = p.x();
+    //        if (p.x() > maxX) maxX = p.x();
+    //    }
+    //}
+    //if (hasData) {
+    //    double xMargin = (maxX - minX) * 0.05;
+    //    if (xMargin <= 0) xMargin = 1.0;
 
-        m_plot->setAxisScale(QwtPlot::xBottom, minX - xMargin, maxX + xMargin);
-        QwtScaleDiv temp = m_plot->axisScaleDiv(QwtPlot::xBottom);
-        QList<double> ticks = temp.ticks(QwtScaleDiv::MajorTick);
-        m_settings->xAxis.min = minX - xMargin;
-        m_settings->xAxis.max = maxX + xMargin;
+    //    m_plot->setAxisScale(QwtPlot::xBottom, minX - xMargin, maxX + xMargin);
+    //    QwtScaleDiv temp = m_plot->axisScaleDiv(QwtPlot::xBottom);
+    //    QList<double> ticks = temp.ticks(QwtScaleDiv::MajorTick);
+    //    m_settings->xAxis.min = minX - xMargin;
+    //    m_settings->xAxis.max = maxX + xMargin;
 
-        m_settings->xAxis.step = ticks[1] - ticks[0];
-    }
-    else {
-        m_settings->xAxis.min = m_defaultXMin;
-        m_settings->xAxis.max = m_defaultXMax;
-    }
+    //    m_settings->xAxis.step = ticks[1] - ticks[0];
+    //}
+    //else {
+    //    m_settings->xAxis.min = m_defaultXMin;
+    //    m_settings->xAxis.max = m_defaultXMax;
+    //}
 }
 void SimplePropertyBrowser::autoYScaleAxes()
 {
-    double minY = std::numeric_limits<double>::max();
-    double maxY = std::numeric_limits<double>::lowest();
-    bool hasData = false;
-    for (const MTFLine& line : m_settings->m_lines) {
-        if (!line.m_style.visible || line.data.isEmpty()) continue;
-        hasData = true;
-        for (const QPointF& p : line.data) {
-            if (p.y() < minY) minY = p.y();
-            if (p.y() > maxY) maxY = p.y();
-        }
-    }
-    if (hasData) {
-        double yMargin = (maxY - minY) * 0.05;
-        if (yMargin <= 0) yMargin = 0.1;
-        m_plot->setAxisScale(QwtPlot::yLeft, std::max(0.0, minY - yMargin), maxY + yMargin);
-        QwtScaleDiv temp = m_plot->axisScaleDiv(QwtPlot::xBottom);
-        QList<double> ticks = temp.ticks(QwtScaleDiv::MajorTick);
+    signalYScaleAxes();
+    //double minY = std::numeric_limits<double>::max();
+    //double maxY = std::numeric_limits<double>::lowest();
+    //bool hasData = false;
+    //for (const MTFLine& line : m_settings->m_lines) {
+    //    if (!line.m_style.visible || line.data.isEmpty()) continue;
+    //    hasData = true;
+    //    for (const QPointF& p : line.data) {
+    //        if (p.y() < minY) minY = p.y();
+    //        if (p.y() > maxY) maxY = p.y();
+    //    }
+    //}
+    //if (hasData) {
+    //    double yMargin = (maxY - minY) * 0.05;
+    //    if (yMargin <= 0) yMargin = 0.1;
+    //    m_plot->setAxisScale(QwtPlot::yLeft, std::max(0.0, minY - yMargin), maxY + yMargin);
+    //    QwtScaleDiv temp = m_plot->axisScaleDiv(QwtPlot::xBottom);
+    //    QList<double> ticks = temp.ticks(QwtScaleDiv::MajorTick);
 
-        m_settings->yAxis.min = minY - yMargin;
-        m_settings->yAxis.max = maxY + yMargin;
-        temp = m_plot->axisScaleDiv(QwtPlot::yLeft);
-        ticks = temp.ticks(QwtScaleDiv::MajorTick);
-        m_settings->yAxis.step = ticks[1] - ticks[0];
+    //    m_settings->yAxis.min = minY - yMargin;
+    //    m_settings->yAxis.max = maxY + yMargin;
+    //    temp = m_plot->axisScaleDiv(QwtPlot::yLeft);
+    //    ticks = temp.ticks(QwtScaleDiv::MajorTick);
+    //    m_settings->yAxis.step = ticks[1] - ticks[0];
 
-    }
-    else {
-        m_settings->yAxis.min = m_defaultYMin;
-        m_settings->yAxis.max = m_defaultYMax;
-    }
+    //}
+    //else {
+    //    m_settings->yAxis.min = m_defaultYMin;
+    //    m_settings->yAxis.max = m_defaultYMax;
+    //}
 }
 
 void SimplePropertyBrowser::applyGridSettings()
@@ -1055,38 +1071,38 @@ void SimplePropertyBrowser::applyOrigin()
         m_plot->axisScaleEngine(QwtPlot::yLeft)->setAttribute(QwtScaleEngine::Inverted, false);
 
         // 计算数据范围（与之前相同）
-        double xMin, xMax, yMin, yMax;
-        if (m_settings->m_lines.isEmpty()) {
-            xMin = m_defaultXMin;
-            xMax = m_defaultXMax;
-            yMin = m_defaultYMin;
-            yMax = m_defaultYMax;
-        }
-        else {
-            xMin = std::numeric_limits<double>::max();
-            xMax = std::numeric_limits<double>::lowest();
-            yMin = std::numeric_limits<double>::max();
-            yMax = std::numeric_limits<double>::lowest();
-            bool hasData = false;
-            for (const MTFLine& line : m_settings->m_lines) {
-                if (!line.m_style.visible || line.data.isEmpty()) continue;
-                hasData = true;
-                for (const QPointF& p : line.data) {
-                    if (p.x() < xMin) xMin = p.x();
-                    if (p.x() > xMax) xMax = p.x();
-                    if (p.y() < yMin) yMin = p.y();
-                    if (p.y() > yMax) yMax = p.y();
-                }
-            }
-            if (!hasData) {
-                xMin = m_defaultXMin;
-                xMax = m_defaultXMax;
-                yMin = m_defaultYMin;
-                yMax = m_defaultYMax;
-            }
-        }
-        double xRange = qMax(qAbs(xMin), qAbs(xMax)) * 1.05;
-        double yRange = qMax(qAbs(yMin), qAbs(yMax)) * 1.05;
+        //double xMin, xMax, yMin, yMax;
+        //if (m_settings->m_lines.isEmpty()) {
+        //    xMin = m_defaultXMin;
+        //    xMax = m_defaultXMax;
+        //    yMin = m_defaultYMin;
+        //    yMax = m_defaultYMax;
+        //}
+        //else {
+        //    xMin = std::numeric_limits<double>::max();
+        //    xMax = std::numeric_limits<double>::lowest();
+        //    yMin = std::numeric_limits<double>::max();
+        //    yMax = std::numeric_limits<double>::lowest();
+        //    bool hasData = false;
+        //    for (const MTFLine& line : m_settings->m_lines) {
+        //        if (!line.m_style.visible || line.data.isEmpty()) continue;
+        //        hasData = true;
+        //        for (const QPointF& p : line.data) {
+        //            if (p.x() < xMin) xMin = p.x();
+        //            if (p.x() > xMax) xMax = p.x();
+        //            if (p.y() < yMin) yMin = p.y();
+        //            if (p.y() > yMax) yMax = p.y();
+        //        }
+        //    }
+        //    if (!hasData) {
+        //        xMin = m_defaultXMin;
+        //        xMax = m_defaultXMax;
+        //        yMin = m_defaultYMin;
+        //        yMax = m_defaultYMax;
+        //    }
+        //}
+        double xRange = xDiv.upperBound() - xDiv.lowerBound() ;
+        double yRange = yDiv.upperBound()- yDiv.lowerBound() ;
         m_plot->setAxisScale(QwtPlot::xBottom, -xRange, xRange);
         m_plot->setAxisScale(QwtPlot::yLeft, -yRange, yRange);
     }
