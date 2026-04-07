@@ -448,22 +448,20 @@ void FieldViewWidget::setupFieldViewPlot()
     m_plot->setAxisScale(QwtPlot::xBottom, -m_defaultRange, m_defaultRange);
     m_plot->setAxisScale(QwtPlot::yLeft, -m_defaultRange, m_defaultRange);
 
-    // 设置网格
-    QwtPlotGrid* grid = new QwtPlotGrid();
-    grid->enableX(true);
-    grid->enableY(true);
-    grid->enableXMin(true);
-    grid->enableYMin(true);
+    m_grid->enableX(true);
+    m_grid->enableY(true);
+    m_grid->enableXMin(true);
+    m_grid->enableYMin(true);
 
     // 设置主网格线样式
     QPen majorGridPen(QColor(200, 200, 200), 1, Qt::SolidLine);
-    grid->setMajorPen(majorGridPen);
+    m_grid->setMajorPen(majorGridPen);
 
     // 设置次网格线样式
     QPen minorGridPen(QColor(220, 220, 220), 1, Qt::DotLine);
-    grid->setMinorPen(minorGridPen);
+    m_grid->setMinorPen(minorGridPen);
 
-    grid->attach(m_plot);
+    m_grid->attach(m_plot);
 
     // 设置坐标轴样式
     QPen axisPen(Qt::black, 2);

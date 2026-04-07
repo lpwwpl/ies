@@ -133,6 +133,9 @@ void SimplePropertyBrowser::initSimplePropertyWidget()
 
     QPushButton* titleFontBtn = new QPushButton(tr("选择字体"));
     titleFontLabel = new QLabel(m_settings->titleFont.family());
+    titleFontLabel->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Expanding);
+    titleFontLabel->adjustSize();
+    titleFontLabel->setWordWrap(true);
     connect(titleFontBtn, &QPushButton::clicked, [this]() {
         bool ok;
         QFont font = QFontDialog::getFont(&ok, m_settings->titleFont, this);
@@ -205,6 +208,9 @@ void SimplePropertyBrowser::initSimplePropertyWidget()
     // 图例字体
     QPushButton* legendFontBtn = new QPushButton(tr("选择字体"));
     legendFontLabel = new QLabel(m_settings->legend.font.family());
+    legendFontLabel->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Expanding);
+    legendFontLabel->adjustSize();
+    legendFontLabel->setWordWrap(true);
     connect(legendFontBtn, &QPushButton::clicked, [this]() {
         bool ok;
         QFont font = QFontDialog::getFont(&ok, m_settings->legend.font, this);
@@ -304,6 +310,9 @@ void SimplePropertyBrowser::initSimplePropertyWidget()
     // 标题字体
     QPushButton* xTitleFontBtn = new QPushButton(tr("选择字体"));
     xTitleFontLabel = new QLabel(m_settings->xAxis.titleFont.family());
+    xTitleFontLabel->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Expanding);
+    xTitleFontLabel->adjustSize();
+    xTitleFontLabel->setWordWrap(true);
     connect(xTitleFontBtn, &QPushButton::clicked, [this]() {
         bool ok;
         QFont font = QFontDialog::getFont(&ok, m_settings->xAxis.titleFont, this);
@@ -336,6 +345,10 @@ void SimplePropertyBrowser::initSimplePropertyWidget()
     // 刻度标签字体
     QPushButton* xTickFontBtn = new QPushButton(tr("选择字体"));
     xTickFontLabel = new QLabel(m_settings->xAxis.tickFont.family());
+    xTickFontLabel->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Expanding);
+    xTickFontLabel->adjustSize();
+    xTickFontLabel->setWordWrap(true);
+
     connect(xTickFontBtn, &QPushButton::clicked, [this]() {
         bool ok;
         QFont font = QFontDialog::getFont(&ok, m_settings->xAxis.tickFont, this);
@@ -423,6 +436,9 @@ void SimplePropertyBrowser::initSimplePropertyWidget()
     // 标题字体
     QPushButton* yTitleFontBtn = new QPushButton(tr("选择字体"));
     yTitleFontLabel = new QLabel(m_settings->yAxis.titleFont.family());
+    yTitleFontLabel->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Expanding);
+    yTitleFontLabel->adjustSize();
+    yTitleFontLabel->setWordWrap(true);
     connect(yTitleFontBtn, &QPushButton::clicked, [this]() {
         bool ok;
         QFont font = QFontDialog::getFont(&ok, m_settings->yAxis.titleFont, this);
@@ -441,6 +457,7 @@ void SimplePropertyBrowser::initSimplePropertyWidget()
     yTitleColorLabel = new QLabel();
     yTitleColorLabel->setAutoFillBackground(true);
     yTitleColorLabel->setPalette(QPalette(m_settings->yAxis.titleColor));
+
     connect(yTitleColorBtn, &QPushButton::clicked, [this]() {
         QColor c = QColorDialog::getColor(m_settings->yAxis.titleColor, this);
         if (c.isValid()) {
@@ -456,6 +473,9 @@ void SimplePropertyBrowser::initSimplePropertyWidget()
     // 刻度标签字体
     QPushButton* yTickFontBtn = new QPushButton(tr("选择字体"));
     yTickFontLabel = new QLabel(m_settings->yAxis.tickFont.family());
+    yTickFontLabel->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Expanding);
+    yTickFontLabel->adjustSize();
+    yTickFontLabel->setWordWrap(true);
     connect(yTickFontBtn, &QPushButton::clicked, [this]() {
         bool ok;
         QFont font = QFontDialog::getFont(&ok, m_settings->yAxis.tickFont, this);
@@ -964,9 +984,9 @@ void SimplePropertyBrowser::applyTitleSettings()
 void SimplePropertyBrowser::applyLegendSettings()
 {
     globalTab->blockSignals(true);
-    QFont font = m_settings->titleFont;
+    QFont font = m_settings->legend.font;
     legendFontLabel->setText(font.family());
-    QColor color = m_settings->titleColor;
+    QColor color = m_settings->legend.color;
     legendColorLabel->setPalette(QPalette(color));
     globalTab->blockSignals(false);
 

@@ -757,7 +757,7 @@ void IESIsoWidget::updatePlot()
         for (int i = 1; i < IESLoader::instance().m_levelSize; i++) {
             levels.push_back(IESLoader::instance().minIlluminance + i * step);
         }
-
+        if (levels.size() < 1)return;
         // 使用MarchingSquares生成等值线
         if (!IESLoader::instance().illuminanceGriddata.empty()) {
             // 注意：MarchingSquares生成的数据需要修正90°翻转

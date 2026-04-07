@@ -249,7 +249,7 @@ int IESLoader::findPhiIndex(double targetPhi) {
         }
     }
 
-    // 如果找到的索引对应的角度与目标角度相差较大，则认为没找到
+    // 如果找到的索引对+应的角度与目标角度相差较大，则认为没找到
     //if (closestIndex >= 0 ) { // 1度容差
     //    return -1;
     //}
@@ -355,11 +355,6 @@ double IESLoader::getCandelaValue(double vertical, double horizontal)
     // 角度归一化
     while (horizontal < 0) horizontal += 360;
     while (horizontal >= 360) horizontal -= 360;
-
-    //if (light.m_IESType > 4 && horizontal < 180)
-    //{
-    //    return 0;
-    //}
     // 简单的最近邻插值 - 实际应用中应使用双线性插值
     int vIdx = 0, hIdx = 0;
     double minVDiff = 360, minHDiff = 360;
@@ -368,21 +363,6 @@ double IESLoader::getCandelaValue(double vertical, double horizontal)
     hIdx = findPhiIndex(horizontal);
     vIdx = findThetaIndex(vertical);
 
-    //for (int i = 0; i < verticalAngles.size(); ++i) {
-    //    double diff = fabs(verticalAngles[i] - vertical);
-    //    if (diff < minVDiff) {
-    //        minVDiff = diff;
-    //        vIdx = i;
-    //    }
-    //}
-
-    //for (int j = 0; j < horizontalAngles.size(); ++j) {
-    //    double diff = fabs(horizontalAngles[j] - horizontal);
-    //    if (diff < minHDiff) {
-    //        minHDiff = diff;
-    //        hIdx = j;
-    //    }
-    //}
     if (hIdx == -1 || vIdx == -1)
         return 0;
     return newValues_all[hIdx][vIdx];
