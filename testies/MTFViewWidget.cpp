@@ -768,11 +768,11 @@ void MTFViewer::plotData()
 
     autoScaleAxes();
 
-    m_plot->replot();
-   
+    m_plot->replot();   
+
     saveInitialView();
+
     fitView();
-    //syncBrowserFromPlot();
 }
 
 void MTFViewer::onLegendChecked(const QVariant& itemInfo, bool on, int)
@@ -929,8 +929,10 @@ void MTFViewer::autoScaleAxes()
         m_settings->yAxis.min = m_defaultYMin;
         m_settings->yAxis.max = m_defaultYMax;
     }
-    m_simple_browser->applyXAxisSettings();
-    m_simple_browser->applyYAxisSettings();
+    m_plot->replot();
+    updateAxesSettings();
+    //m_simple_browser->applyXAxisSettings();
+    //m_simple_browser->applyYAxisSettings();
 }
 
 void MTFViewer::setTitle(const QString& title)
@@ -999,27 +1001,10 @@ void MTFViewer::zoomIn()
     m_plot->setAxisScale(QwtPlot::yRight, m_initialYMin, m_initialYMax);
     // 更新点列位置
     m_current_factor = m_current_factor * 0.9;
-    updateAxesSettings();
-    //m_simple_browser->applyXAxisSettings();
-    //m_simple_browser->applyYAxisSettings();
+
     // 重新绘制
     m_plot->replot();
-    //m_plot->setAxisScale(QwtPlot::xBottom,
-    //    m_plot->axisScaleDiv(QwtPlot::xBottom).lowerBound() * 0.9,
-    //    m_plot->axisScaleDiv(QwtPlot::xBottom).upperBound() * 0.9);
-    //m_plot->setAxisScale(QwtPlot::yLeft,
-    //    m_plot->axisScaleDiv(QwtPlot::yLeft).lowerBound() * 0.9,
-    //    m_plot->axisScaleDiv(QwtPlot::yLeft).upperBound() * 0.9);
-    //m_plot->replot();
-
-    //m_settings->xAxis.min = m_plot->axisScaleDiv(QwtPlot::xBottom).lowerBound();
-    //m_settings->xAxis.max = m_plot->axisScaleDiv(QwtPlot::xBottom).upperBound();
-
-    //m_settings->yAxis.min = m_plot->axisScaleDiv(QwtPlot::yLeft).lowerBound();
-    //m_settings->yAxis.max = m_plot->axisScaleDiv(QwtPlot::yLeft).upperBound();
-
-    //m_simple_browser->applyXAxisSettings();
-    //m_simple_browser->applyYAxisSettings();
+    updateAxesSettings();
 }
 
 void MTFViewer::zoomOut()
@@ -1034,27 +1019,10 @@ void MTFViewer::zoomOut()
     m_plot->setAxisScale(QwtPlot::yRight, m_initialYMin, m_initialYMax);
 
     m_current_factor = m_current_factor * 1.1;
-    updateAxesSettings();
-    //m_simple_browser->applyXAxisSettings();
-    //m_simple_browser->applyYAxisSettings();
+
     // 重新绘制
     m_plot->replot();
-    //m_plot->setAxisScale(QwtPlot::xBottom,
-    //    m_plot->axisScaleDiv(QwtPlot::xBottom).lowerBound() * 1.1,
-    //    m_plot->axisScaleDiv(QwtPlot::xBottom).upperBound() * 1.1);
-    //m_plot->setAxisScale(QwtPlot::yLeft,
-    //    m_plot->axisScaleDiv(QwtPlot::yLeft).lowerBound() * 1.1,
-    //    m_plot->axisScaleDiv(QwtPlot::yLeft).upperBound() * 1.1);
-    //m_plot->replot();
-
-    //m_settings->xAxis.min = m_plot->axisScaleDiv(QwtPlot::xBottom).lowerBound();
-    //m_settings->xAxis.max = m_plot->axisScaleDiv(QwtPlot::xBottom).upperBound();
-
-    //m_settings->yAxis.min = m_plot->axisScaleDiv(QwtPlot::yLeft).lowerBound();
-    //m_settings->yAxis.max = m_plot->axisScaleDiv(QwtPlot::yLeft).upperBound();
-
-    //m_simple_browser->applyXAxisSettings();
-    //m_simple_browser->applyYAxisSettings();
+    updateAxesSettings();
 }
 
 void MTFViewer::fitView()
@@ -1074,8 +1042,6 @@ void MTFViewer::fitView()
     // 重新绘制
     m_plot->replot();
     updateAxesSettings();
-    //m_simple_browser->applyXAxisSettings();
-    //m_simple_browser->applyYAxisSettings();
 }
 
 void MTFViewer::showContextMenu(const QPoint& pos)
