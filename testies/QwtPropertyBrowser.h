@@ -25,6 +25,72 @@ class QwtPlotGrid;
 class QwtLegend;
 class StringEditorFactory;
 
+// MyPlotMagnifier.h
+#pragma once
+
+#include <QObject>
+#include <qwt_plot_magnifier.h>
+
+
+// MyPlotPanner.h
+#include <qwt_plot_panner.h>
+
+class MyPlotPanner : public QwtPlotPanner {
+    Q_OBJECT
+public:
+    MyPlotPanner(QWidget* canvas) : QwtPlotPanner(canvas) {}
+
+protected:
+    void widgetMousePressEvent(QMouseEvent* event) override {
+        // 平移开始前的处理
+        emit panStarted();
+        QwtPlotPanner::widgetMousePressEvent(event);
+    }
+
+    void widgetMouseMoveEvent(QMouseEvent* event) override {
+        // 平移过程中的处理，可以获取实时偏移量
+        // 注意：此处的偏移量信息可能需要从父类获取或自己计算
+        QwtPlotPanner::widgetMouseMoveEvent(event);
+        emit panning();
+    }
+
+    void widgetMouseReleaseEvent(QMouseEvent* event) override {
+        // 平移结束后的处理
+        QwtPlotPanner::widgetMouseReleaseEvent(event);
+
+        // 获取最终的平移偏移量并更新变量
+        // 这里需要访问父类的内部状态，一种方式是通过信号传递，或者重新实现逻辑
+        emit panFinished();
+    }
+
+signals:
+    void panStarted();
+    void panning();
+    void panFinished();
+};
+
+class MyPlotMagnifier : public QwtPlotMagnifier
+{
+    Q_OBJECT
+public:
+    // 构造函数直接透传canvas指针
+    MyPlotMagnifier(QWidget* canvas) : QwtPlotMagnifier(canvas) {}
+
+signals:
+    // 自定义信号，在缩放完成时发射
+    void zoomed();
+
+protected:
+    // 重写 wheel 事件处理函数
+    void widgetWheelEvent(QWheelEvent* event) override
+    {
+        // 调用父类的默认处理，执行实际的缩放
+        QwtPlotMagnifier::widgetWheelEvent(event);
+        // 缩放完成后，发射我们自己的信号
+        emit zoomed();
+    }
+};
+
 class QwtPropertyBrowser : public QWidget
 {
     Q_OBJECT

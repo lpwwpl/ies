@@ -553,6 +553,7 @@
 #include <limits>
 #include <QTimer>
 #include "SimplePropertyBrowser.h"
+#include "QwtPropertyBrowser.h"
 #include <QSplitter>
 #include <QFileDialog>
 // 初始化静态成员变量
@@ -785,18 +786,18 @@ void SpotDiagramPlotter::setupPlot()
     m_zoomer->setMousePattern(QwtEventPattern::MouseSelect3, Qt::RightButton, Qt::AltModifier);
 
     // 连接缩放信号
-    connect(m_zoomer, &QwtPlotZoomer::zoomed, this, &SpotDiagramPlotter::handleZoomed);
+    connect(m_zoomer, &QwtPlotZoomer::zoomed, this, &SpotDiagramPlotter::updateLabelsForCurrentView);
 
     // 设置缩放器的缩放栈最大深度
     m_zoomer->setMaxStackDepth(10);
 
     // 添加平移功能 - 左键移动
-    m_panner = new QwtPlotPanner(m_plot->canvas());
+    m_panner = new MyPlotPanner(m_plot->canvas());
     // 设置左键为平移
     m_panner->setMouseButton(Qt::LeftButton);
 
     // 连接平移信号
-    connect(m_panner, &QwtPlotPanner::panned, this, &SpotDiagramPlotter::handlePanned);
+    connect(m_panner, &MyPlotPanner::panFinished, this, &SpotDiagramPlotter::updateLabelsForCurrentView);
 
     // 设置自动重绘
     m_plot->setAutoReplot(true);
@@ -1248,6 +1249,25 @@ void SpotDiagramPlotter::updateXScaleAxes()
 
     // 重新绘制
     m_plot->replot();
+    updateAxesSettings();
+}
+void SpotDiagramPlotter::updateAxesSettings()
+{
+    m_settings->xAxis.min = m_plot->axisScaleDiv(QwtPlot::xBottom).lowerBound();
+    m_settings->xAxis.max = m_plot->axisScaleDiv(QwtPlot::xBottom).upperBound();
+    m_settings->yAxis.min = m_plot->axisScaleDiv(QwtPlot::yLeft).lowerBound();
+    m_settings->yAxis.max = m_plot->axisScaleDiv(QwtPlot::yLeft).upperBound();
+    QwtScaleDiv temp = m_plot->axisScaleDiv(QwtPlot::xBottom);
+    QList<double> ticks = temp.ticks(QwtScaleDiv::MajorTick);
+    m_settings->xAxis.step = ticks[1] - ticks[0];
+    temp = m_plot->axisScaleDiv(QwtPlot::yLeft);
+    ticks = temp.ticks(QwtScaleDiv::MajorTick);
+    m_settings->yAxis.step = ticks[1] - ticks[0];
+
+    m_simple_browser->blockSignals(true);
+    m_simple_browser->applyXAxisSettings();
+    m_simple_browser->applyYAxisSettings();
+    m_simple_browser->blockSignals(false);
 }
 void SpotDiagramPlotter::updateYScaleAxes()
 {
@@ -1262,6 +1282,7 @@ void SpotDiagramPlotter::updateYScaleAxes()
 
     // 重新绘制
     m_plot->replot();
+    updateAxesSettings();
 }
 void SpotDiagramPlotter::updateLabelsForCurrentView()
 {
@@ -1273,6 +1294,8 @@ void SpotDiagramPlotter::updateLabelsForCurrentView()
 
     // 重新绘制
     m_plot->replot();
+
+    updateAxesSettings();
 }
 
 void SpotDiagramPlotter::updateSpotPositions()
@@ -1466,8 +1489,9 @@ void SpotDiagramPlotter::zoomIn()
     // 更新点列位置
     m_current_factor = m_current_factor * 0.9;
     updateSpotPositions();
-    m_simple_browser->applyXAxisSettings();
-    m_simple_browser->applyYAxisSettings();
+    //m_simple_browser->applyXAxisSettings();
+    //m_simple_browser->applyYAxisSettings();
+    updateAxesSettings();
     // 重新绘制
     m_plot->replot();
 }
@@ -1503,8 +1527,9 @@ void SpotDiagramPlotter::zoomOut()
     m_current_factor = m_current_factor * 1.1;
     // 更新点列位置
     updateSpotPositions();
-    m_simple_browser->applyXAxisSettings();
-    m_simple_browser->applyYAxisSettings();
+    //m_simple_browser->applyXAxisSettings();
+    //m_simple_browser->applyYAxisSettings();
+    updateAxesSettings();
     // 重新绘制
     m_plot->replot();
 
@@ -1519,6 +1544,8 @@ void SpotDiagramPlotter::fitView()
 
     // 重新应用自定义刻度绘制
     reapplyScaleDraws();
+
+    updateAxesSettings();
 }
 
 void SpotDiagramPlotter::autoScaleAxes()

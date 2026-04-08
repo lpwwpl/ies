@@ -393,6 +393,7 @@ void DistortionGridWidget::updateXScaleAxes()
 
     // 重新绘制
     m_plot->replot();
+    updateAxesSettings();
 }
 void DistortionGridWidget::updateYScaleAxes()
 {
@@ -404,18 +405,25 @@ void DistortionGridWidget::updateYScaleAxes()
 
     // 重新绘制
     m_plot->replot();
+    updateAxesSettings();
 }
 
 void DistortionGridWidget::setupInteractions()
 {
     // 创建拖拽功能 (对应 QCP::iRangeDrag)
-    m_panner = new QwtPlotPanner(m_plot->canvas());
+    m_panner = new MyPlotPanner(m_plot->canvas());
     m_panner->setMouseButton(Qt::LeftButton);
 
     // 创建缩放功能 (对应 QCP::iRangeZoom)
-    m_magnifier = new QwtPlotMagnifier(m_plot->canvas());
+    m_magnifier = new MyPlotMagnifier(m_plot->canvas());
     m_magnifier->setMouseButton(Qt::RightButton, Qt::ControlModifier);
     m_magnifier->setWheelFactor(1.1);
+
+    m_panner = new MyPlotPanner(m_plot->canvas());
+    connect(m_panner, &MyPlotPanner::panFinished, this, &DistortionGridWidget::updateAxesSettings);
+
+    m_magnifier = new MyPlotMagnifier(m_plot->canvas());
+    connect(m_magnifier, &MyPlotMagnifier::zoomed, this, &DistortionGridWidget::updateAxesSettings);
 
     // 启用抗锯齿
     //m_plot->canvas()->setPaintAttribute(QwtPlotCanvas::ImmediatePaint, false);
@@ -804,10 +812,13 @@ void DistortionGridWidget::zoomOut()
     m_plot->setAxisScale(QwtPlot::yRight, m_initialYMin, m_initialYMax);
 
     m_current_factor = m_current_factor * 1.1;
-    m_simple_browser->applyXAxisSettings();
-    m_simple_browser->applyYAxisSettings();
+
     // 重新绘制
     m_plot->replot();
+
+    updateAxesSettings();
+    //m_simple_browser->applyXAxisSettings();
+    //m_simple_browser->applyYAxisSettings();
 }
 
 void DistortionGridWidget::fitView()
@@ -815,7 +826,24 @@ void DistortionGridWidget::fitView()
     autoScaleAxes();
     m_plot->replot();
 }
+void DistortionGridWidget::updateAxesSettings()
+{
+    m_settings->xAxis.min = m_plot->axisScaleDiv(QwtPlot::xBottom).lowerBound();
+    m_settings->xAxis.max = m_plot->axisScaleDiv(QwtPlot::xBottom).upperBound();
+    m_settings->yAxis.min = m_plot->axisScaleDiv(QwtPlot::yLeft).lowerBound();
+    m_settings->yAxis.max = m_plot->axisScaleDiv(QwtPlot::yLeft).upperBound();
+    QwtScaleDiv temp = m_plot->axisScaleDiv(QwtPlot::xBottom);
+    QList<double> ticks = temp.ticks(QwtScaleDiv::MajorTick);
+    m_settings->xAxis.step = ticks[1] - ticks[0];
+    temp = m_plot->axisScaleDiv(QwtPlot::yLeft);
+    ticks = temp.ticks(QwtScaleDiv::MajorTick);
+    m_settings->yAxis.step = ticks[1] - ticks[0];
 
+    m_simple_browser->blockSignals(true);
+    m_simple_browser->applyXAxisSettings();
+    m_simple_browser->applyYAxisSettings();
+    m_simple_browser->blockSignals(false);
+}
 void DistortionGridWidget::autoScaleAxes()
 {
     m_initialXMin = m_initialXMin_orig;
@@ -833,8 +861,11 @@ void DistortionGridWidget::autoScaleAxes()
     // 重新绘制
     m_plot->replot();
 
-    m_simple_browser->applyXAxisSettings();
-    m_simple_browser->applyYAxisSettings();
+
+    updateAxesSettings();
+
+    //m_simple_browser->applyXAxisSettings();
+    //m_simple_browser->applyYAxisSettings();
 }
 
 void DistortionGridWidget::zoomIn()
@@ -865,10 +896,12 @@ void DistortionGridWidget::zoomIn()
     m_plot->setAxisScale(QwtPlot::yRight, m_initialYMin, m_initialYMax);
     // 更新点列位置
     m_current_factor = m_current_factor * 0.9;
-    m_simple_browser->applyXAxisSettings();
-    m_simple_browser->applyYAxisSettings();
     // 重新绘制
     m_plot->replot();
+
+    updateAxesSettings();
+    //m_simple_browser->applyXAxisSettings();
+    //m_simple_browser->applyYAxisSettings();
 }
 
 void DistortionGridWidget::saveInitialView()

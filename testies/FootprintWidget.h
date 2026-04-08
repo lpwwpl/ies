@@ -91,6 +91,7 @@ public Q_SLOTS:
     void fitView();
     void updateXScaleAxes();
     void updateYScaleAxes();
+    void updateAxesSettings();
 private:
     void setupPlot();
     void setupInteractions();
@@ -102,8 +103,8 @@ private:
     QwtPlot* m_plot;
 
     // 交互对象
-    QwtPlotPanner* m_panner;
-    QwtPlotMagnifier* m_magnifier;
+    MyPlotPanner* m_panner;
+    MyPlotMagnifier* m_magnifier;
 
     // 存储曲线对象
     QList<QwtPlotCurve*> m_circleCurves;

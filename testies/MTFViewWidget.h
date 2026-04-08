@@ -142,7 +142,7 @@ private slots:
 
     void updateXScaleAxes();
     void updateYScaleAxes();
-
+    void updateAxesSettings();
 public Q_SLOTS:
     void zoomIn();
     void zoomOut();
@@ -167,8 +167,8 @@ private:
     QSplitter* m_splitter;
 
     // 交互对象
-    QwtPlotPanner* m_panner;
-    QwtPlotMagnifier* m_magnifier;
+    MyPlotPanner* m_panner;
+    MyPlotMagnifier* m_magnifier;
     QwtPlotPicker* m_picker;
 
     // 默认范围

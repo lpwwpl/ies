@@ -134,6 +134,7 @@
 #include "common.h"
 #include "PlotSetting.h"
 #include "PlotBase.h"
+
 // 点列图数据结构
 struct SpotData {
     int index;          // 索引
@@ -147,7 +148,7 @@ struct SpotData {
 
 class SimplePropertyBrowser;
 class QSplitter;
-
+class MyPlotPanner;
 // 自定义刻度绘制类，用于显示多行文本
 class MultiLineScaleDraw : public QwtScaleDraw
 {
@@ -258,6 +259,7 @@ public Q_SLOTS:
     void updateLabelsForCurrentView();
     void updateXScaleAxes();
     void updateYScaleAxes();
+    void updateAxesSettings(); 
 private:
     QwtPlot* m_plot;                            // 图表控件
     QVector<SpotData> m_spotData;               // 点列图数据
@@ -274,7 +276,7 @@ private:
     QMap<int, QVector<QwtPlotMarker*>> m_fieldMarkers;
 
     QwtPlotZoomer* m_zoomer;                    // 缩放工具
-    QwtPlotPanner* m_panner;                    // 平移工具
+    MyPlotPanner* m_panner;                    // 平移工具
     QwtPlotGrid* m_grid;                        // 网格
     //QwtLegend* m_legend;
     // 自定义刻度绘制器

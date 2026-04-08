@@ -1586,8 +1586,7 @@ void QwtPropertyBrowser::applyGridSettings()
 }
 
 void QwtPropertyBrowser::applyXAxisSettings_plot()
-{
-    // X轴
+{    // X轴
     if (m_settings->xAxis.visible)
     {
         m_plot->enableAxis(QwtPlot::xBottom);
@@ -1612,9 +1611,12 @@ void QwtPropertyBrowser::applyXAxisSettings_plot()
             //m_plot->setAxisScale(QwtPlot::xBottom, m_settings->xAxis.min, m_settings->xAxis.max);
         }
     }
-    else {
+    else 
+    {
         m_plot->enableAxis(QwtPlot::xBottom, false);
     }
+
+
     m_plot->replot();
 }
 void QwtPropertyBrowser::applyYAxisSettings_plot()
