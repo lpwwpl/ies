@@ -173,6 +173,7 @@ public:
 
     StringEditorFactory* m_stringEditorFactory;
 
+    bool m_bBuilding=false;
     // 默认范围
     double m_defaultXMin = 0.0, m_defaultXMax = 200.0;
     double m_defaultYMin = 0.0, m_defaultYMax = 1.1;

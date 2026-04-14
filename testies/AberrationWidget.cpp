@@ -205,10 +205,18 @@
 #include <QFrame>
 #include <qwt_symbol.h>
 #include <qwt_plot_canvas.h>
-
+#include <QComboBox>
+#include <QCheckBox>
+#include <qwt_scale_widget.h>
+#include <qwt_scale_engine.h>
 AberrationWidget::AberrationWidget(QWidget* parent)
     : QWidget(parent)
     , m_mainLayout(nullptr)
+    , m_controlLayout(nullptr)
+    , m_plotCombo(nullptr)
+    , m_applyToAllCheckBox(nullptr)
+    , m_propertyBrowser(nullptr)
+    , m_currentPlotIndex(-1)
 {
     setupUI();
 
@@ -217,6 +225,10 @@ AberrationWidget::AberrationWidget(QWidget* parent)
 AberrationWidget::~AberrationWidget()
 {
     clearPlots();
+    for (auto& info : m_plotInfos) {
+        delete info.settings;
+    }
+    delete m_propertyBrowser;
 }
 
 void AberrationWidget::setupUI()
@@ -230,21 +242,424 @@ void AberrationWidget::setupUI()
     //connect(m_toolBar_plot, SIGNAL(signalZoomIn()), this, SLOT(zoomIn()));
     //connect(m_toolBar_plot, SIGNAL(signalZommOut()), this, SLOT(zoomOut()));
 
-    m_mainLayout = new QGridLayout(this);
+    //m_mainLayout = new QGridLayout(this);
+    //m_mainLayout->setSpacing(10);
+    //m_mainLayout->setContentsMargins(10, 10, 10, 10);
+    //setLayout(m_mainLayout);
+
+    QHBoxLayout* mainHLayout = new QHBoxLayout(this);
+    setLayout(mainHLayout);
+
+    // 左侧图表区域
+    QWidget* plotContainer = new QWidget(this);
+    m_mainLayout = new QGridLayout(plotContainer);
     m_mainLayout->setSpacing(10);
     m_mainLayout->setContentsMargins(10, 10, 10, 10);
-    setLayout(m_mainLayout);
+    plotContainer->setLayout(m_mainLayout);
+    mainHLayout->addWidget(plotContainer, 1); // 图表区域可拉伸
+
+    // 右侧控制面板
+    QWidget* controlPanel = new QWidget(this);
+    m_controlLayout = new QVBoxLayout(controlPanel);
+    m_controlLayout->setContentsMargins(5, 5, 5, 5);
+    controlPanel->setMaximumWidth(450);
+    mainHLayout->addWidget(controlPanel);
+    // 图表选择下拉框
+    m_plotCombo = new QComboBox(this);
+    m_plotCombo->setEnabled(false);
+    connect(m_plotCombo, QOverload<int>::of(&QComboBox::currentIndexChanged),
+        this, &AberrationWidget::onPlotSelected);
+    m_controlLayout->addWidget(m_plotCombo);
+
+    // “应用到所有”复选框
+    m_applyToAllCheckBox = new QCheckBox("应用到所有图表", this);
+    m_applyToAllCheckBox->setEnabled(false);
+    connect(m_applyToAllCheckBox, &QCheckBox::toggled,
+        this, &AberrationWidget::onApplyToAllToggled);
+    m_controlLayout->addWidget(m_applyToAllCheckBox);
+
+    // 属性浏览器占位（稍后创建）
+    m_propertyBrowser = nullptr;
+}
+void AberrationWidget::onPropertyChanged()
+{
+    if (!m_propertyBrowser)
+        return;
+
+    if (m_applyToAllCheckBox && m_applyToAllCheckBox->isChecked()) 
+    {
+        // 应用到所有图表
+        applyAllSettingsToAllPlots();
+    }
+}
+void AberrationWidget::syncSettingsToPlot(PlotSettings* settings,PlotInfo& info)
+{
+    QwtPlot* plot = info.plot;
+    QwtPlotGrid* grid = info.grid;
+    QwtLegend* legend = info.legend;
+
+    if (!plot || !settings)
+        return;
+
+    // 背景色
+    plot->setCanvasBackground(settings->backgroundColor);
+
+    // 标题
+    QwtText title(settings->title);
+    title.setFont(settings->titleFont);
+    title.setColor(settings->titleColor);
+    plot->setTitle(title);
+
+    // X 轴
+    if (settings->xAxis.visible) 
+    {
+        plot->enableAxis(QwtPlot::xBottom);
+        QwtText xTitle(settings->xAxis.title);
+        xTitle.setFont(settings->xAxis.titleFont);
+        xTitle.setColor(settings->xAxis.titleColor);
+        plot->setAxisTitle(QwtPlot::xBottom, xTitle);
+        plot->setAxisFont(QwtPlot::xBottom, settings->xAxis.tickFont);
+        QwtScaleWidget* xScale = plot->axisWidget(QwtPlot::xBottom);
+        if (xScale) {
+            QPalette pal = xScale->palette();
+            pal.setColor(QPalette::Text, settings->xAxis.tickColor);
+            xScale->setPalette(pal);
+        }
+        if (!settings->xAxis.autoRange) {
+            plot->setAxisScale(QwtPlot::xBottom, settings->xAxis.min, settings->xAxis.max, settings->xAxis.step);
+            //signalUpdateScaleDiv();
+        }
+        else 
+        {
+            updateXScaleAxes(plot, info);
+        }
+    }
+    else 
+    {
+        plot->enableAxis(QwtPlot::xBottom, false);
+    }
+
+    // Y 轴
+    if (settings->yAxis.visible) 
+    {
+        plot->enableAxis(QwtPlot::yLeft);
+        QwtText yTitle(settings->yAxis.title);
+        yTitle.setFont(settings->yAxis.titleFont);
+        yTitle.setColor(settings->yAxis.titleColor);
+        plot->setAxisTitle(QwtPlot::yLeft, yTitle);
+        plot->setAxisFont(QwtPlot::yLeft, settings->yAxis.tickFont);
+        QwtScaleWidget* yScale = plot->axisWidget(QwtPlot::yLeft);
+        if (yScale) {
+            QPalette pal = yScale->palette();
+            pal.setColor(QPalette::Text, settings->yAxis.tickColor);
+            yScale->setPalette(pal);
+        }
+        if (!settings->yAxis.autoRange) 
+        {
+            plot->setAxisScale(QwtPlot::yLeft, settings->yAxis.min, settings->yAxis.max, settings->yAxis.step);
+        }
+        else
+        {
+            updateYScaleAxes(plot,info);
+        }
+    }
+    else 
+    {
+        plot->enableAxis(QwtPlot::yLeft, false);
+    }
+
+    // 网格
+    if (settings->gridVisible) {
+        grid->enableX(true);
+        grid->enableY(true);
+        grid->setMajorPen(QPen(settings->gridMajorColor, 0, settings->gridMajorStyle));
+        grid->setMinorPen(QPen(settings->gridMinorColor, 0, settings->gridMinorStyle));
+        grid->attach(plot);
+    }
+    else {
+        grid->detach();
+    }
+
+    // 图例
+    if (settings->legend.visible) {
+        if (!legend) {
+            legend = new QwtLegend();
+            plot->insertLegend(legend, settings->legend.position);
+            info.legend = legend;
+        }
+        plot->insertLegend(legend, settings->legend.position);
+        legend->setVisible(true);
+        // 更新图例标签样式
+        QList<QwtLegendLabel*> labels = legend->findChildren<QwtLegendLabel*>();
+        for (QwtLegendLabel* label : labels) {
+            label->setFont(settings->legend.font);
+            QPalette pal = label->palette();
+            pal.setColor(QPalette::Text, settings->legend.color);
+            label->setPalette(pal);
+        }
+    }
+    else {
+        delete legend;
+        plot->insertLegend(nullptr);       
+        legend = NULL;
+        info.legend = legend;
+    }
+
+    // 原点位置
+    QwtScaleDiv xDiv = plot->axisScaleDiv(QwtPlot::xBottom);
+    QwtScaleDiv yDiv = plot->axisScaleDiv(QwtPlot::yLeft);
+    switch (settings->origin) {
+    case PlotSettings::BottomLeft:
+        // 取消反转
+        plot->axisScaleEngine(QwtPlot::xBottom)->setAttribute(QwtScaleEngine::Inverted, false);
+        plot->axisScaleEngine(QwtPlot::yLeft)->setAttribute(QwtScaleEngine::Inverted, false);
+        // 确保范围是正序
+        if (xDiv.lowerBound() > xDiv.upperBound()) {
+            plot->setAxisScale(QwtPlot::xBottom, xDiv.upperBound(), xDiv.lowerBound());
+        }
+        else
+        {
+            plot->setAxisScale(QwtPlot::xBottom, xDiv.lowerBound(), xDiv.upperBound());
+        }
+        if (yDiv.lowerBound() > yDiv.upperBound())
+        {
+            plot->setAxisScale(QwtPlot::yLeft, yDiv.upperBound(), yDiv.lowerBound());
+        }
+        else
+        {
+            plot->setAxisScale(QwtPlot::yLeft, yDiv.lowerBound(), yDiv.upperBound());
+        }
+        break;
+    case PlotSettings::BottomRight:
+        plot->axisScaleEngine(QwtPlot::xBottom)->setAttribute(QwtScaleEngine::Inverted, true);
+        plot->axisScaleEngine(QwtPlot::yLeft)->setAttribute(QwtScaleEngine::Inverted, false);
+        // 设置范围为从小到大的值，但引擎会负责反转
+        if (xDiv.lowerBound() > xDiv.upperBound()) {
+            plot->setAxisScale(QwtPlot::xBottom, xDiv.lowerBound(), xDiv.upperBound());
+        }
+        else
+        {
+            plot->setAxisScale(QwtPlot::xBottom, xDiv.upperBound(), xDiv.lowerBound());
+        }
+        if (yDiv.lowerBound() > yDiv.upperBound())
+        {
+            plot->setAxisScale(QwtPlot::yLeft, yDiv.upperBound(), yDiv.lowerBound());
+        }
+        else
+        {
+            plot->setAxisScale(QwtPlot::yLeft, yDiv.lowerBound(), yDiv.upperBound());
+        }
+        break;
+    case PlotSettings::Center:
+        plot->axisScaleEngine(QwtPlot::xBottom)->setAttribute(QwtScaleEngine::Inverted, false);
+        plot->axisScaleEngine(QwtPlot::yLeft)->setAttribute(QwtScaleEngine::Inverted, false);
+        // 简化的中心原点：取当前范围的一半作为对称范围
+        {
+            double xRange = xDiv.upperBound() - xDiv.lowerBound();
+            double yRange = yDiv.upperBound() - yDiv.lowerBound();
+            plot->setAxisScale(QwtPlot::xBottom, -xRange / 2, xRange / 2);
+            plot->setAxisScale(QwtPlot::yLeft, -yRange / 2, yRange / 2);
+        }
+        break;
+    }
+
+    plot->replot();
 }
 
+void AberrationWidget::updateXScaleAxes(QwtPlot* plot, PlotInfo& info)
+{
+    plot->setAxisScale(QwtPlot::xBottom, info.m_initialXMin, info.m_initialXMax);
+    //plot->setAxisScale(QwtPlot::yRight, info.m_initialYMin, info.m_initialYMax);
+
+    // 重新绘制
+    plot->replot();
+}
+void AberrationWidget::saveInitialView(PlotInfo& info)
+{
+    // 保存初始视图范围
+    info.m_initialXMin = info.settings->xAxis.min;
+    info.m_initialXMax = info.settings->xAxis.max;
+    info.m_initialYMin = info.settings->yAxis.min;
+    info.m_initialYMax = info.settings->yAxis.max;
+
+    info.m_initialXMin_orig = info.m_initialXMin;
+    info.m_initialXMax_orig = info.m_initialXMax;
+    info.m_initialYMin_orig = info.m_initialYMin;
+    info.m_initialYMax_orig = info.m_initialYMax;
+
+    info.m_current_factor = 1;
+}
+void AberrationWidget::updateYScaleAxes(QwtPlot* plot,PlotInfo& info)
+{
+    //m_initialYMin = m_initialYMin_orig * m_current_factor;
+    //m_initialYMax = m_initialYMax_orig * m_current_factor;
+
+    plot->setAxisScale(QwtPlot::yLeft, info.m_initialYMin, info.m_initialYMax);
+    //plot->setAxisScale(QwtPlot::yRight, info.m_initialYMin, info.m_initialYMax);
+
+    // 重新绘制
+    plot->replot();
+    updateAxesSettings(plot, info);
+}
+void AberrationWidget::updateAxesSettings(QwtPlot* plot, PlotInfo& info)
+{
+    info.settings->xAxis.min = plot->axisScaleDiv(QwtPlot::xBottom).lowerBound();
+    info.settings->xAxis.max = plot->axisScaleDiv(QwtPlot::xBottom).upperBound();
+    info.settings->yAxis.min = plot->axisScaleDiv(QwtPlot::yLeft).lowerBound();
+    info.settings->yAxis.max = plot->axisScaleDiv(QwtPlot::yLeft).upperBound();
+    QwtScaleDiv temp = plot->axisScaleDiv(QwtPlot::xBottom);
+    QList<double> ticks = temp.ticks(QwtScaleDiv::MajorTick);
+    info.settings->xAxis.step = ticks[1] - ticks[0];
+    temp = plot->axisScaleDiv(QwtPlot::yLeft);
+    ticks = temp.ticks(QwtScaleDiv::MajorTick);
+    info.settings->yAxis.step = ticks[1] - ticks[0];
+
+    //m_simple_browser->blockSignals(true);
+    //m_simple_browser->applyXAxisSettings();
+    //m_simple_browser->applyYAxisSettings();
+    //m_simple_browser->blockSignals(false);
+
+    info.m_initialXMin = plot->axisScaleDiv(QwtPlot::xBottom).lowerBound();
+    info.m_initialXMax = plot->axisScaleDiv(QwtPlot::xBottom).upperBound();
+
+    info.m_initialYMin = plot->axisScaleDiv(QwtPlot::yLeft).lowerBound();
+    info.m_initialYMax = plot->axisScaleDiv(QwtPlot::yLeft).upperBound();
+}
+void AberrationWidget::applyAllSettingsToAllPlots()
+{
+    if (!m_propertyBrowser || m_currentPlotIndex < 0)
+        return;
+
+    PlotSettings* currentSettings = m_propertyBrowser->m_settings;
+    for (int i = 0; i < m_plotInfos.size(); ++i) {
+        if (i == m_currentPlotIndex)
+            continue;   // 跳过当前，因为已经更新过了
+        PlotInfo& info = m_plotInfos[i];
+        // 将当前设置同步到目标图表
+        syncSettingsToPlot(currentSettings, info);
+
+        for (int j = 0; j < info.curves.size() && j < currentSettings->m_lines.size(); ++j) {
+            const MTFLine& srcLine = currentSettings->m_lines[j];
+            MTFLine& dstLine = info.settings->m_lines[j];
+            dstLine.m_style = srcLine.m_style;
+            // 应用样式到实际曲线
+            QwtPlotCurve* curve = info.curves[j];
+            updateCurveStyle(info.plot,dstLine);
+        }
+        //info.plot->replot();
+    }
+}
+void AberrationWidget::updateCurveStyle(QwtPlot* plot,MTFLine& line)
+{
+    if (!line.curve) return;
+
+    //DotLine,       DashDotLine,        DashDotDotLine,
+    Qt::PenStyle lineStyle = line.m_style.lineStyle;
+    if (lineStyle == (Qt::CustomDashLine + 1))
+    {
+        line.curve->setStyle(QwtPlotCurve::Dots);
+    }
+    else
+    {
+        // 线条
+        QPen pen = line.curve->pen();
+        pen.setWidth(line.m_style.lineWidth);
+        pen.setColor(line.m_style.lineColor);
+        pen.setStyle(line.m_style.lineStyle);
+        if (line.m_style.lineStyle == Qt::CustomDashLine && !line.m_style.customDashPattern.isEmpty()) {
+            pen.setDashPattern(line.m_style.customDashPattern);
+        }
+        line.curve->setPen(pen);
+        line.curve->setStyle(QwtPlotCurve::Lines);
+    }
+    // 曲线/折线
+    line.curve->setCurveAttribute(QwtPlotCurve::Fitted, line.m_style.useCurve);
+
+    // 点符号
+    if (line.curve->symbol())
+    {
+        line.curve->setSymbol(nullptr);
+    }
+
+    if ((line.m_style.pointStyle != QwtSymbol::NoSymbol) && (lineStyle == Qt::DotLine || (lineStyle == Qt::CustomDashLine + 1) || lineStyle == Qt::DashDotLine || lineStyle == Qt::DashDotDotLine)) {
+        QwtSymbol* sym = new QwtSymbol(line.m_style.pointStyle);
+        sym->setSize(line.m_style.pointSize);
+        sym->setColor(line.m_style.pointColor);
+        QPen symPen = sym->pen();
+        symPen.setWidth(line.m_style.pointWidth);
+        symPen.setColor(line.m_style.pointColor);
+        sym->setPen(symPen);
+        QBrush brush;
+        brush.setStyle(line.m_style.pointFilled ? Qt::SolidPattern : Qt::NoBrush);
+        brush.setColor(line.m_style.pointColor);
+        sym->setBrush(brush);
+        line.curve->setSymbol(sym);
+    }
+    else {
+        line.curve->setSymbol(nullptr);
+    }
+
+    if (line.m_style.visible)
+    {
+        line.curve->setVisible(true);
+    }
+    else
+    {
+        line.curve->setVisible(false);
+    }
+    plot->replot();
+}
+void AberrationWidget::onPlotSelected(int index)
+{
+    if (index < 0 || index >= m_plotInfos.size())
+        return;
+
+    m_currentPlotIndex = index;
+    PlotInfo& info = m_plotInfos[index];
+
+    if (!m_propertyBrowser) {
+        // 创建属性浏览器，绑定当前图表的 settings 和控件
+        m_propertyBrowser = new QwtPropertyBrowser(info.settings,
+            info.plot,
+            info.grid,
+            info.legend,
+            this);
+        connect(m_propertyBrowser, &QwtPropertyBrowser::propertyChanged,
+            this, &AberrationWidget::onPropertyChanged);
+        m_controlLayout->addWidget(m_propertyBrowser);
+    }
+
+    // 更新已有浏览器的内部指针
+    m_propertyBrowser->m_settings = info.settings;
+    m_propertyBrowser->m_plot = info.plot;
+    m_propertyBrowser->m_grid = info.grid;
+    m_propertyBrowser->m_legend = info.legend;
+
+    // 刷新界面
+    m_propertyBrowser->InitSetupUI();
+    m_propertyBrowser->updateLineCombo();
+    m_propertyBrowser->updateItemCombo();
+
+}
+void AberrationWidget::onApplyToAllToggled(bool checked)
+{
+    Q_UNUSED(checked);
+    // 可选：当勾选时立即将当前设置同步到所有图表（也可以保留，等待下次属性修改）
+    if (checked && m_propertyBrowser) {
+        applyAllSettingsToAllPlots();
+    }
+}
 void AberrationWidget::clearPlots()
 {
-    // 清除所有曲线
-    qDeleteAll(m_curves);
-    m_curves.clear();
-
-    // 清除所有图表
-    qDeleteAll(m_plots);
-    m_plots.clear();
+    // 清除所有曲线（由各 PlotInfo 管理）
+    for (auto& info : m_plotInfos) {
+        qDeleteAll(info.curves);
+        info.curves.clear();
+        delete info.plot;
+        delete info.grid;
+        // legend 由 plot 管理，不需要手动 delete
+    }
+    m_plotInfos.clear();
 
     // 清除布局中的部件
     QLayoutItem* item;
@@ -252,6 +667,19 @@ void AberrationWidget::clearPlots()
         delete item->widget();
         delete item;
     }
+
+    // 重置组合框和属性浏览器
+    if (m_plotCombo) {
+        m_plotCombo->clear();
+        m_plotCombo->setEnabled(false);
+    }
+    if (m_applyToAllCheckBox)
+        m_applyToAllCheckBox->setEnabled(false);
+    if (m_propertyBrowser) {
+        delete m_propertyBrowser;
+        m_propertyBrowser = nullptr;
+    }
+    m_currentPlotIndex = -1;
 }
 
 bool AberrationWidget::loadDataFromFile(const QString& filename)
@@ -390,7 +818,9 @@ bool AberrationWidget::loadDataFromFile(const QString& filename)
             double minY = std::numeric_limits<double>::max();
             double maxY = std::numeric_limits<double>::lowest();
 
+            PlotSettings* settings = new PlotSettings();
             // 为每个波长数据添加曲线
+            int index = 0;
             for (auto& wave : grp) {
                 QwtPlotCurve* curve = new QwtPlotCurve();
 
@@ -423,6 +853,16 @@ bool AberrationWidget::loadDataFromFile(const QString& filename)
                 // 记录曲线对象
                 m_curves.append(curve);
 
+                MTFLine current_line;
+                current_line.m_style.lineColor = curveColor;
+                current_line.m_style.pointColor = curveColor;
+                current_line.m_style.lineStyle = Qt::SolidLine;
+                current_line.m_style.pointStyle = QwtSymbol::Ellipse;
+                current_line.m_style.fillPointStyle = eSmallEllipse;
+                current_line.curve = curve;
+                current_line.index = index;              
+                settings->m_lines[index] = current_line;
+                index++;
                 // 更新Y轴范围
                 for (double val : wave.aberration) {
                     if (val < minY) minY = val;
@@ -449,6 +889,41 @@ bool AberrationWidget::loadDataFromFile(const QString& filename)
 
             // 设置交互功能（拖拽和缩放）
             setupPlotInteractions(plot);
+            
+            // 初始化默认值（根据需要设置）
+            settings->gridVisible = true;
+            settings->origin = PlotSettings::BottomLeft;
+            settings->title = plot->title().text();
+            settings->titleFont = QFont();
+            settings->titleColor = Qt::black;
+            settings->backgroundColor = Qt::white;
+            settings->legend.visible = true;
+            settings->legend.position = QwtPlot::BottomLegend;
+            settings->legend.font = QFont();
+            settings->legend.color = Qt::black;
+            // 坐标轴默认设置
+            settings->xAxis.visible = true;
+            settings->xAxis.title = "归一化光阑";
+            settings->xAxis.titleFont = QFont();
+            settings->xAxis.titleColor = Qt::black;
+            settings->xAxis.autoRange = false;
+            settings->xAxis.min = -1.1;
+            settings->xAxis.max = 1.1;
+            settings->xAxis.step = 0.2;
+            settings->xAxis.tickFont = QFont();
+            settings->xAxis.tickColor = Qt::black;
+
+            settings->yAxis.visible = true;
+            settings->yAxis.title = "光线像差 (mm)";
+            settings->yAxis.titleFont = QFont();
+            settings->yAxis.titleColor = Qt::black;
+            settings->yAxis.autoRange = true;  // 自动范围由数据决定
+            settings->yAxis.min = 0;
+            settings->yAxis.max = 1;
+            settings->yAxis.step = 0.1;
+            settings->yAxis.tickFont = QFont();
+            settings->yAxis.tickColor = Qt::black;
+            
 
             // 自动调整布局
             plot->updateLayout();
@@ -460,11 +935,37 @@ bool AberrationWidget::loadDataFromFile(const QString& filename)
             m_mainLayout->addWidget(plot, row_idx, col_idx);
             m_plots.append(plot);
 
+            PlotInfo info;
+            info.plot = plot;
+            info.grid = grid;
+            info.legend = legend;
+            info.settings = settings;
+            info.curves = m_curves;     
+            //缓存
+            info.settings->xAxis.min = plot->axisScaleDiv(QwtPlot::xBottom).lowerBound();
+            info.settings->xAxis.max = plot->axisScaleDiv(QwtPlot::xBottom).upperBound();
+            info.settings->yAxis.min = plot->axisScaleDiv(QwtPlot::yLeft).lowerBound();
+            info.settings->yAxis.max = plot->axisScaleDiv(QwtPlot::yLeft).upperBound();
+            saveInitialView(info);
+            m_plotInfos.append(info);
+
+            m_curves.clear();
+
             row_idx++;
         }
         col_idx++;
     }
-
+    if (!m_plotInfos.isEmpty()) {
+        for (int i = 0; i < m_plotInfos.size(); ++i) {
+            QString title = m_plotInfos[i].plot->title().text();
+            m_plotCombo->addItem(title, i);
+        }
+        m_plotCombo->setEnabled(true);
+        m_applyToAllCheckBox->setEnabled(true);
+        m_currentPlotIndex = 0;
+        m_plotCombo->setCurrentIndex(0);
+        onPlotSelected(0);  // 创建属性浏览器并绑定第一个图表
+    }
     return true;
 }
 

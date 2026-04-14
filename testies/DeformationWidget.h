@@ -14,9 +14,11 @@
 #include <qwt_interval.h>
 #include <qwt_plot_marker.h>
 #include <qwt_symbol.h>
-
+#include "QwtPropertyBrowser.h"
 #include <nanoflann.hpp>
 #include <QPainter>
+#include "PlotBase.h"
+#include <QSplitter>
 #include <qwt_text.h>
 // 数据结构
 struct NodeData {
@@ -145,6 +147,24 @@ private:
         double maxVal, double minVal);
     void addInfoBox(QwtPlot* plot, int nodeCount, double minVal, double maxVal,
         double xPos, double yPos);
+
+    PlotSettings* m_settings;
+    //PlotBase* m_toolBar_plot;
+    //QwtPlotGrid* m_grid;
+    //QwtLegend* m_legend;
+    QToolBar* m_toolBar;
+    QwtPropertyBrowser* m_simple_browser;
+    QSplitter* m_splitter;
+    QwtPlot* m_plotX;
+    QwtPlot* m_plotY;
+    QwtPlot* m_plotZ;
+    QwtPlot* m_plotMag;
+    double m_current_factor = 1;
+    double m_initialXMin, m_initialXMax;        // 初始X轴范围
+    double m_initialYMin, m_initialYMax;        // 初始Y轴范围
+
+    double m_initialXMin_orig, m_initialXMax_orig;        // 初始X轴范围
+    double m_initialYMin_orig, m_initialYMax_orig;        // 初始Y轴范围
 
     std::vector<NodeData> m_nodes;
     Interpolator* m_interp;

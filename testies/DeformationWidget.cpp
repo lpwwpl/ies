@@ -225,6 +225,7 @@ void MultiDeformationViewer::computeGlobalZRange() {
 }
 
 void MultiDeformationViewer::setupUI() {
+
     m_layout = new QGridLayout(this);
     m_layout->setSpacing(10);
     setWindowTitle("2D Deformation Maps - Normalized to [-12.2, 12.2]");
@@ -232,15 +233,15 @@ void MultiDeformationViewer::setupUI() {
     const double AXIS_MIN = -12.2;
     const double AXIS_MAX = 12.2;
 
-    QwtPlot* plotX = createPlot("X Deformation (mm)", 1, AXIS_MIN, AXIS_MAX, AXIS_MIN, AXIS_MAX);
-    QwtPlot* plotY = createPlot("Y Deformation (mm)", 2, AXIS_MIN, AXIS_MAX, AXIS_MIN, AXIS_MAX);
-    QwtPlot* plotZ = createPlot("Z Deformation (mm)", 3, AXIS_MIN, AXIS_MAX, AXIS_MIN, AXIS_MAX);
-    QwtPlot* plotMag = createPlot("Total Deformation (mm)", 0, AXIS_MIN, AXIS_MAX, AXIS_MIN, AXIS_MAX);
+    m_plotX = createPlot("X Deformation (mm)", 1, AXIS_MIN, AXIS_MAX, AXIS_MIN, AXIS_MAX);
+    m_plotY = createPlot("Y Deformation (mm)", 2, AXIS_MIN, AXIS_MAX, AXIS_MIN, AXIS_MAX);
+    m_plotZ = createPlot("Z Deformation (mm)", 3, AXIS_MIN, AXIS_MAX, AXIS_MIN, AXIS_MAX);
+    m_plotMag = createPlot("Total Deformation (mm)", 0, AXIS_MIN, AXIS_MAX, AXIS_MIN, AXIS_MAX);
 
-    m_layout->addWidget(plotX, 0, 0);
-    m_layout->addWidget(plotY, 0, 1);
-    m_layout->addWidget(plotZ, 1, 0);
-    m_layout->addWidget(plotMag, 1, 1);
+    m_layout->addWidget(m_plotX, 0, 0);
+    m_layout->addWidget(m_plotY, 0, 1);
+    m_layout->addWidget(m_plotZ, 1, 0);
+    m_layout->addWidget(m_plotMag, 1, 1);
 
     // ========== 共享颜色条（分为6段，显示分界点数值） ==========
     m_sharedColorBar = new MyScaleWidget(QwtScaleDraw::LeftScale, this);

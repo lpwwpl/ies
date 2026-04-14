@@ -133,6 +133,7 @@
 #include "QwtPropertyBrowser.h"
 #include "PlotBase.h"
 class QSplitter;
+class QComboBox;
 // 数据结构
 struct AberrationData {
     QString chartName;
@@ -145,7 +146,19 @@ struct AberrationData {
     QVector<double> normalizedAperture;
     QVector<double> aberration;
 };
-
+// 存储每个图表的所有信息
+struct PlotInfo {
+    double m_current_factor = 1;
+    double m_initialXMin, m_initialXMax;        // 初始X轴范围
+    double m_initialYMin, m_initialYMax;        // 初始Y轴范围
+    double m_initialXMin_orig, m_initialXMax_orig;        // 初始X轴范围
+    double m_initialYMin_orig, m_initialYMax_orig;        // 初始Y轴范围
+    QwtPlot* plot;
+    QwtPlotGrid* grid;
+    QwtLegend* legend;
+    PlotSettings* settings;
+    QList<QwtPlotCurve*> curves;      // 该图表中的所有曲线
+};
 class AberrationWidget : public QWidget
 {
     Q_OBJECT
@@ -153,39 +166,45 @@ class AberrationWidget : public QWidget
 public:
     explicit AberrationWidget(QWidget* parent = nullptr);
     ~AberrationWidget();
-
+    void saveInitialView(PlotInfo&);
     // 加载数据文件
     bool loadDataFromFile(const QString& filename);
 
     QColor getColorFromString(const QString& colorStr);
-
+    void applyAllSettingsToAllPlots();
+    void syncSettingsToPlot(PlotSettings* settings, PlotInfo& info);
+    void updateCurveStyle(QwtPlot* plot,MTFLine&);
 public slots:
     void onLegendClicked(const QVariant& itemInfo);
+    void onPropertyChanged();                     // 属性浏览器修改信号
+    void onPlotSelected(int index);               // 切换当前编辑的图表
+    void onApplyToAllToggled(bool checked);       // “应用到所有”勾选状态变化
 
+    void updateYScaleAxes(QwtPlot* plot, PlotInfo&);
+    void updateXScaleAxes(QwtPlot* plot, PlotInfo&);
+    void updateAxesSettings(QwtPlot* plot, PlotInfo&);
 private:
     void setupUI();
     void clearPlots();
     void setupPlotInteractions(QwtPlot* plot);
 
-    QGridLayout* m_mainLayout;
     QVector<QwtPlot*> m_plots;
-    QVector<AberrationData> dataList;
-
     // 交互相关的对象
     QList<QwtPlotCurve*> m_curves;
 
-    /// <summary>
-    /// 
-    /// </summary>
-    //QwtPlot* m_plot;
-    //QString m_currentFile;
-    //QwtPlotGrid* m_grid;
-    //QwtLegend* m_legend;
-    //QToolBar* m_toolBar;
-    //QwtPropertyBrowser* m_simple_browser;
-    //QSplitter* m_splitter;
-    //PlotSettings* m_settings;
-    //PlotBase* m_toolBar_plot;
+
+    // UI 控件
+    QGridLayout* m_mainLayout;           // 主布局（包含图表网格）
+    QVBoxLayout* m_controlLayout;        // 右侧控制面板布局
+    QComboBox* m_plotCombo;              // 图表选择下拉框
+    QCheckBox* m_applyToAllCheckBox;     // 应用到所有图表复选框
+    QwtPropertyBrowser* m_propertyBrowser; // 属性编辑器
+
+    // 数据
+    QVector<AberrationData> dataList;
+    QList<PlotInfo> m_plotInfos;          // 所有图表的详细信息
+    int m_currentPlotIndex;               // 当前选中的图表索引
+
 
     // 按chartName分组数据
     static QMap<QString, QVector<AberrationData>> groupByChartName(const QVector<AberrationData>& data) {

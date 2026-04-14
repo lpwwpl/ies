@@ -42,10 +42,12 @@ QwtPropertyBrowser::QwtPropertyBrowser(PlotSettings* settings, QwtPlot* plot, Qw
     m_stringEditorFactory = new StringEditorFactory(this);
     m_browser->setFactoryForManager(m_stringManager, m_stringEditorFactory);
 
+    m_bBuilding = true;
     createGlobalProperties();
     createAxisProperties();
     createCurveProperties();
     createPlotItemProperties();
+    m_bBuilding = false;
 
     QVBoxLayout* layout = new QVBoxLayout(this);
     layout->setContentsMargins(0, 0, 0, 0);
@@ -98,6 +100,7 @@ void QwtPropertyBrowser::InitSetupUI()
 }
 void QwtPropertyBrowser::onValueChanged(QtProperty* property, const QString& value)
 {
+    if (m_bBuilding)return;
     Q_UNUSED(property)
         Q_UNUSED(value)
 
@@ -111,6 +114,7 @@ void QwtPropertyBrowser::onValueChanged(QtProperty* property, const QString& val
 }
 void QwtPropertyBrowser::onValueChanged(QtProperty* property, const QVariant& value)
 {
+    if (m_bBuilding)return;
     Q_UNUSED(property)
         Q_UNUSED(value)
 
@@ -1604,6 +1608,7 @@ void QwtPropertyBrowser::applyXAxisSettings_plot()
         if (!m_settings->xAxis.autoRange)
         {
             m_plot->setAxisScale(QwtPlot::xBottom, m_settings->xAxis.min, m_settings->xAxis.max, m_settings->xAxis.step);
+            signalUpdateScaleDiv();
         }
         else
         {
@@ -1639,6 +1644,7 @@ void QwtPropertyBrowser::applyYAxisSettings_plot()
         if (!m_settings->yAxis.autoRange)
         {
             m_plot->setAxisScale(QwtPlot::yLeft, m_settings->yAxis.min, m_settings->yAxis.max, m_settings->yAxis.step);
+            signalUpdateScaleDiv();
         }
         else
         {
@@ -1814,9 +1820,8 @@ void QwtPropertyBrowser::applyOrigin_plot()
     }
     break;
     }
-
-
-    m_plot->replot();
+    m_plot->replot();    
+    signalUpdateScaleDiv();
 }
 
 QVector<qreal> QwtPropertyBrowser::parseDashPattern(const QString& text)
