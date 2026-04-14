@@ -326,6 +326,7 @@ void DistortionGridWidget::setupPlot()
     QwtText title("Distortion Grid Visualization");
     title.setFont(QFont("Arial", 14, QFont::Bold));
     m_plot->setTitle(title);
+    m_settings->title = title.text();
 
     // 设置坐标轴标签
     m_plot->setAxisTitle(QwtPlot::xBottom, "Horizontal FOV (mm)");
@@ -383,6 +384,7 @@ void DistortionGridWidget::setupPlot()
     mainLayout->setContentsMargins(0, 0, 0, 0);
     mainLayout->addWidget(m_splitter);
 
+    m_simple_browser->applyTitleSettings();
 }
 void DistortionGridWidget::updateXScaleAxes()
 {
@@ -515,8 +517,9 @@ bool DistortionGridWidget::loadDistortionData(const QString& filename)
     plotGrids();
 
 
-    saveInitialView();
 
+    saveInitialView();
+    fitView();
     qDebug() << "成功加载" << m_distortionData.size() << "个数据点";
     qDebug() << "最大径向畸变:" << m_maxRadialDistortion << "%";
     qDebug() << "最大切向畸变:" << m_maxTangentialDistortion << "%";

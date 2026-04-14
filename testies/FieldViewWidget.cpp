@@ -439,6 +439,8 @@ void FieldViewWidget::setupFieldViewPlot()
     QwtText title("FOV");
     title.setFont(QFont("sans", 12, QFont::Bold));
     m_plot->setTitle(title);
+    m_settings->title = title.text();
+    m_simple_browser->applyTitleSettings();
 
     // 设置坐标轴标签
     m_plot->setAxisTitle(QwtPlot::xBottom, "X");
@@ -604,6 +606,7 @@ bool FieldViewWidget::loadFieldDataFile(const QString& filename)
     if (hasValidData) {
         saveInitialView();
         updatePlot();
+        fitView();
         return true;
     }
     else {
