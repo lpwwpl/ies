@@ -21,6 +21,9 @@
 #include "DistortionWidget.h"
 #include "AberrationWidget.h"
 #include <QMouseEvent>
+
+#include "DeformationWidget.h"
+
 MainWindow::MainWindow(QWidget* parent)
     : QMainWindow(parent),
     ui(new Ui::MainWindow),
@@ -1085,7 +1088,17 @@ void MainWindow::on_actionExit_triggered()
     close();
 }
 
+void MainWindow::on_actiondeformation_triggered()
+{
+    auto filepath = QFileDialog::getOpenFileName(
+        this, tr("Open txt"), "", tr("txt File(*.txt);;All Files(*)"));
+    if (filepath.isEmpty()) {
+        return;
+    }
 
+    MultiDeformationViewer* viewer=new MultiDeformationViewer(filepath);
+    viewer->show();
+}
 
 std::vector<double> MainWindow::getHorizontalAngles() const
 {

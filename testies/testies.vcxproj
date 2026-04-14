@@ -112,6 +112,7 @@
   <ItemGroup>
     <ClCompile Include="AberrationWidget.cpp" />
     <ClCompile Include="contours.cpp" />
+    <ClCompile Include="DeformationWidget.cpp" />
     <ClCompile Include="DistortionWidget.cpp" />
     <ClCompile Include="FieldViewWidget.cpp" />
     <ClCompile Include="FootprintWidget.cpp" />
@@ -162,6 +163,7 @@
     <QtMoc Include="IESIsoWidget.h" />
     <QtMoc Include="mainwindow.h" />
     <QtMoc Include="IESglwidget.h" />
+    <QtMoc Include="DeformationWidget.h" />
     <ClInclude Include="IESLoader.h" />
     <QtMoc Include="IESPolarWidget.h" />
     <QtMoc Include="isoluxdialog.h" />
@@ -172,6 +174,7 @@
     <QtMoc Include="MTFViewWidget.h" />
     <QtMoc Include="newfiledialog.h" />
     <QtMoc Include="PlotBase.h" />
+    <ClInclude Include="nanoflann.hpp" />
     <ClInclude Include="PlotSetting.h" />
     <QtMoc Include="QwtPropertyBrowser.h" />
     <QtMoc Include="SimplePropertyBrowser.h" />

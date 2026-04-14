@@ -85,6 +85,8 @@ public Q_SLOTS:
     void on_actionDark_triggered();
     void on_actionSave_As_triggered();
     void on_actionExit_triggered();
+    void on_actiondeformation_triggered();
+
     void addRow();
     void deleteRow();
     void addColumn();

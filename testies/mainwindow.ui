@@ -618,6 +618,7 @@ photometric planes.</string>
     <addaction name="actionTrace"/>
     <addaction name="actionMTF"/>
     <addaction name="actionaberration"/>
+    <addaction name="actiondeformation"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuEdit"/>
@@ -780,6 +781,11 @@ photometric planes.</string>
   <action name="actionaberration">
    <property name="text">
     <string>aberration</string>
+   </property>
+  </action>
+  <action name="actiondeformation">
+   <property name="text">
+    <string>deformation</string>
    </property>
   </action>
  </widget>
