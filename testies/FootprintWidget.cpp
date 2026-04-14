@@ -364,6 +364,12 @@ void FootprintWidget::updateAxesSettings()
     m_simple_browser->applyXAxisSettings();
     m_simple_browser->applyYAxisSettings();
     m_simple_browser->blockSignals(false);
+
+    m_initialXMin = m_plot->axisScaleDiv(QwtPlot::xBottom).lowerBound();
+    m_initialXMax = m_plot->axisScaleDiv(QwtPlot::xBottom).upperBound();
+
+    m_initialYMin = m_plot->axisScaleDiv(QwtPlot::yLeft).lowerBound();
+    m_initialYMax = m_plot->axisScaleDiv(QwtPlot::yLeft).upperBound();
 }
 void FootprintWidget::clearAllCurves()
 {

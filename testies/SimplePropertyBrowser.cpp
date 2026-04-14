@@ -793,6 +793,7 @@ void SimplePropertyBrowser::applyYAxisSettings()
         if (!m_settings->yAxis.autoRange)
         {
             m_plot->setAxisScale(QwtPlot::yLeft, m_settings->yAxis.min, m_settings->yAxis.max, m_settings->yAxis.step);
+            signalUpdateScaleDiv();
         }
         else
         {
@@ -845,6 +846,7 @@ void SimplePropertyBrowser::applyXAxisSettings()
         if (!m_settings->xAxis.autoRange)
         {
             m_plot->setAxisScale(QwtPlot::xBottom, m_settings->xAxis.min, m_settings->xAxis.max, m_settings->xAxis.step);
+            signalUpdateScaleDiv();
         }
         else
         {
