@@ -202,7 +202,7 @@ public slots:
     void updateAxesSettings(QwtPlot* plot, PlotInfo&);
     void updateAxesSettings_noparam();
 
-
+    void updateLegend();
     void updateAutoScaleX();
     void updateAutoScaleY();
     void updateX();

@@ -235,22 +235,6 @@ AberrationWidget::~AberrationWidget()
 
 void AberrationWidget::setupUI()
 {
-    //m_toolBar_plot = new PlotBase(this);
-    //m_plot = m_toolBar_plot->m_plot;
-    //m_grid = m_toolBar_plot->m_grid;
-    //m_legend = m_toolBar_plot->m_legend;
-    //m_settings = m_toolBar_plot->m_settings;
-    //connect(m_toolBar_plot, SIGNAL(signalFitView()), this, SLOT(fitView()));
-    //connect(m_toolBar_plot, SIGNAL(signalZoomIn()), this, SLOT(zoomIn()));
-    //connect(m_toolBar_plot, SIGNAL(signalZommOut()), this, SLOT(zoomOut()));
-
-    //m_mainLayout = new QGridLayout(this);
-    //m_mainLayout->setSpacing(10);
-    //m_mainLayout->setContentsMargins(10, 10, 10, 10);
-    //setLayout(m_mainLayout);
-
-
-
     // 左侧图表区域
     QWidget* plotContainer = new QWidget(this);
     m_mainLayout = new QGridLayout(plotContainer);
@@ -436,7 +420,8 @@ void AberrationWidget::syncSettingsToPlot(PlotInfo* curInfo,PlotInfo* info)
         plot->axisScaleEngine(QwtPlot::xBottom)->setAttribute(QwtScaleEngine::Inverted, false);
         plot->axisScaleEngine(QwtPlot::yLeft)->setAttribute(QwtScaleEngine::Inverted, false);
         // 确保范围是正序
-        if (xDiv.lowerBound() > xDiv.upperBound()) {
+        if (xDiv.lowerBound() > xDiv.upperBound()) 
+        {
             plot->setAxisScale(QwtPlot::xBottom, xDiv.upperBound(), xDiv.lowerBound());
         }
         else
@@ -456,7 +441,8 @@ void AberrationWidget::syncSettingsToPlot(PlotInfo* curInfo,PlotInfo* info)
         plot->axisScaleEngine(QwtPlot::xBottom)->setAttribute(QwtScaleEngine::Inverted, true);
         plot->axisScaleEngine(QwtPlot::yLeft)->setAttribute(QwtScaleEngine::Inverted, false);
         // 设置范围为从小到大的值，但引擎会负责反转
-        if (xDiv.lowerBound() > xDiv.upperBound()) {
+        if (xDiv.lowerBound() > xDiv.upperBound()) 
+        {
             plot->setAxisScale(QwtPlot::xBottom, xDiv.lowerBound(), xDiv.upperBound());
         }
         else
@@ -513,6 +499,15 @@ void AberrationWidget::updateYScaleAxes(QwtPlot* plot,PlotInfo& info)
     plot->setAxisScale(QwtPlot::yLeft, info.m_initialYMin, info.m_initialYMax);
     // 重新绘制
     plot->replot();
+}
+
+void AberrationWidget::updateLegend()
+{
+    if (m_currentPlotIndex < 0 || m_currentPlotIndex >= m_plotInfos.size())return;
+    PlotInfo* info = m_plotInfos[m_currentPlotIndex];
+    if (!info)return;
+
+    info->legend = m_propertyBrowser->m_legend;
 }
 //当前的info->plot,恢复init
 void AberrationWidget::updateAutoScaleX()
@@ -711,7 +706,8 @@ void AberrationWidget::onPlotSelected(int index)
     m_currentPlotIndex = index;
     PlotInfo* info = m_plotInfos[index];
 
-    if (!m_propertyBrowser) {
+    if (!m_propertyBrowser) 
+    {
         // 创建属性浏览器，绑定当前图表的 settings 和控件
         m_propertyBrowser = new QwtPropertyBrowser(info->settings,
             info->plot,
@@ -721,6 +717,7 @@ void AberrationWidget::onPlotSelected(int index)
         connect(m_propertyBrowser, SIGNAL(signalUpdateScaleDiv()), this, SLOT(updateXY()));
         connect(m_propertyBrowser, SIGNAL(signalYScaleAxes()), this, SLOT(updateAutoScaleY()));
         connect(m_propertyBrowser, SIGNAL(signalXScaleAxes()), this, SLOT(updateAutoScaleX()));
+        connect(m_propertyBrowser, SIGNAL(signalUpdateLegend()), this, SLOT(updateLegend()));
         connect(m_propertyBrowser, &QwtPropertyBrowser::propertyChanged,
             this, &AberrationWidget::onPropertyChanged);
         m_controlLayout->addWidget(m_propertyBrowser);
@@ -762,13 +759,15 @@ void AberrationWidget::clearPlots()
 
     // 清除布局中的部件
     QLayoutItem* item;
-    while ((item = m_mainLayout->takeAt(0)) != nullptr) {
+    while ((item = m_mainLayout->takeAt(0)) != nullptr) 
+    {
         delete item->widget();
         delete item;
     }
 
     // 重置组合框和属性浏览器
-    if (m_plotCombo) {
+    if (m_plotCombo) 
+    {
         m_plotCombo->clear();
         m_plotCombo->setEnabled(false);
     }
@@ -876,7 +875,8 @@ bool AberrationWidget::loadDataFromFile(const QString& filename)
 
     // 为每个视场创建图表
     int col_idx = 0;
-    for (auto it = fieldGroups.begin(); it != fieldGroups.end(); ++it) {
+    for (auto it = fieldGroups.begin(); it != fieldGroups.end(); ++it) 
+    {
         int fieldIndex = it.key();
         const QVector<AberrationData>& fieldData = it.value();
         // 按chartName分组
@@ -1062,7 +1062,7 @@ void AberrationWidget::setupPlotInteractions(QwtPlot* plot)
 
     // 1. 拖拽功能 - 对应 QCP::iRangeDrag
     MyPlotPanner* panner = new MyPlotPanner(plot->canvas());
-    panner->setMouseButton(Qt::MiddleButton);  // 中键拖拽（更符合习惯）
+    panner->setMouseButton(Qt::LeftButton);  
     panner->setEnabled(true);
 
     // 2. 缩放功能 - 对应 QCP::iRangeZoom

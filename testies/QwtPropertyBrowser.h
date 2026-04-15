@@ -107,7 +107,7 @@ signals:
     void signalXScaleAxes();
     void signalYScaleAxes();
     void signalUpdateScaleDiv();
-
+    void signalUpdateLegend();
 private slots:
     //property属性更改，则更新m_settings和plot
     void onValueChanged(QtProperty* property, const QVariant& value);

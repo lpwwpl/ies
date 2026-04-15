@@ -1544,7 +1544,7 @@ void QwtPropertyBrowser::applyLegendSettings_plot()
         // 或者直接删除并置空（取决于你的内存管理策略）
         // 这里假设保留 m_legend 对象，仅从 plot 中移除
     }
-
+    emit signalUpdateLegend();
     //if (m_settings->legend.visible)
     //{
     //    m_legend->setVisible(true);
