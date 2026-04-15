@@ -345,8 +345,9 @@ void AberrationWidget::syncSettingsToPlot(PlotInfo* curInfo,PlotInfo* info)
             QPalette pal = xScale->palette();
             pal.setColor(QPalette::Text, settings->xAxis.tickColor);
             xScale->setPalette(pal);
-        }
-        if (!settings->xAxis.autoRange) {
+        }        
+        if (!settings->xAxis.autoRange) 
+        {
             plot->setAxisScale(QwtPlot::xBottom, settings->xAxis.min, settings->xAxis.max, settings->xAxis.step);
             plot->replot();
         }
@@ -490,11 +491,7 @@ void AberrationWidget::syncSettingsToPlot(PlotInfo* curInfo,PlotInfo* info)
 void AberrationWidget::updateXScaleAxes(QwtPlot* plot, PlotInfo& info)
 {
     plot->setAxisScale(QwtPlot::xBottom, info.m_initialXMin, info.m_initialXMax);
-    //plot->setAxisScale(QwtPlot::yRight, info.m_initialYMin, info.m_initialYMax);
-
-    // 重新绘制
     plot->replot();
-    updateAxesSettings(plot, info);
 }
 void AberrationWidget::saveInitialView(PlotInfo& info)
 {
@@ -513,21 +510,69 @@ void AberrationWidget::saveInitialView(PlotInfo& info)
 }
 void AberrationWidget::updateYScaleAxes(QwtPlot* plot,PlotInfo& info)
 {
-    //m_initialYMin = m_initialYMin_orig * m_current_factor;
-    //m_initialYMax = m_initialYMax_orig * m_current_factor;
-
     plot->setAxisScale(QwtPlot::yLeft, info.m_initialYMin, info.m_initialYMax);
-    //plot->setAxisScale(QwtPlot::yRight, info.m_initialYMin, info.m_initialYMax);
-
     // 重新绘制
     plot->replot();
-    updateAxesSettings(plot, info);
 }
+//当前的info->plot,恢复init
+void AberrationWidget::updateAutoScaleX()
+{
+    if (m_currentPlotIndex < 0 || m_currentPlotIndex >= m_plotInfos.size())return;
+    PlotInfo* info = m_plotInfos[m_currentPlotIndex];
+    if (!info)return;
+
+    updateXScaleAxes(info->plot,*info);
+
+    m_propertyBrowser->applyXAxisSettings();
+}
+//当前的info->plot,恢复init
+void AberrationWidget::updateAutoScaleY()
+{
+    if (m_currentPlotIndex < 0 || m_currentPlotIndex >= m_plotInfos.size())return;
+    PlotInfo* info = m_plotInfos[m_currentPlotIndex];
+    if (!info)return;
+
+    updateYScaleAxes(info->plot, *info);
+
+    m_propertyBrowser->applyYAxisSettings();
+}
+
+//当前的info->plot,根据当前范围更新
+void AberrationWidget::updateX()
+{
+    if (m_currentPlotIndex < 0 || m_currentPlotIndex >= m_plotInfos.size())return;
+    PlotInfo* info = m_plotInfos[m_currentPlotIndex];
+    if (!info)return;
+
+    info->settings->xAxis.min = info->plot->axisScaleDiv(QwtPlot::xBottom).lowerBound();
+    info->settings->xAxis.max = info->plot->axisScaleDiv(QwtPlot::xBottom).upperBound();
+    QwtScaleDiv temp = info->plot->axisScaleDiv(QwtPlot::xBottom);
+    QList<double> ticks = temp.ticks(QwtScaleDiv::MajorTick);
+    info->settings->xAxis.step = ticks[1] - ticks[0];
+
+    m_propertyBrowser->applyXAxisSettings();
+}
+//当前的info->plot,根据当前范围更新
+void AberrationWidget::updateY()
+{
+    if (m_currentPlotIndex < 0 || m_currentPlotIndex >= m_plotInfos.size())return;
+    PlotInfo* info = m_plotInfos[m_currentPlotIndex];
+    if (!info)return;
+    info->settings->yAxis.min = info->plot->axisScaleDiv(QwtPlot::yLeft).lowerBound();
+    info->settings->yAxis.max = info->plot->axisScaleDiv(QwtPlot::yLeft).upperBound();
+    QwtScaleDiv temp = info->plot->axisScaleDiv(QwtPlot::yLeft);
+    QList<double> ticks = temp.ticks(QwtScaleDiv::MajorTick);
+    info->settings->yAxis.step = ticks[1] - ticks[0];
+
+    m_propertyBrowser->applyYAxisSettings();
+}
+//pan,zoom对应的函数
 void AberrationWidget::updateAxesSettings_noparam()
 {
     if (m_currentPlotIndex < 0 || m_currentPlotIndex >= m_plotInfos.size())return;
     PlotInfo* info = m_plotInfos[m_currentPlotIndex];
     if (!info)return;
+    
     updateAxesSettings(info->plot,*info);
     m_propertyBrowser->applyYAxisSettings();
     m_propertyBrowser->applyXAxisSettings();
@@ -537,25 +582,35 @@ void AberrationWidget::updateAxesSettings_noparam()
         applyAllSettingsToAllPlots();
     }
 }
+//根据info和plot更新xy
 void AberrationWidget::updateAxesSettings(QwtPlot* plot, PlotInfo& info)
 {
-    info.settings->xAxis.min = plot->axisScaleDiv(QwtPlot::xBottom).lowerBound();
-    info.settings->xAxis.max = plot->axisScaleDiv(QwtPlot::xBottom).upperBound();
-    info.settings->yAxis.min = plot->axisScaleDiv(QwtPlot::yLeft).lowerBound();
-    info.settings->yAxis.max = plot->axisScaleDiv(QwtPlot::yLeft).upperBound();
-    QwtScaleDiv temp = plot->axisScaleDiv(QwtPlot::xBottom);
-    QList<double> ticks = temp.ticks(QwtScaleDiv::MajorTick);
-    info.settings->xAxis.step = ticks[1] - ticks[0];
-    temp = plot->axisScaleDiv(QwtPlot::yLeft);
-    ticks = temp.ticks(QwtScaleDiv::MajorTick);
-    info.settings->yAxis.step = ticks[1] - ticks[0];
-
-
-    //info.m_initialXMin = plot->axisScaleDiv(QwtPlot::xBottom).lowerBound();
-    //info.m_initialXMax = plot->axisScaleDiv(QwtPlot::xBottom).upperBound();
-
-    //info.m_initialYMin = plot->axisScaleDiv(QwtPlot::yLeft).lowerBound();
-    //info.m_initialYMax = plot->axisScaleDiv(QwtPlot::yLeft).upperBound();
+    if (!info.settings->xAxis.autoRange)
+    {
+        info.settings->xAxis.min = plot->axisScaleDiv(QwtPlot::xBottom).lowerBound();
+        info.settings->xAxis.max = plot->axisScaleDiv(QwtPlot::xBottom).upperBound();
+        QwtScaleDiv temp = plot->axisScaleDiv(QwtPlot::xBottom);
+        QList<double> ticks = temp.ticks(QwtScaleDiv::MajorTick);
+        info.settings->xAxis.step = ticks[1] - ticks[0];
+    }
+    else
+    {
+        plot->setAxisScale(QwtPlot::xBottom, info.m_initialXMin, info.m_initialXMax);
+        plot->replot();
+    }
+    if (!info.settings->yAxis.autoRange)
+    {
+        info.settings->yAxis.min = plot->axisScaleDiv(QwtPlot::yLeft).lowerBound();
+        info.settings->yAxis.max = plot->axisScaleDiv(QwtPlot::yLeft).upperBound();
+        QwtScaleDiv temp = plot->axisScaleDiv(QwtPlot::yLeft);
+        QList<double> ticks = temp.ticks(QwtScaleDiv::MajorTick);
+        info.settings->yAxis.step = ticks[1] - ticks[0];
+    }
+    else
+    {
+        plot->setAxisScale(QwtPlot::yLeft, info.m_initialYMin, info.m_initialYMax);
+        plot->replot();
+    }
 }
 void AberrationWidget::applyAllSettingsToAllPlots()
 {
@@ -565,8 +620,8 @@ void AberrationWidget::applyAllSettingsToAllPlots()
     for (int i = 0; i < m_plotInfos.size(); ++i) 
     {
         //重复更新没事
-        //if (i == m_currentPlotIndex)
-        //    continue;         
+        if (i == m_currentPlotIndex)
+            continue;         
         PlotInfo* info = m_plotInfos[i];
         // 将当前设置同步到目标图表
         syncSettingsToPlot(cur_info, info);
@@ -646,6 +701,8 @@ void AberrationWidget::updateCurveStyle(QwtPlot* plot,MTFLine& line)
     }
     plot->replot();
 }
+
+
 void AberrationWidget::onPlotSelected(int index)
 {
     if (index < 0 || index >= m_plotInfos.size())
@@ -661,6 +718,9 @@ void AberrationWidget::onPlotSelected(int index)
             info->grid,
             info->legend,
             this);
+        connect(m_propertyBrowser, SIGNAL(signalUpdateScaleDiv()), this, SLOT(updateXY()));
+        connect(m_propertyBrowser, SIGNAL(signalYScaleAxes()), this, SLOT(updateAutoScaleY()));
+        connect(m_propertyBrowser, SIGNAL(signalXScaleAxes()), this, SLOT(updateAutoScaleX()));
         connect(m_propertyBrowser, &QwtPropertyBrowser::propertyChanged,
             this, &AberrationWidget::onPropertyChanged);
         m_controlLayout->addWidget(m_propertyBrowser);

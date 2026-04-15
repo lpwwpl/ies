@@ -201,6 +201,13 @@ public slots:
     void updateXScaleAxes(QwtPlot* plot, PlotInfo&);
     void updateAxesSettings(QwtPlot* plot, PlotInfo&);
     void updateAxesSettings_noparam();
+
+
+    void updateAutoScaleX();
+    void updateAutoScaleY();
+    void updateX();
+    void updateY();
+    void updateXY() { updateX(); updateY(); }
 private:
     void setupUI();
     void clearPlots();
