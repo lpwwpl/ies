@@ -66,9 +66,174 @@ struct MTFLine {
     QVector<QPointF> data;
     QwtPlotCurve* curve = nullptr;
     SLineStyle m_style;
+
+    void setPointFillValue()
+    {
+        switch (m_style.fillPointStyle)
+        {
+        case eSmallEllipse:
+        {
+            m_style.pointStyle = QwtSymbol::Ellipse;
+            m_style.pointFilled = true;
+        }
+        break;
+        case eXCross:
+        {
+            m_style.pointStyle = QwtSymbol::XCross;
+            m_style.pointFilled = false;
+        }
+        break;
+        case eCross:
+        {
+            m_style.pointStyle = QwtSymbol::Cross;
+            m_style.pointFilled = false;
+        }
+        break;
+        case eEllipse:
+        {
+            m_style.pointStyle = QwtSymbol::Ellipse;
+            m_style.pointFilled = false;
+        }
+        break;
+        case eFillEllipse:
+        {
+            m_style.pointStyle = QwtSymbol::Ellipse;
+            m_style.pointFilled = true;
+        }
+        break;
+        case eRect:
+        {
+            m_style.pointStyle = QwtSymbol::Rect;
+            m_style.pointFilled = false;
+        }
+        break;
+        case eFillRect:
+        {
+            m_style.pointStyle = QwtSymbol::Rect;
+            m_style.pointFilled = true;
+        }
+        break;
+        case eDTriangle:
+        {
+            m_style.pointStyle = QwtSymbol::DTriangle;
+            m_style.pointFilled = false;
+        }
+        break;
+        case eFillDTriangle:
+        {
+            m_style.pointStyle = QwtSymbol::DTriangle;
+            m_style.pointFilled = true;
+        }
+        break;
+        case eDiamond:
+        {
+            m_style.pointStyle = QwtSymbol::Diamond;
+            m_style.pointFilled = false;
+        }
+        break;
+        case eFillDiamond:
+        {
+            m_style.pointStyle = QwtSymbol::Diamond;
+            m_style.pointFilled = true;
+        }
+        break;
+        case eStart1:
+        {
+            m_style.pointStyle = QwtSymbol::Star1;
+            m_style.pointFilled = false;
+        }
+        break;
+        case eFillStart1:
+        {
+            m_style.pointStyle = QwtSymbol::Star1;
+            m_style.pointFilled = true;
+        }
+        break;
+        default:
+            break;
+        }
+    }
 };
 // 全局绘图设置
 struct PlotSettings {
+
+    PlotSettings() {}
+    PlotSettings operator=(const PlotSettings& other)
+    {
+        backgroundColor = other.backgroundColor;
+        xAxis = other.xAxis;
+        yAxis = other.yAxis;
+        gridVisible = other.gridVisible;
+        gridMajorColor = other.gridMajorColor;
+        gridMinorColor = other.gridMinorColor;
+        gridMajorStyle = other.gridMajorStyle;
+        gridMinorStyle = other.gridMinorStyle;
+        legend = other.legend;
+        titleFont = other.titleFont;
+        titleColor = other.titleColor;
+        origin = other.origin;
+        QList<int> line_keys = other.m_lines.keys();
+        for (int i = 0; i < line_keys.size(); i++)
+        {
+            if (m_lines.contains(line_keys[i]))
+            {
+                m_lines[line_keys[i]].m_style = other.m_lines[line_keys[i]].m_style;
+                m_lines[line_keys[i]].setPointFillValue();
+                m_lines[line_keys[i]].selected = other.m_lines[line_keys[i]].selected;
+            }
+        }
+        QList<int> item_keys = other.m_items.keys();
+        for (int i = 0; i < item_keys.size(); i++)
+        {
+            if (m_lines.contains(item_keys[i]))
+            {
+                m_items[line_keys[i]].m_x = other.m_items[line_keys[i]].m_x;
+                m_items[line_keys[i]].m_y = other.m_items[line_keys[i]].m_y;
+                m_items[line_keys[i]].m_length = other.m_items[line_keys[i]].m_length;
+                m_items[line_keys[i]].visible = other.m_items[line_keys[i]].visible;
+                m_items[line_keys[i]].m_color = other.m_items[line_keys[i]].m_color;
+                m_items[line_keys[i]].m_width = other.m_items[line_keys[i]].m_width;
+            }
+        }
+        return *this;
+    }
+    PlotSettings(const PlotSettings& other)
+    {
+        backgroundColor = other.backgroundColor;
+        xAxis = other.xAxis;
+        yAxis = other.yAxis;
+        gridVisible = other.gridVisible;
+        gridMajorColor = other.gridMajorColor;
+        gridMinorColor = other.gridMinorColor;
+        gridMajorStyle = other.gridMajorStyle;
+        gridMinorStyle = other.gridMinorStyle;
+        legend = other.legend;
+        titleFont = other.titleFont;
+        titleColor = other.titleColor;
+        origin = other.origin;
+        QList<int> line_keys = other.m_lines.keys();
+        for (int i=0;i< line_keys.size();i++)
+        {
+            if (m_lines.contains(line_keys[i]))
+            {
+                m_lines[line_keys[i]].m_style = other.m_lines[line_keys[i]].m_style;
+                m_lines[line_keys[i]].selected = other.m_lines[line_keys[i]].selected;
+            }  
+        }
+        QList<int> item_keys = other.m_items.keys();
+        for (int i = 0; i < item_keys.size(); i++)
+        {
+            if (m_lines.contains(item_keys[i]))
+            {
+                m_items[line_keys[i]].m_x = other.m_items[line_keys[i]].m_x;
+                m_items[line_keys[i]].m_y = other.m_items[line_keys[i]].m_y;
+                m_items[line_keys[i]].m_length = other.m_items[line_keys[i]].m_length;
+                m_items[line_keys[i]].visible = other.m_items[line_keys[i]].visible;
+                m_items[line_keys[i]].m_color = other.m_items[line_keys[i]].m_color;
+                m_items[line_keys[i]].m_width = other.m_items[line_keys[i]].m_width;
+            }
+        }
+    }
     // 背景
     QColor backgroundColor = Qt::white;
 

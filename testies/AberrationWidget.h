@@ -147,7 +147,9 @@ struct AberrationData {
     QVector<double> aberration;
 };
 // 存储每个图表的所有信息
-struct PlotInfo {
+struct PlotInfo 
+{
+    //用来记录每个图标的初始XY范围
     double m_current_factor = 1;
     double m_initialXMin, m_initialXMax;        // 初始X轴范围
     double m_initialYMin, m_initialYMax;        // 初始Y轴范围
@@ -158,6 +160,21 @@ struct PlotInfo {
     QwtLegend* legend;
     PlotSettings* settings;
     QList<QwtPlotCurve*> curves;      // 该图表中的所有曲线
+
+    PlotInfo operator=(const PlotInfo& other)
+    {
+        m_current_factor = other.m_current_factor;
+        m_initialXMin = other.m_initialXMin;
+        m_initialXMax = other.m_initialXMax;
+        m_initialYMin = other.m_initialYMin;
+        m_initialYMax = other.m_initialYMax;
+        m_initialXMin_orig = other.m_initialXMin_orig;
+        m_initialXMax_orig = other.m_initialXMax_orig;
+        m_initialYMin_orig = other.m_initialYMin_orig;
+        m_initialYMin_orig = other.m_initialYMin_orig;
+        *settings = *other.settings;
+        return *this;
+    }
 };
 class AberrationWidget : public QWidget
 {
@@ -172,7 +189,7 @@ public:
 
     QColor getColorFromString(const QString& colorStr);
     void applyAllSettingsToAllPlots();
-    void syncSettingsToPlot(PlotSettings* settings, PlotInfo& info);
+    void syncSettingsToPlot(PlotInfo* settings, PlotInfo* info);
     void updateCurveStyle(QwtPlot* plot,MTFLine&);
 public slots:
     void onLegendClicked(const QVariant& itemInfo);
@@ -183,6 +200,7 @@ public slots:
     void updateYScaleAxes(QwtPlot* plot, PlotInfo&);
     void updateXScaleAxes(QwtPlot* plot, PlotInfo&);
     void updateAxesSettings(QwtPlot* plot, PlotInfo&);
+    void updateAxesSettings_noparam();
 private:
     void setupUI();
     void clearPlots();
@@ -193,6 +211,7 @@ private:
     QList<QwtPlotCurve*> m_curves;
 
 
+    QSplitter* m_splitter;
     // UI 控件
     QGridLayout* m_mainLayout;           // 主布局（包含图表网格）
     QVBoxLayout* m_controlLayout;        // 右侧控制面板布局
@@ -202,12 +221,13 @@ private:
 
     // 数据
     QVector<AberrationData> dataList;
-    QList<PlotInfo> m_plotInfos;          // 所有图表的详细信息
+    QList<PlotInfo*> m_plotInfos;          // 所有图表的详细信息
     int m_currentPlotIndex;               // 当前选中的图表索引
 
 
     // 按chartName分组数据
-    static QMap<QString, QVector<AberrationData>> groupByChartName(const QVector<AberrationData>& data) {
+    static QMap<QString, QVector<AberrationData>> groupByChartName(const QVector<AberrationData>& data) 
+    {
         QMap<QString, QVector<AberrationData>> groupedData;
 
         for (const AberrationData& item : data) {
@@ -218,7 +238,8 @@ private:
     }
 
     // 按chartName分组并排序（按lineIndex）
-    static QMap<QString, QVector<AberrationData>> groupAndSortByChartName(const QVector<AberrationData>& data) {
+    static QMap<QString, QVector<AberrationData>> groupAndSortByChartName(const QVector<AberrationData>& data) 
+    {
         QMap<QString, QVector<AberrationData>> groupedData = groupByChartName(data);
 
         // 对每个组内的数据按lineIndex排序
@@ -233,7 +254,8 @@ private:
     }
 
     // 获取所有不同的chartName
-    static QVector<QString> getUniqueChartNames(const QVector<AberrationData>& data) {
+    static QVector<QString> getUniqueChartNames(const QVector<AberrationData>& data) 
+    {
         QSet<QString> uniqueNames;
         for (const AberrationData& item : data) {
             uniqueNames.insert(item.chartName);
@@ -242,7 +264,8 @@ private:
     }
 
     // 按chartName和viewFieldIndex双重分组
-    static QMap<QString, QMap<int, QVector<AberrationData>>> groupByChartAndField(const QVector<AberrationData>& data) {
+    static QMap<QString, QMap<int, QVector<AberrationData>>> groupByChartAndField(const QVector<AberrationData>& data) 
+    {
         QMap<QString, QMap<int, QVector<AberrationData>>> groupedData;
 
         for (const AberrationData& item : data) {
@@ -253,7 +276,8 @@ private:
     }
 
     // 打印分组信息（用于调试）
-    static void printGroupingInfo(const QMap<QString, QVector<AberrationData>>& groupedData) {
+    static void printGroupingInfo(const QMap<QString, QVector<AberrationData>>& groupedData) 
+    {
         qDebug() << "分组结果:";
         for (auto it = groupedData.begin(); it != groupedData.end(); ++it) {
             qDebug() << "Chart:" << it.key() << "包含" << it->size() << "条数据";

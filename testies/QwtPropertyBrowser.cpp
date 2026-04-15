@@ -409,89 +409,7 @@ void QwtPropertyBrowser::onValueChanged(QtProperty* property, const QVariant& va
                     if (line.m_group == groupId)
                     {
                         line.m_style.fillPointStyle = (FillPointType)value.toInt();
-                        switch (line.m_style.fillPointStyle)
-                        {
-                        case eSmallEllipse:
-                        {
-                            line.m_style.pointStyle = QwtSymbol::Ellipse;
-                            line.m_style.pointFilled = true;
-                        }
-                        break;
-                        case eXCross:
-                        {
-                            line.m_style.pointStyle = QwtSymbol::XCross;
-                            line.m_style.pointFilled = false;
-                        }
-                        break;
-                        case eCross:
-                        {
-                            line.m_style.pointStyle = QwtSymbol::Cross;
-                            line.m_style.pointFilled = false;
-                        }
-                        break;
-                        case eEllipse:
-                        {
-                            line.m_style.pointStyle = QwtSymbol::Ellipse;
-                            line.m_style.pointFilled = false;
-                        }
-                        break;
-                        case eFillEllipse:
-                        {
-                            line.m_style.pointStyle = QwtSymbol::Ellipse;
-                            line.m_style.pointFilled = true;
-                        }
-                        break;
-                        case eRect:
-                        {
-                            line.m_style.pointStyle = QwtSymbol::Rect;
-                            line.m_style.pointFilled = false;
-                        }
-                        break;
-                        case eFillRect:
-                        {
-                            line.m_style.pointStyle = QwtSymbol::Rect;
-                            line.m_style.pointFilled = true;
-                        }
-                        break;
-                        case eDTriangle:
-                        {
-                            line.m_style.pointStyle = QwtSymbol::DTriangle;
-                            line.m_style.pointFilled = false;
-                        }
-                        break;
-                        case eFillDTriangle:
-                        {
-                            line.m_style.pointStyle = QwtSymbol::DTriangle;
-                            line.m_style.pointFilled = true;
-                        }
-                        break;
-                        case eDiamond:
-                        {
-                            line.m_style.pointStyle = QwtSymbol::Diamond;
-                            line.m_style.pointFilled = false;
-                        }
-                        break;
-                        case eFillDiamond:
-                        {
-                            line.m_style.pointStyle = QwtSymbol::Diamond;
-                            line.m_style.pointFilled = true;
-                        }
-                        break;
-                        case eStart1:
-                        {
-                            line.m_style.pointStyle = QwtSymbol::Star1;
-                            line.m_style.pointFilled = false;
-                        }
-                        break;
-                        case eFillStart1:
-                        {
-                            line.m_style.pointStyle = QwtSymbol::Star1;
-                            line.m_style.pointFilled = true;
-                        }
-                        break;
-                        default:
-                            break;
-                        }
+                        line.setPointFillValue();
                         updateCurveStyle(line.index);
                     }
                 }
@@ -500,89 +418,7 @@ void QwtPropertyBrowser::onValueChanged(QtProperty* property, const QVariant& va
             {
                 int index = m_curveTitleProperty->value().toInt();
                 m_settings->m_lines[index].m_style.fillPointStyle = (FillPointType)value.toInt();
-                switch (m_settings->m_lines[index].m_style.fillPointStyle)
-                {
-                case eSmallEllipse:
-                {
-                    m_settings->m_lines[index].m_style.pointStyle = QwtSymbol::Ellipse;
-                    m_settings->m_lines[index].m_style.pointFilled = true;
-                }
-                break;
-                case eXCross:
-                {
-                    m_settings->m_lines[index].m_style.pointStyle = QwtSymbol::XCross;
-                    m_settings->m_lines[index].m_style.pointFilled = false;
-                }
-                break;
-                case eCross:
-                {
-                    m_settings->m_lines[index].m_style.pointStyle = QwtSymbol::Cross;
-                    m_settings->m_lines[index].m_style.pointFilled = false;
-                }
-                break;
-                case eEllipse:
-                {
-                    m_settings->m_lines[index].m_style.pointStyle = QwtSymbol::Ellipse;
-                    m_settings->m_lines[index].m_style.pointFilled = false;
-                }
-                break;
-                case eFillEllipse:
-                {
-                    m_settings->m_lines[index].m_style.pointStyle = QwtSymbol::Ellipse;
-                    m_settings->m_lines[index].m_style.pointFilled = true;
-                }
-                break;
-                case eRect:
-                {
-                    m_settings->m_lines[index].m_style.pointStyle = QwtSymbol::Rect;
-                    m_settings->m_lines[index].m_style.pointFilled = false;
-                }
-                break;
-                case eFillRect:
-                {
-                    m_settings->m_lines[index].m_style.pointStyle = QwtSymbol::Rect;
-                    m_settings->m_lines[index].m_style.pointFilled = true;
-                }
-                break;
-                case eDTriangle:
-                {
-                    m_settings->m_lines[index].m_style.pointStyle = QwtSymbol::DTriangle;
-                    m_settings->m_lines[index].m_style.pointFilled = false;
-                }
-                break;
-                case eFillDTriangle:
-                {
-                    m_settings->m_lines[index].m_style.pointStyle = QwtSymbol::DTriangle;
-                    m_settings->m_lines[index].m_style.pointFilled = true;
-                }
-                break;
-                case eDiamond:
-                {
-                    m_settings->m_lines[index].m_style.pointStyle = QwtSymbol::Diamond;
-                    m_settings->m_lines[index].m_style.pointFilled = false;
-                }
-                break;
-                case eFillDiamond:
-                {
-                    m_settings->m_lines[index].m_style.pointStyle = QwtSymbol::Diamond;
-                    m_settings->m_lines[index].m_style.pointFilled = true;
-                }
-                break;
-                case eStart1:
-                {
-                    m_settings->m_lines[index].m_style.pointStyle = QwtSymbol::Star1;
-                    m_settings->m_lines[index].m_style.pointFilled = false;
-                }
-                break;
-                case eFillStart1:
-                {
-                    m_settings->m_lines[index].m_style.pointStyle = QwtSymbol::Star1;
-                    m_settings->m_lines[index].m_style.pointFilled = true;
-                }
-                break;
-                default:
-                    break;
-                }
+                m_settings->m_lines[index].setPointFillValue();                
                 updateCurveStyle(index);
             }
             setCurrentCurve(index); 
@@ -1368,7 +1204,7 @@ void QwtPropertyBrowser::loadGroupSettings(int index)
 void QwtPropertyBrowser::loadLineSettings(int index) 
 {
     if (index < 0 || index >= m_settings->m_lines.size()) return;
-    const MTFLine& line = m_settings->m_lines[index];
+    MTFLine& line = m_settings->m_lines[index];
 
     m_curveVisibleProperty->setValue(line.m_style.visible);
     m_curveLineWidthProperty->setValue(line.m_style.lineWidth);
@@ -1382,6 +1218,7 @@ void QwtPropertyBrowser::loadLineSettings(int index)
     m_curveSymbolSizeProperty->setValue(line.m_style.pointSize);
     // 点颜色
     m_curveSymbolColorProperty->setValue(line.m_style.pointColor);
+
     m_plot->replot();
 };
 
