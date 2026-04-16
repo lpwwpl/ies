@@ -44,7 +44,7 @@ QwtPropertyBrowser::QwtPropertyBrowser(PlotSettings* settings, QwtPlot* plot, Qw
 
     m_bBuilding = true;
     createGlobalProperties();
-    createAxisProperties();
+    createAxisProperties();    
     createCurveProperties();
     createPlotItemProperties();
     m_bBuilding = false;
@@ -1299,7 +1299,7 @@ void QwtPropertyBrowser::applyXAxisSettings()
 {
     m_axisProps[QwtPlot::xBottom].visibleProperty->setValue(m_settings->xAxis.visible);
     m_axisProps[QwtPlot::xBottom].titleProperty->setValue(m_settings->xAxis.title);
-    QFont font = m_settings->xAxis.tickFont;
+    QFont font = m_settings->xAxis.titleFont;
     m_axisProps[QwtPlot::xBottom].titleFontProperty->setValue(font);
     QColor color = m_settings->xAxis.titleColor;
     m_axisProps[QwtPlot::xBottom].titleColorProperty->setValue(color);
@@ -1308,7 +1308,7 @@ void QwtPropertyBrowser::applyXAxisSettings()
     m_axisProps[QwtPlot::xBottom].maxProperty->setValue(m_settings->xAxis.max);
     m_axisProps[QwtPlot::xBottom].stepProperty->setValue(m_settings->xAxis.step);
     font = m_settings->xAxis.tickFont;
-    m_axisProps[QwtPlot::xBottom].tickFontProperty->setValue(font.family());
+    m_axisProps[QwtPlot::xBottom].tickFontProperty->setValue(font);
     color = m_settings->xAxis.tickColor;
     m_axisProps[QwtPlot::xBottom].tickColorProperty->setValue(color);
 }
@@ -1316,7 +1316,7 @@ void QwtPropertyBrowser::applyYAxisSettings()
 {
     m_axisProps[QwtPlot::yLeft].visibleProperty->setValue(m_settings->yAxis.visible);
     m_axisProps[QwtPlot::yLeft].titleProperty->setValue(m_settings->yAxis.title);
-    QFont font = m_settings->yAxis.tickFont;
+    QFont font = m_settings->yAxis.titleFont;
     m_axisProps[QwtPlot::yLeft].titleFontProperty->setValue(font);
     QColor color = m_settings->yAxis.titleColor;
     m_axisProps[QwtPlot::yLeft].titleColorProperty->setValue(color);
@@ -1325,7 +1325,7 @@ void QwtPropertyBrowser::applyYAxisSettings()
     m_axisProps[QwtPlot::yLeft].maxProperty->setValue(m_settings->yAxis.max);
     m_axisProps[QwtPlot::yLeft].stepProperty->setValue(m_settings->yAxis.step);
     font = m_settings->yAxis.tickFont;
-    m_axisProps[QwtPlot::yLeft].tickFontProperty->setValue(font.family());
+    m_axisProps[QwtPlot::yLeft].tickFontProperty->setValue(font);
     color = m_settings->yAxis.tickColor;
     m_axisProps[QwtPlot::yLeft].tickColorProperty->setValue(color);
 }
@@ -1445,6 +1445,7 @@ void QwtPropertyBrowser::applyXAxisSettings_plot()
         if (!m_settings->xAxis.autoRange)
         {
             m_plot->setAxisScale(QwtPlot::xBottom, m_settings->xAxis.min, m_settings->xAxis.max, m_settings->xAxis.step);
+            m_plot->replot();
             signalUpdateScaleDiv();
         }
         else
@@ -1481,6 +1482,7 @@ void QwtPropertyBrowser::applyYAxisSettings_plot()
         if (!m_settings->yAxis.autoRange)
         {
             m_plot->setAxisScale(QwtPlot::yLeft, m_settings->yAxis.min, m_settings->yAxis.max, m_settings->yAxis.step);
+            m_plot->replot();
             signalUpdateScaleDiv();
         }
         else

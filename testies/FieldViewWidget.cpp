@@ -297,7 +297,7 @@
 #include <algorithm>
 #include <qwt_text.h>
 #include <qwt_scale_div.h>
-
+#include <QFileDialog>
 #include <QSplitter>
 #ifndef M_PI
 #define M_PI 3.14159265358979323846
@@ -974,4 +974,14 @@ void FieldViewWidget::saveInitialView()
     m_initialYMax_orig = yScaleDiv.upperBound();
 
     m_current_factor = 1;
+}
+void FieldViewWidget::setLegendPosition(bool leftSide)
+{
+    m_settings->legend.position = leftSide ? QwtPlot::LeftLegend : QwtPlot::RightLegend;
+    m_simple_browser->applyLegendSettings();
+}
+void FieldViewWidget::showLegend(bool show)
+{
+    m_settings->legend.visible = show;
+    m_simple_browser->applyLegendSettings();
 }

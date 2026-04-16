@@ -516,6 +516,9 @@ void AberrationWidget::updateAutoScaleX()
     PlotInfo* info = m_plotInfos[m_currentPlotIndex];
     if (!info)return;
 
+    info->settings->xAxis.min = info->m_initialXMin;
+    info->settings->xAxis.max = info->m_initialXMax;
+
     updateXScaleAxes(info->plot,*info);
 
     m_propertyBrowser->applyXAxisSettings();
@@ -526,6 +529,9 @@ void AberrationWidget::updateAutoScaleY()
     if (m_currentPlotIndex < 0 || m_currentPlotIndex >= m_plotInfos.size())return;
     PlotInfo* info = m_plotInfos[m_currentPlotIndex];
     if (!info)return;
+
+    info->settings->yAxis.min = info->m_initialYMin;
+    info->settings->yAxis.max = info->m_initialYMax;
 
     updateYScaleAxes(info->plot, *info);
 
@@ -721,6 +727,8 @@ void AberrationWidget::onPlotSelected(int index)
         connect(m_propertyBrowser, &QwtPropertyBrowser::propertyChanged,
             this, &AberrationWidget::onPropertyChanged);
         m_controlLayout->addWidget(m_propertyBrowser);
+
+        m_propertyBrowser->m_browser->removeProperty(m_propertyBrowser->group_item);
     }
 
     // 更新已有浏览器的内部指针
@@ -975,9 +983,6 @@ bool AberrationWidget::loadDataFromFile(const QString& filename)
             legend->setDefaultItemMode(QwtLegendData::Checkable); // 使图例项可点击
             plot->insertLegend(legend, QwtPlot::BottomLegend);
 
-            // 设置图例位置和最大高度
-            plot->plotLayout()->setLegendPosition(QwtPlot::BottomLegend);
-
             // 连接图例点击信号
             connect(legend, SIGNAL(clicked(const QVariant&, int)),
                 this, SLOT(onLegendClicked(const QVariant&)));
@@ -985,6 +990,11 @@ bool AberrationWidget::loadDataFromFile(const QString& filename)
             // 设置交互功能（拖拽和缩放）
             setupPlotInteractions(plot);
             
+            // 自动调整布局
+            plot->updateLayout();
+            // 重绘图表
+            plot->replot();
+
             // 初始化默认值（根据需要设置）
             settings->gridMajorStyle = Qt::DotLine;
             settings->gridMajorColor = Qt::gray;
@@ -993,28 +1003,25 @@ bool AberrationWidget::loadDataFromFile(const QString& filename)
             settings->gridVisible = true;
             settings->origin = PlotSettings::BottomLeft;
             settings->title = plot->title().text();
-            settings->titleFont = QFont();
+            settings->titleFont = plot->title().font();
             settings->titleColor = Qt::black;
             settings->backgroundColor = Qt::white;
             settings->legend.visible = true;
             settings->legend.position = QwtPlot::BottomLegend;
             settings->xAxis.visible = true;
             settings->xAxis.title = "归一化光阑";
+            settings->xAxis.titleFont = plot->axisTitle(QwtPlot::xBottom).font();
             settings->xAxis.autoRange = true;
             settings->xAxis.min = -1.1;
             settings->xAxis.max = 1.1;
             settings->xAxis.step = 0.2;
             settings->yAxis.visible = true;
             settings->yAxis.title = "光线像差 (mm)";
+            settings->yAxis.titleFont = plot->axisTitle(QwtPlot::yLeft).font();
             settings->yAxis.autoRange = true;  // 自动范围由数据决定
             settings->yAxis.min = 0;
             settings->yAxis.max = 1;
-            settings->yAxis.step = 0.1;        
-
-            // 自动调整布局
-            plot->updateLayout();
-            // 重绘图表
-            plot->replot();
+            settings->yAxis.step = 0.1;   
 
             // 添加到网格布局
             m_mainLayout->addWidget(plot, row_idx, col_idx);

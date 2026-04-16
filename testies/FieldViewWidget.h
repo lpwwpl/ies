@@ -120,6 +120,8 @@ public Q_SLOTS:
     void updateXScaleAxes();
     void updateYScaleAxes();
     void updateAxesSettings();
+    void showLegend(bool show);
+    void setLegendPosition(bool leftSide);
 private:
     void setupFieldViewPlot();
     void setupInteractions();

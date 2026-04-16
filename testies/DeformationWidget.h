@@ -18,8 +18,10 @@
 #include <nanoflann.hpp>
 #include <QPainter>
 #include "PlotBase.h"
-#include <QSplitter>
 #include <qwt_text.h>
+class QSplitter;
+class QComboBox;
+
 // 数据结构
 struct NodeData {
     double x, y, z;
@@ -134,12 +136,35 @@ public:
     explicit MultiDeformationViewer(const QString& dataFile, QWidget* parent = nullptr);
     ~MultiDeformationViewer();
 
+public Q_SLOTS:
+    void onPlotSelected(int index);
+    void onApplyToAllToggled(bool checked);
+    void applyAllSettingsToAllPlots();
+    void syncSettingsToPlot(PlotInfo* curInfo, PlotInfo* info);
+
+    void updateXScaleAxes(QwtPlot* plot, PlotInfo& info);
+    void updateYScaleAxes(QwtPlot* plot, PlotInfo& info);
+    void onPropertyChanged();
+    void updateX();
+    void updateY();
+    void updateXY() { updateX(); updateY(); }
+    void updateLegend();
+    void updateAxesSettings_noparam();
+    void updateAutoScaleY();
+    void updateAutoScaleX();
+    void onLegendClicked(const QVariant& itemInfo);
+
+public:
+    void saveInitialView(PlotInfo& info);
+    void setupPlotInteractions(QwtPlot* plot);
+    void updateAxesSettings(QwtPlot* plot, PlotInfo& info);
+
 private:
     void loadData(const QString& dataFile);
     void computeGlobalZRange();
     void setupUI();
     QwtPlot* createPlot(const QString& title, int fieldType,
-        double xmin, double xmax, double ymin, double ymax);
+        double xmin, double xmax, double ymin, double ymax,bool isYTitle);
     void addMarkers(QwtPlot* plot, const std::vector<double>& values,
         const std::vector<NodeData>& nodes,
         double xRange, double yRange,
@@ -148,30 +173,31 @@ private:
     void addInfoBox(QwtPlot* plot, int nodeCount, double minVal, double maxVal,
         double xPos, double yPos);
 
-    PlotSettings* m_settings;
-    //PlotBase* m_toolBar_plot;
-    //QwtPlotGrid* m_grid;
-    //QwtLegend* m_legend;
-    QToolBar* m_toolBar;
-    QwtPropertyBrowser* m_simple_browser;
-    QSplitter* m_splitter;
+
+    //QToolBar* m_toolBar;
     QwtPlot* m_plotX;
     QwtPlot* m_plotY;
     QwtPlot* m_plotZ;
     QwtPlot* m_plotMag;
-    double m_current_factor = 1;
-    double m_initialXMin, m_initialXMax;        // 初始X轴范围
-    double m_initialYMin, m_initialYMax;        // 初始Y轴范围
-
-    double m_initialXMin_orig, m_initialXMax_orig;        // 初始X轴范围
-    double m_initialYMin_orig, m_initialYMax_orig;        // 初始Y轴范围
 
     std::vector<NodeData> m_nodes;
     Interpolator* m_interp;
     double m_globalZmin, m_globalZmax;
     double m_circleCenterX, m_circleCenterY, m_circleRadius;
-    QGridLayout* m_layout;
+    //QGridLayout* m_layout;
     MyScaleWidget* m_sharedColorBar;
+
+
+    QList<PlotInfo*> m_plotInfos;          // 所有图表的详细信息
+    int m_currentPlotIndex;               // 当前选中的图表索引
+    QVector<QwtPlot*> m_plots;
+    QSplitter* m_splitter;
+    // UI 控件
+    QGridLayout* m_mainLayout;           // 主布局（包含图表网格）
+    QVBoxLayout* m_controlLayout;        // 右侧控制面板布局
+    QComboBox* m_plotCombo;              // 图表选择下拉框
+    QCheckBox* m_applyToAllCheckBox;     // 应用到所有图表复选框
+    QwtPropertyBrowser* m_propertyBrowser; // 属性编辑器
 };
 
 

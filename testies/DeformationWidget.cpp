@@ -8,7 +8,10 @@
 #include <cmath>
 #include <algorithm>
 #include <limits>
-
+#include <QSplitter>
+#include <QComboBox>
+#include <QCheckBox>
+#include <qwt_scale_engine.h>
 // ==================== DataLoader 实现 ====================
 std::vector<NodeData> DataLoader::load(const std::string& filename) {
     std::vector<NodeData> nodes;
@@ -223,25 +226,284 @@ void MultiDeformationViewer::computeGlobalZRange() {
     }
     std::cout << "Global Z range: [" << m_globalZmin << ", " << m_globalZmax << "]" << std::endl;
 }
+void MultiDeformationViewer::onApplyToAllToggled(bool checked)
+{
+    Q_UNUSED(checked);
+    // 可选：当勾选时立即将当前设置同步到所有图表（也可以保留，等待下次属性修改）
+    if (checked && m_propertyBrowser)
+    {
+        applyAllSettingsToAllPlots();
+    }
+}
+void MultiDeformationViewer::updateXScaleAxes(QwtPlot* plot, PlotInfo& info)
+{
+    plot->setAxisScale(QwtPlot::xBottom, info.m_initialXMin, info.m_initialXMax);
+    plot->replot();
+}
+void MultiDeformationViewer::updateYScaleAxes(QwtPlot* plot, PlotInfo& info)
+{
+    plot->setAxisScale(QwtPlot::yLeft, info.m_initialYMin, info.m_initialYMax);
+    // 重新绘制
+    plot->replot();
+}
+void MultiDeformationViewer::syncSettingsToPlot(PlotInfo* curInfo, PlotInfo* info)
+{
+    QwtPlot* plot = info->plot;
+    QwtPlotGrid* grid = info->grid;
+    QwtLegend* legend = info->legend;
 
+    *info = *curInfo;
+
+    //target settings
+    PlotSettings* settings = info->settings;
+
+    if (!plot || !curInfo)
+        return;
+
+    // 背景色
+    plot->setCanvasBackground(settings->backgroundColor);
+
+    // 标题
+    QwtText title(settings->title);
+    title.setFont(settings->titleFont);
+    title.setColor(settings->titleColor);
+    plot->setTitle(title);
+
+    // X 轴
+    if (settings->xAxis.visible)
+    {
+        plot->enableAxis(QwtPlot::xBottom);
+        QwtText xTitle(settings->xAxis.title);
+        xTitle.setFont(settings->xAxis.titleFont);
+        xTitle.setColor(settings->xAxis.titleColor);
+        plot->setAxisTitle(QwtPlot::xBottom, xTitle);
+        plot->setAxisFont(QwtPlot::xBottom, settings->xAxis.tickFont);
+        QwtScaleWidget* xScale = plot->axisWidget(QwtPlot::xBottom);
+        if (xScale) {
+            QPalette pal = xScale->palette();
+            pal.setColor(QPalette::Text, settings->xAxis.tickColor);
+            xScale->setPalette(pal);
+        }
+        if (!settings->xAxis.autoRange)
+        {
+            plot->setAxisScale(QwtPlot::xBottom, settings->xAxis.min, settings->xAxis.max, settings->xAxis.step);
+            plot->replot();
+        }
+        else
+        {
+            updateXScaleAxes(plot, *info);
+        }
+    }
+    else
+    {
+        plot->enableAxis(QwtPlot::xBottom, false);
+    }
+
+    // Y 轴
+    if (settings->yAxis.visible)
+    {
+        plot->enableAxis(QwtPlot::yLeft);
+        QwtText yTitle(settings->yAxis.title);
+        yTitle.setFont(settings->yAxis.titleFont);
+        yTitle.setColor(settings->yAxis.titleColor);
+        plot->setAxisTitle(QwtPlot::yLeft, yTitle);
+        plot->setAxisFont(QwtPlot::yLeft, settings->yAxis.tickFont);
+        QwtScaleWidget* yScale = plot->axisWidget(QwtPlot::yLeft);
+        if (yScale) {
+            QPalette pal = yScale->palette();
+            pal.setColor(QPalette::Text, settings->yAxis.tickColor);
+            yScale->setPalette(pal);
+        }
+        if (!settings->yAxis.autoRange)
+        {
+            plot->setAxisScale(QwtPlot::yLeft, settings->yAxis.min, settings->yAxis.max, settings->yAxis.step);
+            plot->replot();
+        }
+        else
+        {
+            updateYScaleAxes(plot, *info);
+        }
+    }
+    else
+    {
+        plot->enableAxis(QwtPlot::yLeft, false);
+    }
+
+    // 网格
+    if (settings->gridVisible) {
+        grid->enableX(true);
+        grid->enableY(true);
+        grid->setMajorPen(QPen(settings->gridMajorColor, 0, settings->gridMajorStyle));
+        grid->setMinorPen(QPen(settings->gridMinorColor, 0, settings->gridMinorStyle));
+        grid->attach(plot);
+    }
+    else {
+        grid->detach();
+    }
+
+    // 图例
+    if (settings->legend.visible) {
+        if (!legend) {
+            legend = new QwtLegend();
+            info->legend = legend;
+        }
+        plot->insertLegend(legend, settings->legend.position);
+        legend->setVisible(true);
+        // 更新图例标签样式
+        QList<QwtLegendLabel*> labels = legend->findChildren<QwtLegendLabel*>();
+        for (QwtLegendLabel* label : labels) {
+            label->setFont(settings->legend.font);
+            QPalette pal = label->palette();
+            pal.setColor(QPalette::Text, settings->legend.color);
+            label->setPalette(pal);
+        }
+    }
+    else {
+        delete legend;
+        plot->insertLegend(nullptr);
+        legend = NULL;
+        info->legend = legend;
+    }
+
+    // 原点位置
+    QwtScaleDiv xDiv = plot->axisScaleDiv(QwtPlot::xBottom);
+    QwtScaleDiv yDiv = plot->axisScaleDiv(QwtPlot::yLeft);
+    switch (settings->origin) {
+    case PlotSettings::BottomLeft:
+        // 取消反转
+        plot->axisScaleEngine(QwtPlot::xBottom)->setAttribute(QwtScaleEngine::Inverted, false);
+        plot->axisScaleEngine(QwtPlot::yLeft)->setAttribute(QwtScaleEngine::Inverted, false);
+        // 确保范围是正序
+        if (xDiv.lowerBound() > xDiv.upperBound())
+        {
+            plot->setAxisScale(QwtPlot::xBottom, xDiv.upperBound(), xDiv.lowerBound());
+        }
+        else
+        {
+            plot->setAxisScale(QwtPlot::xBottom, xDiv.lowerBound(), xDiv.upperBound());
+        }
+        if (yDiv.lowerBound() > yDiv.upperBound())
+        {
+            plot->setAxisScale(QwtPlot::yLeft, yDiv.upperBound(), yDiv.lowerBound());
+        }
+        else
+        {
+            plot->setAxisScale(QwtPlot::yLeft, yDiv.lowerBound(), yDiv.upperBound());
+        }
+        break;
+    case PlotSettings::BottomRight:
+        plot->axisScaleEngine(QwtPlot::xBottom)->setAttribute(QwtScaleEngine::Inverted, true);
+        plot->axisScaleEngine(QwtPlot::yLeft)->setAttribute(QwtScaleEngine::Inverted, false);
+        // 设置范围为从小到大的值，但引擎会负责反转
+        if (xDiv.lowerBound() > xDiv.upperBound())
+        {
+            plot->setAxisScale(QwtPlot::xBottom, xDiv.lowerBound(), xDiv.upperBound());
+        }
+        else
+        {
+            plot->setAxisScale(QwtPlot::xBottom, xDiv.upperBound(), xDiv.lowerBound());
+        }
+        if (yDiv.lowerBound() > yDiv.upperBound())
+        {
+            plot->setAxisScale(QwtPlot::yLeft, yDiv.upperBound(), yDiv.lowerBound());
+        }
+        else
+        {
+            plot->setAxisScale(QwtPlot::yLeft, yDiv.lowerBound(), yDiv.upperBound());
+        }
+        break;
+    case PlotSettings::Center:
+        plot->axisScaleEngine(QwtPlot::xBottom)->setAttribute(QwtScaleEngine::Inverted, false);
+        plot->axisScaleEngine(QwtPlot::yLeft)->setAttribute(QwtScaleEngine::Inverted, false);
+        // 简化的中心原点：取当前范围的一半作为对称范围
+        {
+            double xRange = xDiv.upperBound() - xDiv.lowerBound();
+            double yRange = yDiv.upperBound() - yDiv.lowerBound();
+            plot->setAxisScale(QwtPlot::xBottom, -xRange / 2, xRange / 2);
+            plot->setAxisScale(QwtPlot::yLeft, -yRange / 2, yRange / 2);
+        }
+        break;
+    }
+
+    plot->replot();
+}
+
+void MultiDeformationViewer::applyAllSettingsToAllPlots()
+{
+    if (!m_propertyBrowser || m_currentPlotIndex < 0)
+        return;
+    PlotInfo* cur_info = m_plotInfos[m_currentPlotIndex];
+    for (int i = 0; i < m_plotInfos.size(); ++i)
+    {
+        //重复更新没事
+        if (i == m_currentPlotIndex)
+            continue;
+        PlotInfo* info = m_plotInfos[i];
+        // 将当前设置同步到目标图表
+        syncSettingsToPlot(cur_info, info);
+    }
+}
 void MultiDeformationViewer::setupUI() {
 
-    m_layout = new QGridLayout(this);
-    m_layout->setSpacing(10);
+    // 左侧图表区域
+    QWidget* plotContainer = new QWidget(this);
+    m_mainLayout = new QGridLayout(plotContainer);
+    m_mainLayout->setSpacing(10);
+    m_mainLayout->setContentsMargins(10, 10, 10, 10);
+    plotContainer->setLayout(m_mainLayout);
+
+    QWidget* controlWidget = new QWidget(this);
+    m_controlLayout = new QVBoxLayout(controlWidget);
+    m_controlLayout->setSpacing(5);
+    m_controlLayout->setContentsMargins(5, 5, 5, 5);
+    controlWidget->setLayout(m_controlLayout);
+
+    m_splitter = new QSplitter(this);
+    m_splitter->addWidget(plotContainer);
+    m_splitter->addWidget(controlWidget);
+
+    m_splitter->setStretchFactor(0, 1);
+    m_splitter->setStretchFactor(1, 0);
+    m_splitter->setCollapsible(1, false);
+    m_splitter->setSizes({ 900, 300 });
+
+    QHBoxLayout* mainHLayout = new QHBoxLayout(this);
+    setLayout(mainHLayout);
+    mainHLayout->setContentsMargins(0, 0, 0, 0);
+    mainHLayout->addWidget(m_splitter);
+
+    // 图表选择下拉框
+    m_plotCombo = new QComboBox(this);
+    m_plotCombo->setEnabled(false);
+    connect(m_plotCombo, QOverload<int>::of(&QComboBox::currentIndexChanged),
+        this, &MultiDeformationViewer::onPlotSelected);
+    m_controlLayout->addWidget(m_plotCombo);
+
+    // “应用到所有”复选框
+    m_applyToAllCheckBox = new QCheckBox("应用到所有图表", this);
+    m_applyToAllCheckBox->setEnabled(false);
+    connect(m_applyToAllCheckBox, &QCheckBox::toggled,
+        this, &MultiDeformationViewer::onApplyToAllToggled);
+    m_controlLayout->addWidget(m_applyToAllCheckBox);
+
+    // 属性浏览器占位（稍后创建）
+    m_propertyBrowser = nullptr;
+
+    // /////////////////////////////////////////////////////////////////////
     setWindowTitle("2D Deformation Maps - Normalized to [-12.2, 12.2]");
 
     const double AXIS_MIN = -12.2;
     const double AXIS_MAX = 12.2;
 
-    m_plotX = createPlot("X Deformation (mm)", 1, AXIS_MIN, AXIS_MAX, AXIS_MIN, AXIS_MAX);
-    m_plotY = createPlot("Y Deformation (mm)", 2, AXIS_MIN, AXIS_MAX, AXIS_MIN, AXIS_MAX);
-    m_plotZ = createPlot("Z Deformation (mm)", 3, AXIS_MIN, AXIS_MAX, AXIS_MIN, AXIS_MAX);
-    m_plotMag = createPlot("Total Deformation (mm)", 0, AXIS_MIN, AXIS_MAX, AXIS_MIN, AXIS_MAX);
+    m_plotX = createPlot("X Deformation (mm)", 1, AXIS_MIN, AXIS_MAX, AXIS_MIN, AXIS_MAX,true);
+    m_plotY = createPlot("Y Deformation (mm)", 2, AXIS_MIN, AXIS_MAX, AXIS_MIN, AXIS_MAX,false);
+    m_plotZ = createPlot("Z Deformation (mm)", 3, AXIS_MIN, AXIS_MAX, AXIS_MIN, AXIS_MAX,true);
+    m_plotMag = createPlot("Total Deformation (mm)", 0, AXIS_MIN, AXIS_MAX, AXIS_MIN, AXIS_MAX,false);
 
-    m_layout->addWidget(m_plotX, 0, 0);
-    m_layout->addWidget(m_plotY, 0, 1);
-    m_layout->addWidget(m_plotZ, 1, 0);
-    m_layout->addWidget(m_plotMag, 1, 1);
+    m_mainLayout->addWidget(m_plotX, 0, 0);
+    m_mainLayout->addWidget(m_plotY, 0, 1);
+    m_mainLayout->addWidget(m_plotZ, 1, 0);
+    m_mainLayout->addWidget(m_plotMag, 1, 1);
 
     // ========== 共享颜色条（分为6段，显示分界点数值） ==========
     m_sharedColorBar = new MyScaleWidget(QwtScaleDraw::LeftScale, this);
@@ -276,12 +538,266 @@ void MultiDeformationViewer::setupUI() {
     scaleDraw->setTickLength(QwtScaleDiv::MediumTick, 0);
     scaleDraw->enableComponent(QwtScaleDraw::Backbone, false);
 
-    m_layout->addWidget(m_sharedColorBar, 0, 2, 2, 1);
+    m_mainLayout->addWidget(m_sharedColorBar, 0, 2, 2, 1);
+
+
+    if (!m_plotInfos.isEmpty())
+    {
+        for (int i = 0; i < m_plotInfos.size(); ++i)
+        {
+            QString title = m_plotInfos[i]->plot->title().text();
+            m_plotCombo->addItem(title, i);
+        }
+        m_plotCombo->setEnabled(true);
+        m_applyToAllCheckBox->setEnabled(true);
+        m_currentPlotIndex = 0;
+        m_plotCombo->setCurrentIndex(0);
+        onPlotSelected(0);  // 创建属性浏览器并绑定第一个图表
+    }
 }
 
+void MultiDeformationViewer::onPropertyChanged()
+{
+    if (!m_propertyBrowser)
+        return;
+
+    if (m_applyToAllCheckBox && m_applyToAllCheckBox->isChecked())
+    {
+        // 应用到所有图表
+        applyAllSettingsToAllPlots();
+    }
+}
+//当前的info->plot,根据当前范围更新
+void MultiDeformationViewer::updateX()
+{
+    if (m_currentPlotIndex < 0 || m_currentPlotIndex >= m_plotInfos.size())return;
+    PlotInfo* info = m_plotInfos[m_currentPlotIndex];
+    if (!info)return;
+
+    info->settings->xAxis.min = info->plot->axisScaleDiv(QwtPlot::xBottom).lowerBound();
+    info->settings->xAxis.max = info->plot->axisScaleDiv(QwtPlot::xBottom).upperBound();
+    QwtScaleDiv temp = info->plot->axisScaleDiv(QwtPlot::xBottom);
+    QList<double> ticks = temp.ticks(QwtScaleDiv::MajorTick);
+    info->settings->xAxis.step = ticks[1] - ticks[0];
+
+    m_propertyBrowser->applyXAxisSettings();
+}
+//当前的info->plot,根据当前范围更新
+void MultiDeformationViewer::updateY()
+{
+    if (m_currentPlotIndex < 0 || m_currentPlotIndex >= m_plotInfos.size())return;
+    PlotInfo* info = m_plotInfos[m_currentPlotIndex];
+    if (!info)return;
+    info->settings->yAxis.min = info->plot->axisScaleDiv(QwtPlot::yLeft).lowerBound();
+    info->settings->yAxis.max = info->plot->axisScaleDiv(QwtPlot::yLeft).upperBound();
+    QwtScaleDiv temp = info->plot->axisScaleDiv(QwtPlot::yLeft);
+    QList<double> ticks = temp.ticks(QwtScaleDiv::MajorTick);
+    info->settings->yAxis.step = ticks[1] - ticks[0];
+
+    m_propertyBrowser->applyYAxisSettings();
+}
+void MultiDeformationViewer::updateLegend()
+{
+    if (m_currentPlotIndex < 0 || m_currentPlotIndex >= m_plotInfos.size())return;
+    PlotInfo* info = m_plotInfos[m_currentPlotIndex];
+    if (!info)return;
+
+    info->legend = m_propertyBrowser->m_legend;
+}
+
+void MultiDeformationViewer::onPlotSelected(int index)
+{
+    if (index < 0 || index >= m_plotInfos.size())
+        return;
+
+    m_currentPlotIndex = index;
+    PlotInfo* info = m_plotInfos[index];
+
+    if (!m_propertyBrowser)
+    {
+        // 创建属性浏览器，绑定当前图表的 settings 和控件
+        m_propertyBrowser = new QwtPropertyBrowser(info->settings,
+            info->plot,
+            info->grid,
+            info->legend,
+            this);
+        connect(m_propertyBrowser, SIGNAL(signalUpdateScaleDiv()), this, SLOT(updateXY()));
+        connect(m_propertyBrowser, SIGNAL(signalYScaleAxes()), this, SLOT(updateAutoScaleY()));
+        connect(m_propertyBrowser, SIGNAL(signalXScaleAxes()), this, SLOT(updateAutoScaleX()));
+        connect(m_propertyBrowser, SIGNAL(signalUpdateLegend()), this, SLOT(updateLegend()));
+        connect(m_propertyBrowser, &QwtPropertyBrowser::propertyChanged,
+            this, &MultiDeformationViewer::onPropertyChanged);
+        m_controlLayout->addWidget(m_propertyBrowser);
+
+        m_propertyBrowser->m_browser->removeProperty(m_propertyBrowser->group_curve);
+        m_propertyBrowser->m_browser->removeProperty(m_propertyBrowser->group_item);
+    }
+
+    // 更新已有浏览器的内部指针
+    m_propertyBrowser->m_settings = info->settings;
+    m_propertyBrowser->m_plot = info->plot;
+    m_propertyBrowser->m_grid = info->grid;
+    m_propertyBrowser->m_legend = info->legend;
+
+    // 刷新界面
+    m_propertyBrowser->InitSetupUI();
+}
+
+void MultiDeformationViewer::onLegendClicked(const QVariant& itemInfo)
+{
+    // 获取发送信号的图例
+    QwtLegend* legend = qobject_cast<QwtLegend*>(sender());
+    if (!legend) return;
+
+    // 获取对应的plot
+    QwtPlot* plot = nullptr;
+    for (auto* p : m_plots) {
+        if (p->legend() == legend) {
+            plot = p;
+            break;
+        }
+    }
+
+    if (!plot) return;
+
+    // 找到对应的曲线
+    QwtPlotItem* item = plot->infoToItem(itemInfo);
+    if (item && item->rtti() == QwtPlotItem::Rtti_PlotCurve) {
+        QwtPlotCurve* curve = static_cast<QwtPlotCurve*>(item);
+
+        // 切换曲线的可见性
+        bool visible = !curve->isVisible();
+        curve->setVisible(visible);
+
+        // 更新图例显示
+        QList<QWidget*> legendWidgets = legend->legendWidgets(itemInfo);
+        for (QWidget* w : legendWidgets) {
+            if (QwtLegendLabel* label = qobject_cast<QwtLegendLabel*>(w)) {
+                label->setChecked(visible);
+            }
+        }
+
+        // 重新调整坐标轴范围
+        if (visible) {
+            // 如果显示曲线，重新计算范围
+            plot->setAutoReplot(false);
+            plot->updateAxes();
+            plot->setAutoReplot(true);
+        }
+
+        plot->replot();
+    }
+}
+
+//当前的info->plot,恢复init
+void MultiDeformationViewer::updateAutoScaleX()
+{
+    if (m_currentPlotIndex < 0 || m_currentPlotIndex >= m_plotInfos.size())return;
+    PlotInfo* info = m_plotInfos[m_currentPlotIndex];
+    if (!info)return;
+
+    updateXScaleAxes(info->plot, *info);
+
+    m_propertyBrowser->applyXAxisSettings();
+}
+//当前的info->plot,恢复init
+void MultiDeformationViewer::updateAutoScaleY()
+{
+    if (m_currentPlotIndex < 0 || m_currentPlotIndex >= m_plotInfos.size())return;
+    PlotInfo* info = m_plotInfos[m_currentPlotIndex];
+    if (!info)return;
+
+    updateYScaleAxes(info->plot, *info);
+
+    m_propertyBrowser->applyYAxisSettings();
+}
+void MultiDeformationViewer::saveInitialView(PlotInfo& info)
+{
+    // 保存初始视图范围
+    info.m_initialXMin = info.settings->xAxis.min;
+    info.m_initialXMax = info.settings->xAxis.max;
+    info.m_initialYMin = info.settings->yAxis.min;
+    info.m_initialYMax = info.settings->yAxis.max;
+
+    info.m_initialXMin_orig = info.m_initialXMin;
+    info.m_initialXMax_orig = info.m_initialXMax;
+    info.m_initialYMin_orig = info.m_initialYMin;
+    info.m_initialYMax_orig = info.m_initialYMax;
+
+    info.m_current_factor = 1;
+}
+void MultiDeformationViewer::setupPlotInteractions(QwtPlot* plot)
+{
+    if (!plot) return;
+
+    // 1. 拖拽功能 - 对应 QCP::iRangeDrag
+    MyPlotPanner* panner = new MyPlotPanner(plot->canvas());
+    panner->setMouseButton(Qt::LeftButton);
+    panner->setEnabled(true);
+
+    // 2. 缩放功能 - 对应 QCP::iRangeZoom
+    MyPlotMagnifier* magnifier = new MyPlotMagnifier(plot->canvas());
+    magnifier->setMouseButton(Qt::NoButton);  // 不使用鼠标按钮，仅用滚轮
+    magnifier->setWheelFactor(1.1);  // 滚轮缩放因子
+    magnifier->setZoomInKey(Qt::Key_Plus, Qt::ControlModifier);
+    magnifier->setZoomOutKey(Qt::Key_Minus, Qt::ControlModifier);
+    magnifier->setEnabled(true);
+
+    connect(panner, &MyPlotPanner::panFinished, this, &MultiDeformationViewer::updateAxesSettings_noparam);
+    connect(magnifier, &MyPlotMagnifier::zoomed, this, &MultiDeformationViewer::updateAxesSettings_noparam);
+
+    // 3. 右键菜单用于重置视图（可选功能）
+    plot->canvas()->setContextMenuPolicy(Qt::CustomContextMenu);
+}
+//根据info和plot更新xy
+void MultiDeformationViewer::updateAxesSettings(QwtPlot* plot, PlotInfo& info)
+{
+    if (!info.settings->xAxis.autoRange)
+    {
+        info.settings->xAxis.min = plot->axisScaleDiv(QwtPlot::xBottom).lowerBound();
+        info.settings->xAxis.max = plot->axisScaleDiv(QwtPlot::xBottom).upperBound();
+        QwtScaleDiv temp = plot->axisScaleDiv(QwtPlot::xBottom);
+        QList<double> ticks = temp.ticks(QwtScaleDiv::MajorTick);
+        info.settings->xAxis.step = ticks[1] - ticks[0];
+    }
+    else
+    {
+        plot->setAxisScale(QwtPlot::xBottom, info.m_initialXMin, info.m_initialXMax);
+        plot->replot();
+    }
+    if (!info.settings->yAxis.autoRange)
+    {
+        info.settings->yAxis.min = plot->axisScaleDiv(QwtPlot::yLeft).lowerBound();
+        info.settings->yAxis.max = plot->axisScaleDiv(QwtPlot::yLeft).upperBound();
+        QwtScaleDiv temp = plot->axisScaleDiv(QwtPlot::yLeft);
+        QList<double> ticks = temp.ticks(QwtScaleDiv::MajorTick);
+        info.settings->yAxis.step = ticks[1] - ticks[0];
+    }
+    else
+    {
+        plot->setAxisScale(QwtPlot::yLeft, info.m_initialYMin, info.m_initialYMax);
+        plot->replot();
+    }
+}
+//pan,zoom对应的函数
+void MultiDeformationViewer::updateAxesSettings_noparam()
+{
+    if (m_currentPlotIndex < 0 || m_currentPlotIndex >= m_plotInfos.size())return;
+    PlotInfo* info = m_plotInfos[m_currentPlotIndex];
+    if (!info)return;
+
+    updateAxesSettings(info->plot, *info);
+    m_propertyBrowser->applyYAxisSettings();
+    m_propertyBrowser->applyXAxisSettings();
+    if (m_applyToAllCheckBox && m_applyToAllCheckBox->isChecked())
+    {
+        // 应用到所有图表
+        applyAllSettingsToAllPlots();
+    }
+}
 QwtPlot* MultiDeformationViewer::createPlot(const QString& title, int fieldType,
     double xmin, double xmax,
-    double ymin, double ymax) {
+    double ymin, double ymax, bool isYTitle) {
     QwtPlot* plot = new QwtPlot(this);
     plot->setTitle(title);
     plot->setAxisTitle(QwtPlot::xBottom, "X (mm)");
@@ -336,7 +852,69 @@ QwtPlot* MultiDeformationViewer::createPlot(const QString& title, int fieldType,
             xmin + 0.02 * xRange, ymax - 0.05 * yRange);
     }
 
+
+    // 添加网格
+    QwtPlotGrid* grid = new QwtPlotGrid();
+    grid->enableX(true);
+    grid->enableY(true);
+    grid->setMajorPen(QPen(Qt::gray, 0, Qt::DotLine));
+    grid->setMinorPen(QPen(Qt::lightGray, 0, Qt::DotLine));
+    grid->attach(plot);
+    QwtLegend* legend = new QwtLegend();
+    legend->setDefaultItemMode(QwtLegendData::Checkable); // 使图例项可点击
+    plot->insertLegend(legend, QwtPlot::BottomLegend);
+
+    // 连接图例点击信号
+    connect(legend, SIGNAL(clicked(const QVariant&, int)),
+        this, SLOT(onLegendClicked(const QVariant&)));
+    PlotSettings* settings = new PlotSettings();
+
     plot->replot();
+
+    settings->gridMajorStyle = Qt::DotLine;
+    settings->gridMajorColor = Qt::gray;
+    settings->gridMinorStyle = Qt::DotLine;
+    settings->gridMinorColor = Qt::lightGray;
+    settings->gridVisible = true;
+    settings->origin = PlotSettings::BottomLeft;
+    settings->title = plot->title().text();
+    settings->titleFont = plot->title().font();
+    settings->titleColor = Qt::black;
+    settings->backgroundColor = Qt::white;
+    settings->legend.visible = true;
+    settings->legend.position = QwtPlot::BottomLegend;
+    settings->xAxis.visible = true;
+    settings->xAxis.title = "X坐标(mm)";   
+    settings->xAxis.titleFont = plot->axisTitle(QwtPlot::xBottom).font();
+    settings->xAxis.autoRange = true;
+    settings->xAxis.min = -12.2;
+    settings->xAxis.max = 12.2;
+    settings->xAxis.step = 1;
+    settings->yAxis.titleFont = plot->axisTitle(QwtPlot::yLeft).font();
+    settings->yAxis.visible = true;
+    if(isYTitle)
+        settings->yAxis.title = "Y坐标(mm)";
+    settings->yAxis.autoRange = true;  // 自动范围由数据决定
+    settings->yAxis.min = -12.2;
+    settings->yAxis.max = 12.2;
+    settings->yAxis.step = 1;
+
+
+
+    PlotInfo* info = new PlotInfo();
+    info->plot = plot;
+    info->grid = grid;
+    info->legend = legend;
+    info->settings = settings;
+    //缓存
+    info->settings->xAxis.min = plot->axisScaleDiv(QwtPlot::xBottom).lowerBound();
+    info->settings->xAxis.max = plot->axisScaleDiv(QwtPlot::xBottom).upperBound();
+    info->settings->yAxis.min = plot->axisScaleDiv(QwtPlot::yLeft).lowerBound();
+    info->settings->yAxis.max = plot->axisScaleDiv(QwtPlot::yLeft).upperBound();
+    saveInitialView(*info);
+    m_plotInfos.append(info);
+
+
     return plot;
 }
 

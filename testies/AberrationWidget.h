@@ -147,35 +147,7 @@ struct AberrationData {
     QVector<double> aberration;
 };
 // 存储每个图表的所有信息
-struct PlotInfo 
-{
-    //用来记录每个图标的初始XY范围
-    double m_current_factor = 1;
-    double m_initialXMin, m_initialXMax;        // 初始X轴范围
-    double m_initialYMin, m_initialYMax;        // 初始Y轴范围
-    double m_initialXMin_orig, m_initialXMax_orig;        // 初始X轴范围
-    double m_initialYMin_orig, m_initialYMax_orig;        // 初始Y轴范围
-    QwtPlot* plot;
-    QwtPlotGrid* grid;
-    QwtLegend* legend;
-    PlotSettings* settings;
-    QList<QwtPlotCurve*> curves;      // 该图表中的所有曲线
 
-    PlotInfo operator=(const PlotInfo& other)
-    {
-        m_current_factor = other.m_current_factor;
-        m_initialXMin = other.m_initialXMin;
-        m_initialXMax = other.m_initialXMax;
-        m_initialYMin = other.m_initialYMin;
-        m_initialYMax = other.m_initialYMax;
-        m_initialXMin_orig = other.m_initialXMin_orig;
-        m_initialXMax_orig = other.m_initialXMax_orig;
-        m_initialYMin_orig = other.m_initialYMin_orig;
-        m_initialYMin_orig = other.m_initialYMin_orig;
-        *settings = *other.settings;
-        return *this;
-    }
-};
 class AberrationWidget : public QWidget
 {
     Q_OBJECT
