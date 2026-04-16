@@ -135,7 +135,10 @@ class MultiDeformationViewer : public QWidget {
 public:
     explicit MultiDeformationViewer(const QString& dataFile, QWidget* parent = nullptr);
     ~MultiDeformationViewer();
-
+    void zoomIn_info(PlotInfo* info);
+    void zoomOut_info(PlotInfo* info);
+    void fitview_info(PlotInfo* info);
+    PlotInfo* GetPlotInfo(QwtPlot* plot);
 public Q_SLOTS:
     void onPlotSelected(int index);
     void onApplyToAllToggled(bool checked);
@@ -153,6 +156,12 @@ public Q_SLOTS:
     void updateAutoScaleY();
     void updateAutoScaleX();
     void onLegendClicked(const QVariant& itemInfo);
+
+    void saveAsSVG(const QString& fileName);
+
+    void fitView();
+    void zoomIn();
+    void zoomOut();
 
 public:
     void saveInitialView(PlotInfo& info);
@@ -174,7 +183,7 @@ private:
         double xPos, double yPos);
 
 
-    //QToolBar* m_toolBar;
+    QToolBar* m_toolBar;
     QwtPlot* m_plotX;
     QwtPlot* m_plotY;
     QwtPlot* m_plotZ;

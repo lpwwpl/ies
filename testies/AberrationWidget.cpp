@@ -221,7 +221,6 @@ AberrationWidget::AberrationWidget(QWidget* parent)
     , m_currentPlotIndex(-1)
 {
     setupUI();
-
 }
 
 AberrationWidget::~AberrationWidget()
@@ -238,8 +237,8 @@ void AberrationWidget::setupUI()
     // 左侧图表区域
     QWidget* plotContainer = new QWidget(this);
     m_mainLayout = new QGridLayout(plotContainer);
-    m_mainLayout->setSpacing(10);
-    m_mainLayout->setContentsMargins(10, 10, 10, 10);
+    m_mainLayout->setSpacing(5);
+    m_mainLayout->setContentsMargins(5, 5, 5, 5);
     plotContainer->setLayout(m_mainLayout);
 
 
@@ -253,8 +252,8 @@ void AberrationWidget::setupUI()
     m_splitter->addWidget(plotContainer);
     m_splitter->addWidget(controlWidget);
 
-    m_splitter->setStretchFactor(0, 1);
-    m_splitter->setStretchFactor(1, 0);
+    m_splitter->setStretchFactor(0, 0);
+    m_splitter->setStretchFactor(1, 1);
     m_splitter->setCollapsible(1, false);
  
     QHBoxLayout* mainHLayout = new QHBoxLayout(this);
@@ -279,8 +278,7 @@ void AberrationWidget::setupUI()
     // 属性浏览器占位（稍后创建）
     m_propertyBrowser = nullptr;
 
-
-    resize(1320, 900);
+    setMinimumWidth(1536);
 }
 void AberrationWidget::onPropertyChanged()
 {
@@ -729,7 +727,7 @@ void AberrationWidget::onPlotSelected(int index)
             this, &AberrationWidget::onPropertyChanged);
         m_controlLayout->addWidget(m_propertyBrowser);
 
-        m_propertyBrowser->m_browser->removeProperty(m_propertyBrowser->group_item);
+        m_propertyBrowser->m_browser->removeProperty(m_propertyBrowser->group_item);         
     }
 
     // 更新已有浏览器的内部指针

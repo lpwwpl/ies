@@ -12,6 +12,9 @@
 #include <QComboBox>
 #include <QCheckBox>
 #include <qwt_scale_engine.h>
+#include <QToolBar>
+#include <QFileDialog>
+#include <qwt_plot_renderer.h>
 // ==================== DataLoader 实现 ====================
 std::vector<NodeData> DataLoader::load(const std::string& filename) {
     std::vector<NodeData> nodes;
@@ -443,7 +446,148 @@ void MultiDeformationViewer::applyAllSettingsToAllPlots()
         syncSettingsToPlot(cur_info, info);
     }
 }
-void MultiDeformationViewer::setupUI() {
+void MultiDeformationViewer::saveAsSVG(const QString& fileName)
+{
+    if (m_currentPlotIndex < 0 || m_currentPlotIndex >= m_plotInfos.size())return;
+    PlotInfo* info = m_plotInfos[m_currentPlotIndex];
+    if (!info)return;
+    QwtPlotRenderer renderer;
+    renderer.renderDocument(info->plot, fileName, QSizeF(300, 200), 85);
+}
+
+void MultiDeformationViewer::fitView()
+{
+    if (m_currentPlotIndex < 0 || m_currentPlotIndex >= m_plotInfos.size())return;
+    PlotInfo* info = m_plotInfos[m_currentPlotIndex];
+    if (!info)return;
+
+    fitview_info(info);
+
+    if (m_applyToAllCheckBox && m_applyToAllCheckBox->isChecked())
+    {
+        if (!m_propertyBrowser || m_currentPlotIndex < 0)
+            return;
+        PlotInfo* cur_info = m_plotInfos[m_currentPlotIndex];
+        for (int i = 0; i < m_plotInfos.size(); ++i)
+        {
+            if (i == m_currentPlotIndex)
+                continue;
+            PlotInfo* info = m_plotInfos[i];
+            fitview_info(info);
+        }
+    }
+}
+
+void MultiDeformationViewer::fitview_info(PlotInfo* info)
+{
+    info->m_initialXMin = info->m_initialXMin_orig;
+    info->m_initialXMax = info->m_initialXMax_orig;
+    info->m_initialYMin = info->m_initialYMin_orig;
+    info->m_initialYMax = info->m_initialYMax_orig;
+    // 恢复初始视图范围
+    info->plot->setAxisScale(QwtPlot::xBottom, info->m_initialXMin, info->m_initialXMax);
+    info->plot->setAxisScale(QwtPlot::yLeft, info->m_initialYMin, info->m_initialYMax);
+    info->plot->setAxisScale(QwtPlot::yRight, info->m_initialYMin, info->m_initialYMax);
+    // 更新点列位置
+    info->m_current_factor = 1;
+    // 重新绘制
+    info->plot->replot();
+
+    updateAxesSettings(info->plot, *info);
+}
+
+void MultiDeformationViewer::zoomOut_info(PlotInfo* info)
+{
+    info->m_initialXMin = info->m_initialXMin * 1.1;
+    info->m_initialXMax = info->m_initialXMax * 1.1;
+    info->m_initialYMax = info->m_initialYMax * 1.1;
+    info->m_initialYMin = info->m_initialYMin * 1.1;
+    // 恢复初始视图范围
+    info->plot->setAxisScale(QwtPlot::xBottom, info->m_initialXMin, info->m_initialXMax);
+    info->plot->setAxisScale(QwtPlot::yLeft, info->m_initialYMin, info->m_initialYMax);
+    info->plot->setAxisScale(QwtPlot::yRight, info->m_initialYMin, info->m_initialYMax);
+    // 更新点列位置
+    info->m_current_factor = info->m_current_factor * 1.1;
+    // 重新绘制
+    info->plot->replot();
+
+    updateAxesSettings(info->plot, *info);
+}
+void MultiDeformationViewer::zoomIn_info(PlotInfo* info)
+{
+    info->m_initialXMin = info->m_initialXMin * 0.9;
+    info->m_initialXMax = info->m_initialXMax * 0.9;
+    info->m_initialYMax = info->m_initialYMax * 0.9;
+    info->m_initialYMin = info->m_initialYMin * 0.9;
+    // 恢复初始视图范围
+    info->plot->setAxisScale(QwtPlot::xBottom, info->m_initialXMin, info->m_initialXMax);
+    info->plot->setAxisScale(QwtPlot::yLeft, info->m_initialYMin, info->m_initialYMax);
+    info->plot->setAxisScale(QwtPlot::yRight, info->m_initialYMin, info->m_initialYMax);
+    // 更新点列位置
+    info->m_current_factor = info->m_current_factor * 0.9;
+    // 重新绘制
+    info->plot->replot();
+
+    updateAxesSettings(info->plot,*info);
+}
+void MultiDeformationViewer::zoomIn()
+{
+    if (m_currentPlotIndex < 0 || m_currentPlotIndex >= m_plotInfos.size())return;
+    PlotInfo* info = m_plotInfos[m_currentPlotIndex];
+    if (!info)return;
+
+    zoomIn_info(info);
+
+    if (m_applyToAllCheckBox && m_applyToAllCheckBox->isChecked())
+    {
+        if (!m_propertyBrowser || m_currentPlotIndex < 0)
+            return;
+        PlotInfo* cur_info = m_plotInfos[m_currentPlotIndex];
+        for (int i = 0; i < m_plotInfos.size(); ++i)
+        {
+            if (i == m_currentPlotIndex)
+                continue;
+            PlotInfo* info = m_plotInfos[i];
+            zoomIn_info(info);
+        }
+    }
+}
+void MultiDeformationViewer::zoomOut()
+{
+    if (m_currentPlotIndex < 0 || m_currentPlotIndex >= m_plotInfos.size())return;
+    PlotInfo* info = m_plotInfos[m_currentPlotIndex];
+    if (!info)return;
+
+    zoomOut_info(info);
+
+    if (m_applyToAllCheckBox && m_applyToAllCheckBox->isChecked())
+    {
+        if (!m_propertyBrowser || m_currentPlotIndex < 0)
+            return;
+        PlotInfo* cur_info = m_plotInfos[m_currentPlotIndex];
+        for (int i = 0; i < m_plotInfos.size(); ++i)
+        {
+            if (i == m_currentPlotIndex)
+                continue;
+            PlotInfo* info = m_plotInfos[i];
+            zoomOut_info(info);
+        }
+    }
+}
+void MultiDeformationViewer::setupUI() 
+{
+    QWidget* plot_toolbar_widget = new QWidget(this);
+    QVBoxLayout* v_layout = new QVBoxLayout(plot_toolbar_widget);
+    m_toolBar = new QToolBar(this);
+    m_toolBar->addAction(tr("自适应"), this, &MultiDeformationViewer::fitView);
+    m_toolBar->addAction(tr("放大"), this, &MultiDeformationViewer::zoomIn);
+    m_toolBar->addAction(tr("缩小"), this, &MultiDeformationViewer::zoomOut);
+    m_toolBar->addSeparator();
+    QAction* saveSVGAction = m_toolBar->addAction(tr("保存SVG"), [this]() {
+        QString fileName = QFileDialog::getSaveFileName(this, tr("保存为SVG"), QString(), tr("SVG文件 (*.svg)"));
+        if (!fileName.isEmpty()) saveAsSVG(fileName);
+        });
+    saveSVGAction->setToolTip(tr("将当前图像保存为SVG文件"));
 
     // 左侧图表区域
     QWidget* plotContainer = new QWidget(this);
@@ -452,6 +596,12 @@ void MultiDeformationViewer::setupUI() {
     m_mainLayout->setContentsMargins(10, 10, 10, 10);
     plotContainer->setLayout(m_mainLayout);
 
+
+    v_layout->addWidget(m_toolBar);
+    v_layout->addWidget(plotContainer);
+    plot_toolbar_widget->setLayout(v_layout);
+
+
     QWidget* controlWidget = new QWidget(this);
     m_controlLayout = new QVBoxLayout(controlWidget);
     m_controlLayout->setSpacing(5);
@@ -459,7 +609,7 @@ void MultiDeformationViewer::setupUI() {
     controlWidget->setLayout(m_controlLayout);
 
     m_splitter = new QSplitter(this);
-    m_splitter->addWidget(plotContainer);
+    m_splitter->addWidget(plot_toolbar_widget);
     m_splitter->addWidget(controlWidget);
 
     m_splitter->setStretchFactor(0, 1);
@@ -781,20 +931,56 @@ void MultiDeformationViewer::updateAxesSettings(QwtPlot* plot, PlotInfo& info)
         plot->replot();
     }
 }
+
+PlotInfo* MultiDeformationViewer::GetPlotInfo(QwtPlot* plot)
+{
+    PlotInfo* ret = nullptr;
+    for (int i = 0; i < m_plotInfos.size(); i++)
+    {
+        PlotInfo* info = m_plotInfos[i];
+        if (info->plot == plot)
+        {
+            ret = info;
+            break;
+        }
+    }
+    return ret;
+}
 //pan,zoom对应的函数
 void MultiDeformationViewer::updateAxesSettings_noparam()
 {
-    if (m_currentPlotIndex < 0 || m_currentPlotIndex >= m_plotInfos.size())return;
-    PlotInfo* info = m_plotInfos[m_currentPlotIndex];
-    if (!info)return;
-
-    updateAxesSettings(info->plot, *info);
-    m_propertyBrowser->applyYAxisSettings();
-    m_propertyBrowser->applyXAxisSettings();
-    if (m_applyToAllCheckBox && m_applyToAllCheckBox->isChecked())
+    /// /////////////////////////////
+    QwtPlot* plot = nullptr;
+    MyPlotPanner* panner = qobject_cast<MyPlotPanner*>(sender());
+    MyPlotMagnifier* magnifier = qobject_cast<MyPlotMagnifier*>(sender());
+    if (panner)
     {
-        // 应用到所有图表
-        applyAllSettingsToAllPlots();
+        plot = panner->plot();
+    }
+    else if (magnifier)
+    {
+        plot = magnifier->plot();
+    }
+    if (!plot)return;
+
+    if (m_currentPlotIndex < 0 || m_currentPlotIndex >= m_plotInfos.size())return;
+    PlotInfo* selected_info = m_plotInfos[m_currentPlotIndex];
+    if (!selected_info)return;
+
+
+    PlotInfo* interact_info = GetPlotInfo(plot);
+
+    updateAxesSettings(plot, *interact_info);
+
+    if (interact_info == selected_info)
+    {      
+        m_propertyBrowser->applyYAxisSettings();
+        m_propertyBrowser->applyXAxisSettings();
+        if (m_applyToAllCheckBox && m_applyToAllCheckBox->isChecked())
+        {
+            // 应用到所有图表
+            applyAllSettingsToAllPlots();
+        }
     }
 }
 QwtPlot* MultiDeformationViewer::createPlot(const QString& title, int fieldType,
@@ -853,8 +1039,8 @@ QwtPlot* MultiDeformationViewer::createPlot(const QString& title, int fieldType,
         double xRange = xmax - xmin;
         double yRange = ymax - ymin;
         addMarkers(plot, values, validNodes, xRange, yRange, maxIdx, minIdx, maxVal, minVal);
-        addInfoBox(plot, (int)validNodes.size(), minVal, maxVal,
-            xmin + 0.02 * xRange, ymax - 0.05 * yRange);
+        //addInfoBox(plot, (int)validNodes.size(), minVal, maxVal,
+        //    xmin + 0.02 * xRange, ymax - 0.05 * yRange);
     }
 
 
@@ -913,7 +1099,7 @@ QwtPlot* MultiDeformationViewer::createPlot(const QString& title, int fieldType,
 
     saveInitialView(*info);
     m_plotInfos.append(info);
-
+    setupPlotInteractions(info->plot);
     return plot;
 }
 
