@@ -465,7 +465,7 @@ void MultiDeformationViewer::setupUI() {
     m_splitter->setStretchFactor(0, 1);
     m_splitter->setStretchFactor(1, 0);
     m_splitter->setCollapsible(1, false);
-    m_splitter->setSizes({ 900, 300 });
+
 
     QHBoxLayout* mainHLayout = new QHBoxLayout(this);
     setLayout(mainHLayout);
@@ -554,6 +554,8 @@ void MultiDeformationViewer::setupUI() {
         m_plotCombo->setCurrentIndex(0);
         onPlotSelected(0);  // 创建属性浏览器并绑定第一个图表
     }
+
+    resize(1280, 960);
 }
 
 void MultiDeformationViewer::onPropertyChanged()

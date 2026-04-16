@@ -295,7 +295,7 @@ DistortionGridWidget::DistortionGridWidget(QWidget* parent)
     setupPlot();
     setupInteractions();
 
-    setMinimumSize(640, 640);
+    setMinimumSize(960, 640);
 }
 
 DistortionGridWidget::~DistortionGridWidget()

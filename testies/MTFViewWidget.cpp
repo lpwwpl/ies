@@ -546,7 +546,7 @@ MTFViewer::MTFViewer(QWidget* parent)
 
     setupUI();
     setupInteractions();
-    setMinimumSize(800, 600);
+    setMinimumSize(1024, 600);
 
     //QCoreApplication::setOrganizationName("MySoft");
     QCoreApplication::setApplicationName("MTFViewer");

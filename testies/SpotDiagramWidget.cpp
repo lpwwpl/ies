@@ -580,7 +580,7 @@ SpotDiagramPlotter::SpotDiagramPlotter(QWidget* parent)
     m_settings = m_toolbar_plot->m_settings;
 
     // 设置初始大小
-    resize(QSize(640, 480));
+    resize(QSize(1280, 960));
 
     // 设置图表
     setupPlot();

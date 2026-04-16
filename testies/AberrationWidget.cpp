@@ -256,9 +256,7 @@ void AberrationWidget::setupUI()
     m_splitter->setStretchFactor(0, 1);
     m_splitter->setStretchFactor(1, 0);
     m_splitter->setCollapsible(1, false);
-    m_splitter->setSizes({ 900, 300 });
-
-
+ 
     QHBoxLayout* mainHLayout = new QHBoxLayout(this);
     setLayout(mainHLayout);
     mainHLayout->setContentsMargins(0, 0, 0, 0);
@@ -280,6 +278,9 @@ void AberrationWidget::setupUI()
 
     // 属性浏览器占位（稍后创建）
     m_propertyBrowser = nullptr;
+
+
+    resize(1320, 900);
 }
 void AberrationWidget::onPropertyChanged()
 {
