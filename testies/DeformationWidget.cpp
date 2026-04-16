@@ -229,6 +229,12 @@ void MultiDeformationViewer::computeGlobalZRange() {
     }
     std::cout << "Global Z range: [" << m_globalZmin << ", " << m_globalZmax << "]" << std::endl;
 }
+void MultiDeformationViewer::onColorBarToggled(bool checked)
+{
+    Q_UNUSED(checked);
+    // 可选：当勾选时立即将当前设置同步到所有图表（也可以保留，等待下次属性修改）
+    m_sharedColorBar->setVisible(checked);
+}
 void MultiDeformationViewer::onApplyToAllToggled(bool checked)
 {
     Q_UNUSED(checked);
@@ -636,6 +642,13 @@ void MultiDeformationViewer::setupUI()
         this, &MultiDeformationViewer::onApplyToAllToggled);
     m_controlLayout->addWidget(m_applyToAllCheckBox);
 
+
+    m_colorbarCheckBox = new QCheckBox("ColorBar是否显示", this);
+    m_colorbarCheckBox->setChecked(true);
+    connect(m_colorbarCheckBox, &QCheckBox::toggled,
+        this, &MultiDeformationViewer::onColorBarToggled);
+    m_controlLayout->addWidget(m_colorbarCheckBox);
+
     // 属性浏览器占位（稍后创建）
     m_propertyBrowser = nullptr;
 
@@ -645,10 +658,10 @@ void MultiDeformationViewer::setupUI()
     const double AXIS_MIN = -12.2;
     const double AXIS_MAX = 12.2;
 
-    m_plotX = createPlot("X Deformation (mm)", 1, AXIS_MIN, AXIS_MAX, AXIS_MIN, AXIS_MAX,true);
-    m_plotY = createPlot("Y Deformation (mm)", 2, AXIS_MIN, AXIS_MAX, AXIS_MIN, AXIS_MAX,false);
-    m_plotZ = createPlot("Z Deformation (mm)", 3, AXIS_MIN, AXIS_MAX, AXIS_MIN, AXIS_MAX,true);
-    m_plotMag = createPlot("Total Deformation (mm)", 0, AXIS_MIN, AXIS_MAX, AXIS_MIN, AXIS_MAX,false);
+    m_plotX = createPlot("X 形变", 1, AXIS_MIN, AXIS_MAX, AXIS_MIN, AXIS_MAX,true);
+    m_plotY = createPlot("Y 形变", 2, AXIS_MIN, AXIS_MAX, AXIS_MIN, AXIS_MAX,false);
+    m_plotZ = createPlot("Z 形变", 3, AXIS_MIN, AXIS_MAX, AXIS_MIN, AXIS_MAX,true);
+    m_plotMag = createPlot("形变幅度", 0, AXIS_MIN, AXIS_MAX, AXIS_MIN, AXIS_MAX,false);
 
     m_mainLayout->addWidget(m_plotX, 0, 0);
     m_mainLayout->addWidget(m_plotY, 0, 1);
@@ -658,8 +671,8 @@ void MultiDeformationViewer::setupUI()
     // ========== 共享颜色条（分为6段，显示分界点数值） ==========
     m_sharedColorBar = new MyScaleWidget(QwtScaleDraw::LeftScale, this);
     m_sharedColorBar->setColorBarEnabled(true);
-    m_sharedColorBar->setColorBarWidth(20);
-    m_sharedColorBar->setTitle("Deformation (mm)");
+    m_sharedColorBar->setColorBarWidth(40);
+    m_sharedColorBar->setTitle("形变(mm)");
 
 
     QwtLinearColorMap* colorMap = new QwtLinearColorMap(Qt::blue, Qt::red);

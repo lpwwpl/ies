@@ -163,6 +163,8 @@ public Q_SLOTS:
     void zoomIn();
     void zoomOut();
 
+    void onColorBarToggled(bool);
+
 public:
     void saveInitialView(PlotInfo& info);
     void setupPlotInteractions(QwtPlot* plot);
@@ -206,6 +208,7 @@ private:
     QVBoxLayout* m_controlLayout;        // 右侧控制面板布局
     QComboBox* m_plotCombo;              // 图表选择下拉框
     QCheckBox* m_applyToAllCheckBox;     // 应用到所有图表复选框
+    QCheckBox* m_colorbarCheckBox;     // 应用到所有图表复选框
     QwtPropertyBrowser* m_propertyBrowser; // 属性编辑器
 };
 
