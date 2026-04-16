@@ -277,7 +277,7 @@ void MultiDeformationViewer::syncSettingsToPlot(PlotInfo* curInfo, PlotInfo* inf
         xTitle.setFont(settings->xAxis.titleFont);
         xTitle.setColor(settings->xAxis.titleColor);
         plot->setAxisTitle(QwtPlot::xBottom, xTitle);
-        plot->setAxisFont(QwtPlot::xBottom, settings->xAxis.tickFont);
+        //plot->setAxisFont(QwtPlot::xBottom, settings->xAxis.titleFont);
         QwtScaleWidget* xScale = plot->axisWidget(QwtPlot::xBottom);
         if (xScale) {
             QPalette pal = xScale->palette();
@@ -307,7 +307,7 @@ void MultiDeformationViewer::syncSettingsToPlot(PlotInfo* curInfo, PlotInfo* inf
         yTitle.setFont(settings->yAxis.titleFont);
         yTitle.setColor(settings->yAxis.titleColor);
         plot->setAxisTitle(QwtPlot::yLeft, yTitle);
-        plot->setAxisFont(QwtPlot::yLeft, settings->yAxis.tickFont);
+        //plot->setAxisFont(QwtPlot::yLeft, settings->yAxis.titleFont);
         QwtScaleWidget* yScale = plot->axisWidget(QwtPlot::yLeft);
         if (yScale) {
             QPalette pal = yScale->palette();
@@ -800,8 +800,11 @@ QwtPlot* MultiDeformationViewer::createPlot(const QString& title, int fieldType,
     double ymin, double ymax, bool isYTitle) {
     QwtPlot* plot = new QwtPlot(this);
     plot->setTitle(title);
-    plot->setAxisTitle(QwtPlot::xBottom, "X (mm)");
-    plot->setAxisTitle(QwtPlot::yLeft, "Y (mm)");
+    plot->setAxisTitle(QwtPlot::xBottom, "X坐标(mm)");
+    if (isYTitle)
+        plot->setAxisTitle(QwtPlot::yLeft, "Y坐标(mm)");
+    else
+        plot->setAxisTitle(QwtPlot::yLeft, "");
     plot->setCanvasBackground(Qt::white);
 
     plot->setAxisScale(QwtPlot::xBottom, xmin, xmax);
@@ -879,26 +882,25 @@ QwtPlot* MultiDeformationViewer::createPlot(const QString& title, int fieldType,
     settings->origin = PlotSettings::BottomLeft;
     settings->title = plot->title().text();
     settings->titleFont = plot->title().font();
-    settings->titleColor = Qt::black;
-    settings->backgroundColor = Qt::white;
+    settings->titleColor = plot->title().color();
+    settings->backgroundColor = plot->canvasBackground().color();
     settings->legend.visible = true;
     settings->legend.position = QwtPlot::BottomLegend;
     settings->xAxis.visible = true;
-    settings->xAxis.title = "X坐标(mm)";   
+    settings->xAxis.title = plot->axisTitle(QwtPlot::xBottom).text();
     settings->xAxis.titleFont = plot->axisTitle(QwtPlot::xBottom).font();
     settings->xAxis.autoRange = true;
-    settings->xAxis.min = -12.2;
-    settings->xAxis.max = 12.2;
     settings->xAxis.step = 1;
     settings->yAxis.titleFont = plot->axisTitle(QwtPlot::yLeft).font();
     settings->yAxis.visible = true;
-    if(isYTitle)
-        settings->yAxis.title = "Y坐标(mm)";
+    settings->yAxis.title = plot->axisTitle(QwtPlot::yLeft).text();
     settings->yAxis.autoRange = true;  // 自动范围由数据决定
-    settings->yAxis.min = -12.2;
-    settings->yAxis.max = 12.2;
     settings->yAxis.step = 1;
-
+    //缓存
+    settings->xAxis.min = plot->axisScaleDiv(QwtPlot::xBottom).lowerBound();
+    settings->xAxis.max = plot->axisScaleDiv(QwtPlot::xBottom).upperBound();
+    settings->yAxis.min = plot->axisScaleDiv(QwtPlot::yLeft).lowerBound();
+    settings->yAxis.max = plot->axisScaleDiv(QwtPlot::yLeft).upperBound();
 
 
     PlotInfo* info = new PlotInfo();
@@ -906,14 +908,9 @@ QwtPlot* MultiDeformationViewer::createPlot(const QString& title, int fieldType,
     info->grid = grid;
     info->legend = legend;
     info->settings = settings;
-    //缓存
-    info->settings->xAxis.min = plot->axisScaleDiv(QwtPlot::xBottom).lowerBound();
-    info->settings->xAxis.max = plot->axisScaleDiv(QwtPlot::xBottom).upperBound();
-    info->settings->yAxis.min = plot->axisScaleDiv(QwtPlot::yLeft).lowerBound();
-    info->settings->yAxis.max = plot->axisScaleDiv(QwtPlot::yLeft).upperBound();
+
     saveInitialView(*info);
     m_plotInfos.append(info);
-
 
     return plot;
 }

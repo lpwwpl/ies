@@ -78,7 +78,7 @@ void QwtPropertyBrowser::InitSetupUI()
 
     m_axisProps[QwtPlot::xBottom].visibleProperty->setValue(m_settings->xAxis.visible);
     m_axisProps[QwtPlot::xBottom].titleProperty->setValue(m_settings->xAxis.title);
-    m_axisProps[QwtPlot::xBottom].titleFontProperty->setValue(m_settings->xAxis.tickFont);
+    m_axisProps[QwtPlot::xBottom].titleFontProperty->setValue(m_settings->xAxis.titleFont);
     m_axisProps[QwtPlot::xBottom].titleColorProperty->setValue(m_settings->xAxis.tickColor);
     m_axisProps[QwtPlot::xBottom].autoRangeProperty->setValue(m_settings->xAxis.autoRange);
     m_axisProps[QwtPlot::xBottom].minProperty->setValue(m_settings->xAxis.min);
@@ -89,7 +89,7 @@ void QwtPropertyBrowser::InitSetupUI()
 
     m_axisProps[QwtPlot::yLeft].visibleProperty->setValue(m_settings->yAxis.visible);
     m_axisProps[QwtPlot::yLeft].titleProperty->setValue(m_settings->yAxis.title);
-    m_axisProps[QwtPlot::yLeft].titleFontProperty->setValue(m_settings->yAxis.tickFont);
+    m_axisProps[QwtPlot::yLeft].titleFontProperty->setValue(m_settings->yAxis.titleFont);
     m_axisProps[QwtPlot::yLeft].titleColorProperty->setValue(m_settings->yAxis.tickColor);
     m_axisProps[QwtPlot::yLeft].autoRangeProperty->setValue(m_settings->yAxis.autoRange);
     m_axisProps[QwtPlot::yLeft].minProperty->setValue(m_settings->yAxis.min);
@@ -1435,7 +1435,7 @@ void QwtPropertyBrowser::applyXAxisSettings_plot()
         xTitle.setFont(m_settings->xAxis.titleFont);
         xTitle.setColor(m_settings->xAxis.titleColor);
         m_plot->setAxisTitle(QwtPlot::xBottom, xTitle);
-        m_plot->setAxisFont(QwtPlot::xBottom, m_settings->xAxis.tickFont);
+        //m_plot->setAxisFont(QwtPlot::xBottom, m_settings->xAxis.titleFont);
         QwtScaleWidget* xScale = m_plot->axisWidget(QwtPlot::xBottom);
         if (xScale) {
             QPalette pal = xScale->palette();
@@ -1472,7 +1472,7 @@ void QwtPropertyBrowser::applyYAxisSettings_plot()
         yTitle.setFont(m_settings->yAxis.titleFont);
         yTitle.setColor(m_settings->yAxis.titleColor);
         m_plot->setAxisTitle(QwtPlot::yLeft, yTitle);
-        m_plot->setAxisFont(QwtPlot::yLeft, m_settings->yAxis.tickFont);
+        //m_plot->setAxisFont(QwtPlot::yLeft, m_settings->yAxis.titleFont);
         QwtScaleWidget* yScale = m_plot->axisWidget(QwtPlot::yLeft);
         if (yScale) {
             QPalette pal = yScale->palette();
