@@ -1536,13 +1536,15 @@ void IESLoader::calculateXZ_PlaneIlluminance()
 
 double IESLoader::calculateIlluminanceAtPoint(double x, double y, double z)
 {
-
     double dx = x - fixtureX;
     double dy = y - fixtureY;
     double dz = z - fixtureZ;
     double totalDistance = sqrt(dx * dx + dy * dy + dz * dz);
 
     if (totalDistance == 0) return 0;
+
+    //临时解决typec-2.ies
+    if (light.m_IESType == 4 && (x == 0 || y == 0))return calculateIlluminanceAtPoint_(x,y,z);
 
     double verticalAngle = acos(dz / totalDistance) * 180.0 / M_PI;
     double horizontalAngle = atan2(dy, dx) * 180.0 / M_PI;
