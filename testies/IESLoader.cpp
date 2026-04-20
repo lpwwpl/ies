@@ -962,14 +962,8 @@ void IESLoader::fillData()
     {
     case eC_V180:
     {
-        if (light.m_IESType)
-        {
+        newThetas = linspace(0, 180, light.candela_hv[0].size());
 
-        }
-        else
-        {
-            newThetas = linspace(0, 180, light.candela_hv[0].size());
-        }
         //double vertical_size = light.number_vertical_angles;
         //double step = light.vertical_angles[vertical_size - 1] - light.vertical_angles[vertical_size - 2];
         //std::vector<double> vals1;
