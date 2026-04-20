@@ -1160,6 +1160,7 @@ void QwtPropertyBrowser::updateCurveStyle(int index)
         symPen.setColor(line.m_style.pointColor);
         sym->setPen(symPen);
         QBrush brush;
+        line.setPointFillValue();
         brush.setStyle(line.m_style.pointFilled ? Qt::SolidPattern : Qt::NoBrush);
         brush.setColor(line.m_style.pointColor);
         sym->setBrush(brush);

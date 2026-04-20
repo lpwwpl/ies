@@ -632,6 +632,7 @@ void AberrationWidget::applyAllSettingsToAllPlots()
             const MTFLine& srcLine = cur_info->settings->m_lines[j];
             MTFLine& dstLine = info->settings->m_lines[j];
             dstLine.m_style = srcLine.m_style;
+            dstLine.setPointFillValue();
             // 应用样式到实际曲线
             QwtPlotCurve* curve = info->curves[j];
             updateCurveStyle(info->plot,dstLine);
@@ -665,7 +666,7 @@ void AberrationWidget::updateCurveStyle(QwtPlot* plot,MTFLine& line)
     }
     // 曲线/折线
     line.curve->setCurveAttribute(QwtPlotCurve::Fitted, line.m_style.useCurve);
-
+    line.curve->setRenderHint(QwtPlotItem::RenderAntialiased);
     // 点符号
     if (line.curve->symbol())
     {
@@ -681,9 +682,10 @@ void AberrationWidget::updateCurveStyle(QwtPlot* plot,MTFLine& line)
         symPen.setColor(line.m_style.pointColor);
         sym->setPen(symPen);
         QBrush brush;
+        line.setPointFillValue();
         brush.setStyle(line.m_style.pointFilled ? Qt::SolidPattern : Qt::NoBrush);
         brush.setColor(line.m_style.pointColor);
-        sym->setBrush(brush);
+        sym->setBrush(brush);        
         line.curve->setSymbol(sym);
     }
     else 
