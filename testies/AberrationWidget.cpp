@@ -654,6 +654,7 @@ void AberrationWidget::updateCurveStyle(QwtPlot* plot,MTFLine& line)
     {
         // 线条
         QPen pen = line.curve->pen();
+        //pen.setStyle(Qt::SolidLine);
         pen.setWidth(line.m_style.lineWidth);
         pen.setColor(line.m_style.lineColor);
         pen.setStyle(line.m_style.lineStyle);
@@ -672,8 +673,8 @@ void AberrationWidget::updateCurveStyle(QwtPlot* plot,MTFLine& line)
     {
         line.curve->setSymbol(nullptr);
     }
-
-    if ((line.m_style.pointStyle != QwtSymbol::NoSymbol) && (lineStyle == Qt::DotLine || (lineStyle == Qt::CustomDashLine + 1) || lineStyle == Qt::DashDotLine || lineStyle == Qt::DashDotDotLine)) {
+ 
+    if ((line.m_style.pointStyle != QwtSymbol::NoSymbol) /*&& (lineStyle != (Qt::CustomDashLine + 1))*/) {
         QwtSymbol* sym = new QwtSymbol(line.m_style.pointStyle);
         sym->setSize(line.m_style.pointSize);
         sym->setColor(line.m_style.pointColor);

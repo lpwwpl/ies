@@ -1039,7 +1039,7 @@ void QwtPropertyBrowser::createCurveProperties()
     group_curve->addSubProperty(m_curveSymbolStyleProperty);
 
     m_curveSymbolSizeProperty = m_manager->addProperty(QVariant::Int, "点大小");
-    m_curveSymbolSizeProperty->setAttribute("minimum", 1);
+    m_curveSymbolSizeProperty->setAttribute("minimum", 0);
     m_curveSymbolSizeProperty->setAttribute("maximum", 20);
     group_curve->addSubProperty(m_curveSymbolSizeProperty);
 
@@ -1151,7 +1151,7 @@ void QwtPropertyBrowser::updateCurveStyle(int index)
         line.curve->setSymbol(nullptr);
     }
 
-    if ((line.m_style.pointStyle != QwtSymbol::NoSymbol) && (lineStyle == Qt::DotLine || (lineStyle == Qt::CustomDashLine + 1) || lineStyle == Qt::DashDotLine || lineStyle == Qt::DashDotDotLine)) {
+    if ((line.m_style.pointStyle != QwtSymbol::NoSymbol) /*&& (lineStyle != (Qt::CustomDashLine + 1))*/) {
         QwtSymbol* sym = new QwtSymbol(line.m_style.pointStyle);
         sym->setSize(line.m_style.pointSize);
         sym->setColor(line.m_style.pointColor);

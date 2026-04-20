@@ -160,9 +160,18 @@ public:
 
     virtual QwtText label(double value) const override
     {
-        if (m_tickLabels.contains(value)) {
-            return QwtText(m_tickLabels[value]);
+        QList<double> keys = m_tickLabels.keys();
+        for (int i = 0; i < keys.size(); i++)
+        {
+            double key = keys[i];
+            if (qAbs(key - value) < 1e-9)
+            {
+                return QwtText(m_tickLabels[value]);
+            }
         }
+        //if (m_tickLabels.contains(value)) {
+        //    return QwtText(m_tickLabels[value]);
+        //}
         return QwtText(); // 返回空文本，不显示其他位置的标签
     }
 

@@ -596,7 +596,7 @@ void SimplePropertyBrowser::initSimplePropertyWidget()
         }));
 
     pointSizeSpin = new QDoubleSpinBox();
-    pointSizeSpin->setRange(1, 200);
+    pointSizeSpin->setRange(0, 200);
     pointSizeSpin->setValue(1);
     pointSizeSpin->setSingleStep(0.1);
     propLayout->addRow(tr("默认点大小:"), pointSizeSpin);
@@ -729,7 +729,7 @@ void SimplePropertyBrowser::updateCurveStyle(int index)
         line.curve->setSymbol(nullptr);
     }
 
-    if ((line.m_style.pointStyle != QwtSymbol::NoSymbol) && (lineStyle == Qt::DotLine ||( lineStyle == Qt::CustomDashLine + 1) || lineStyle == Qt::DashDotLine || lineStyle == Qt::DashDotDotLine)) {
+    if ((line.m_style.pointStyle != QwtSymbol::NoSymbol)/* && (lineStyle != (Qt::CustomDashLine + 1))*/) {
         QwtSymbol* sym = new QwtSymbol(line.m_style.pointStyle);
         sym->setSize(line.m_style.pointSize);
         sym->setColor(line.m_style.pointColor);
