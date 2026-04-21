@@ -752,6 +752,7 @@ void MTFViewer::plotData()
             .arg(line.label.isEmpty() ? "" : ": " + line.label));
         line.curve->setItemAttribute(QwtPlotItem::Legend, line.m_style.legendVisible);
         line.curve->setVisible(line.m_style.visible);
+        line.m_style.pointSize = 0;
         line.curve->attach(m_plot);
         m_simple_browser->updateCurveStyle(i);  // 应用样式
     }

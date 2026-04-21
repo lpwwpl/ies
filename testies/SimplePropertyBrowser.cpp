@@ -792,7 +792,9 @@ void SimplePropertyBrowser::applyYAxisSettings()
         }
         if (!m_settings->yAxis.autoRange)
         {
-            m_plot->setAxisScale(QwtPlot::yLeft, m_settings->yAxis.min, m_settings->yAxis.max, m_settings->yAxis.step);
+            //m_plot->setAxisScale(QwtPlot::yLeft, m_settings->yAxis.min, m_settings->yAxis.max, m_settings->yAxis.step);
+            //m_plot->setAxisScale(QwtPlot::yRight, m_settings->yAxis.min, m_settings->yAxis.max, m_settings->yAxis.step);
+            m_plot->replot();
             signalUpdateScaleDiv();
         }
         else
@@ -845,7 +847,8 @@ void SimplePropertyBrowser::applyXAxisSettings()
         }
         if (!m_settings->xAxis.autoRange)
         {
-            m_plot->setAxisScale(QwtPlot::xBottom, m_settings->xAxis.min, m_settings->xAxis.max, m_settings->xAxis.step);
+            //m_plot->setAxisScale(QwtPlot::xBottom, m_settings->xAxis.min, m_settings->xAxis.max, m_settings->xAxis.step);
+            m_plot->replot();
             signalUpdateScaleDiv();
         }
         else

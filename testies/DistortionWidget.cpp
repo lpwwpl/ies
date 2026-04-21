@@ -316,7 +316,7 @@ void DistortionGridWidget::setupPlot()
     m_simple_browser = new QwtPropertyBrowser(m_settings, m_plot, m_grid, m_toolBar_plot->m_legend, this);
     //connect(m_simple_browser, SIGNAL(signalUpdateScaleDiv()), this, SLOT(updateLabelsForCurrentView()));
     //signalXScaleAxes
-    connect(m_simple_browser, SIGNAL(signalXScaleAxes()), this, SLOT(updateXScaleAxes()));
+    bool ret = connect(m_simple_browser, SIGNAL(signalXScaleAxes()), this, SLOT(updateXScaleAxes()));
     connect(m_simple_browser, SIGNAL(signalYScaleAxes()), this, SLOT(updateYScaleAxes()));
     // 设置画布背景
     m_plot->setCanvasBackground(Qt::white);
@@ -605,6 +605,7 @@ void DistortionGridWidget::plotIdealGrid(int& index)
         line.index = index;
         line.m_group = 0;
         line.curve = curve;
+        line.m_style.pointSize = 0;
         line.m_style.lineColor = QColor(0, 0, 255, 180);
         line.m_style.lineStyle = Qt::SolidLine;
         //line.m_style.lineStyle = circleCurve->style();
