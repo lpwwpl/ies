@@ -145,7 +145,7 @@ struct SpotData {
     double wavelength;  // 波长
     QString colorName;  // 颜色名称
 };
-
+class MyPlotMagnifier;
 class SimplePropertyBrowser;
 class QSplitter;
 class MyPlotPanner;
@@ -264,6 +264,7 @@ public Q_SLOTS:
     void zoomIn();
     void zoomOut();
     void fitView();
+    void onZoomed();
     // 根据当前Y轴位置更新标签
     void updateLabelsForCurrentView();
     void updateXScaleAxes();
@@ -285,8 +286,10 @@ private:
 
     QMap<int, QVector<QwtPlotMarker*>> m_fieldMarkers;
 
+    QwtInterval savedXRange;
     QwtPlotZoomer* m_zoomer;                    // 缩放工具
     MyPlotPanner* m_panner;                    // 平移工具
+    MyPlotMagnifier* m_magnifier;
     QwtPlotGrid* m_grid;                        // 网格
     //QwtLegend* m_legend;
     // 自定义刻度绘制器

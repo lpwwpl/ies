@@ -425,7 +425,7 @@ void DistortionGridWidget::setupInteractions()
     m_panner = new MyPlotPanner(m_plot->canvas());
     connect(m_panner, &MyPlotPanner::panFinished, this, &DistortionGridWidget::updateAxesSettings);
 
-    m_magnifier = new MyPlotMagnifier(m_plot->canvas());
+    //m_magnifier = new MyPlotMagnifier(m_plot->canvas());
     connect(m_magnifier, &MyPlotMagnifier::zoomed, this, &DistortionGridWidget::updateAxesSettings);
 
     // 启用抗锯齿

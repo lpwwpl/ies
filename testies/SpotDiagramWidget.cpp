@@ -797,6 +797,10 @@ void SpotDiagramPlotter::setupPlot()
     // 设置左键为平移
     m_panner->setMouseButton(Qt::LeftButton);
 
+
+    m_magnifier = new MyPlotMagnifier(m_plot->canvas());
+    connect(m_magnifier, &MyPlotMagnifier::zoomed, this, &SpotDiagramPlotter::onZoomed);
+
     // 连接平移信号
     connect(m_panner, &MyPlotPanner::panFinished, this, &SpotDiagramPlotter::updateLabelsForCurrentView);
 
@@ -809,7 +813,26 @@ void SpotDiagramPlotter::setupPlot()
     // 安装事件过滤器
     m_plot->canvas()->installEventFilter(this);
 }
-
+void SpotDiagramPlotter::onZoomed()
+{
+    QwtInterval currentXRange = m_plot->axisInterval(QwtPlot::xBottom);
+    // 1. 计算当前范围和上次范围的长度 (maxValue - minValue)
+    double currentLength = currentXRange.width();
+    double savedLength = savedXRange.width();
+    // 2. 比较长度以判断放大或缩小
+    if (currentLength < savedLength) {
+        qDebug() << "放大操作";
+        zoomIn();
+    }
+    else if (currentLength > savedLength) {
+        qDebug() << "缩小操作";
+        zoomOut();
+    }
+    else {
+        qDebug() << "视图未发生变化";
+    }
+    savedXRange = currentXRange;
+}
 QString SpotDiagramPlotter::getFieldName(int fieldIndex) const
 {
     switch (fieldIndex) {
