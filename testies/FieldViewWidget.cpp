@@ -392,6 +392,7 @@ FieldViewWidget::FieldViewWidget(QWidget* parent)
     connect(m_toolBar_plot, SIGNAL(signalFitView()), this, SLOT(fitView()));
     connect(m_toolBar_plot, SIGNAL(signalZoomIn()), this, SLOT(zoomIn()));
     connect(m_toolBar_plot, SIGNAL(signalZoomOut()), this, SLOT(zoomOut()));
+    connect(m_toolBar_plot, SIGNAL(signalDisplayProperties(int)), this, SLOT(slotDisplayProperties(int)));
 
     m_simple_browser = new QwtPropertyBrowser(m_settings, m_plot, m_grid, m_toolBar_plot->m_legend, this);
     connect(m_simple_browser, SIGNAL(signalUpdateItemStyle(int)), this, SLOT(slotUpdateItemStyle(int)));
@@ -984,4 +985,9 @@ void FieldViewWidget::showLegend(bool show)
 {
     m_settings->legend.visible = show;
     m_simple_browser->applyLegendSettings();
+}
+
+void FieldViewWidget::slotDisplayProperties(int value)
+{
+    m_simple_browser->setVisible(value);
 }

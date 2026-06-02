@@ -164,7 +164,7 @@ public Q_SLOTS:
     void zoomOut();
 
     void onColorBarToggled(bool);
-
+    void slotDisplayProperties(int);
 public:
     void saveInitialView(PlotInfo& info);
     void setupPlotInteractions(QwtPlot* plot);
@@ -190,6 +190,7 @@ private:
     QwtPlot* m_plotY;
     QwtPlot* m_plotZ;
     QwtPlot* m_plotMag;
+    QWidget* m_controlWidget;
 
     std::vector<NodeData> m_nodes;
     Interpolator* m_interp;

@@ -252,7 +252,7 @@ void FootprintWidget::setupPlot()
     connect(m_toolBar_plot, SIGNAL(signalFitView()), this, SLOT(fitView()));
     connect(m_toolBar_plot, SIGNAL(signalZoomIn()), this, SLOT(zoomIn()));
     connect(m_toolBar_plot, SIGNAL(signalZoomOut()), this, SLOT(zoomOut()));
-
+    connect(m_toolBar_plot, SIGNAL(signalDisplayProperties(int)), this, SLOT(slotDisplayProperties(int)));
     m_simple_browser = new QwtPropertyBrowser(m_settings, m_plot, m_grid, m_toolBar_plot->m_legend, this);
     connect(m_simple_browser, SIGNAL(signalXScaleAxes()), this, SLOT(updateXScaleAxes()));
     connect(m_simple_browser, SIGNAL(signalYScaleAxes()), this, SLOT(updateYScaleAxes()));
@@ -565,8 +565,10 @@ void FootprintWidget::plotFootprints()
             MTFLine line;
             line.curve = circleCurve;
             line.index = index;
-            line.m_style.pointSize = 0;
+            line.m_style.lineWidth = 1;           
+            line.m_style.pointSize = 1;
             line.m_style.lineColor = color;
+            line.m_style.pointColor = color;
             line.m_style.lineStyle = Qt::DashLine;
             //line.m_style.lineStyle = circleCurve->style();
             line.label = circleCurve->title().text();
@@ -602,7 +604,10 @@ void FootprintWidget::plotFootprints()
 
             MTFLine line;
             line.curve = circleCurve;
+            line.m_style.lineWidth = 1;
+            line.m_style.pointSize = 1;
             line.m_style.lineColor = color;
+            line.m_style.pointColor = color;
             line.index = index;
             line.m_style.lineStyle = Qt::DashLine;
             //line.m_style.lineStyle = circleCurve->style();
@@ -832,4 +837,9 @@ void FootprintWidget::saveInitialView()
     m_initialYMax_orig = yScaleDiv.upperBound();
 
     m_current_factor = 1;
+}
+
+void FootprintWidget::slotDisplayProperties(int value)
+{
+    m_simple_browser->setVisible(value);
 }

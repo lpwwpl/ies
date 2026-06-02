@@ -122,6 +122,8 @@ public Q_SLOTS:
     void updateAxesSettings();
     void showLegend(bool show);
     void setLegendPosition(bool leftSide);
+
+    void slotDisplayProperties(int);
 private:
     void setupFieldViewPlot();
     void setupInteractions();

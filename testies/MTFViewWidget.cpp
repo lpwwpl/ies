@@ -578,7 +578,7 @@ void MTFViewer::setupUI()
     connect(m_toolBar_plot, SIGNAL(signalFitView()), this, SLOT(fitView()));
     connect(m_toolBar_plot, SIGNAL(signalZoomIn()), this, SLOT(zoomIn()));
     connect(m_toolBar_plot, SIGNAL(signalZoomOut()), this, SLOT(zoomOut()));
-
+    connect(m_toolBar_plot, SIGNAL(signalDisplayProperties(int)), this, SLOT(slotDisplayProperties(int)));
     m_simple_browser = new QwtPropertyBrowser(m_settings, m_plot,m_grid, m_toolBar_plot->m_legend, this);
     connect(m_simple_browser, SIGNAL(signalXScaleAxes()), this, SLOT(updateXScaleAxes()));
     connect(m_simple_browser, SIGNAL(signalYScaleAxes()), this, SLOT(updateYScaleAxes()));
@@ -1124,4 +1124,9 @@ void MTFViewer::saveInitialView()
     m_initialYMax_orig = m_initialYMax;
 
     m_current_factor = 1;
+}
+
+void MTFViewer::slotDisplayProperties(int value)
+{
+    m_simple_browser->setVisible(value);
 }

@@ -588,12 +588,21 @@ void MultiDeformationViewer::setupUI()
     m_toolBar->addAction(tr("自适应"), this, &MultiDeformationViewer::fitView);
     m_toolBar->addAction(tr("放大"), this, &MultiDeformationViewer::zoomIn);
     m_toolBar->addAction(tr("缩小"), this, &MultiDeformationViewer::zoomOut);
+
+
     m_toolBar->addSeparator();
     QAction* saveSVGAction = m_toolBar->addAction(tr("保存SVG"), [this]() {
         QString fileName = QFileDialog::getSaveFileName(this, tr("保存为SVG"), QString(), tr("SVG文件 (*.svg)"));
         if (!fileName.isEmpty()) saveAsSVG(fileName);
         });
     saveSVGAction->setToolTip(tr("将当前图像保存为SVG文件"));
+
+    QCheckBox* display_chk = new QCheckBox("显示属性", this);
+    display_chk->setChecked(true);
+    m_toolBar->addWidget(display_chk);
+
+    connect(display_chk, &QCheckBox::stateChanged, this, &MultiDeformationViewer::slotDisplayProperties);
+
 
     // 左侧图表区域
     QWidget* plotContainer = new QWidget(this);
@@ -608,15 +617,15 @@ void MultiDeformationViewer::setupUI()
     plot_toolbar_widget->setLayout(v_layout);
 
 
-    QWidget* controlWidget = new QWidget(this);
-    m_controlLayout = new QVBoxLayout(controlWidget);
+    m_controlWidget = new QWidget(this);
+    m_controlLayout = new QVBoxLayout(m_controlWidget);
     m_controlLayout->setSpacing(5);
     m_controlLayout->setContentsMargins(5, 5, 5, 5);
-    controlWidget->setLayout(m_controlLayout);
+    m_controlWidget->setLayout(m_controlLayout);
 
     m_splitter = new QSplitter(this);
     m_splitter->addWidget(plot_toolbar_widget);
-    m_splitter->addWidget(controlWidget);
+    m_splitter->addWidget(m_controlWidget);
 
     m_splitter->setStretchFactor(0, 1);
     m_splitter->setStretchFactor(1, 0);
@@ -1165,4 +1174,9 @@ void MultiDeformationViewer::addInfoBox(QwtPlot* plot, int nodeCount,
     infoBox->setLabel(text);
     infoBox->setLabelAlignment(Qt::AlignLeft | Qt::AlignTop);
     infoBox->attach(plot);
+}
+
+void MultiDeformationViewer::slotDisplayProperties(int value)
+{
+    m_controlWidget->setVisible(value);
 }

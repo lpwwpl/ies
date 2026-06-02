@@ -4,7 +4,7 @@
 #include <QFileDialog>
 #include <QVBoxLayout>
 #include <QMenu>
-
+#include <QCheckBox>
 #include <qwt_text.h>
 #include <qwt_symbol.h>
 #include <qwt_plot_renderer.h>
@@ -47,12 +47,21 @@ PlotBase::PlotBase(QWidget* parent) : QWidget(parent)
     m_toolBar->addAction(tr("自适应"), this, &PlotBase::fitView);
     m_toolBar->addAction(tr("放大"), this, &PlotBase::zoomIn);
     m_toolBar->addAction(tr("缩小"), this, &PlotBase::zoomOut);
+
+
+
     m_toolBar->addSeparator();
     QAction* saveSVGAction = m_toolBar->addAction(tr("保存SVG"), [this]() {
         QString fileName = QFileDialog::getSaveFileName(this, tr("保存为SVG"), QString(), tr("SVG文件 (*.svg)"));
         if (!fileName.isEmpty()) saveAsSVG(fileName);
         });
     saveSVGAction->setToolTip(tr("将当前图像保存为SVG文件"));
+
+    QCheckBox* display_chk = new QCheckBox("显示属性", this);
+    display_chk->setChecked(true);
+    m_toolBar->addWidget(display_chk);
+
+    connect(display_chk, &QCheckBox::stateChanged, this, &PlotBase::on_display_chk_StateChanged);
 
     plotLayout->addWidget(m_toolBar);
     plotLayout->addWidget(m_plot);
@@ -64,7 +73,10 @@ PlotBase::~PlotBase()
 {
 
 }
-
+void PlotBase::on_display_chk_StateChanged(int value)
+{
+    signalDisplayProperties(value);
+}
 void PlotBase::saveAsSVG(const QString& fileName)
 {
     QwtPlotRenderer renderer;

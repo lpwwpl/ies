@@ -92,6 +92,8 @@ public Q_SLOTS:
     void updateXScaleAxes();
     void updateYScaleAxes();
     void updateAxesSettings();
+
+    void slotDisplayProperties(int);
 private:
     void setupPlot();
     void setupInteractions();

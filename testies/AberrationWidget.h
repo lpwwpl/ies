@@ -180,6 +180,8 @@ public slots:
     void updateX();
     void updateY();
     void updateXY() { updateX(); updateY(); }
+
+    void slotDisplayProperties(int);
 private:
     void setupUI();
     void clearPlots();

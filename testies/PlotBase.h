@@ -30,12 +30,12 @@ public Q_SLOTS:
     void zoomIn();
     void zoomOut();
     void fitView();
-
+    void on_display_chk_StateChanged(int);
 Q_SIGNALS:
     void signalZoomIn();
     void signalZoomOut();
     void signalFitView();
-
+    void signalDisplayProperties(int);
 public:
     QwtPlot* m_plot;
 

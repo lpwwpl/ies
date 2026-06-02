@@ -268,6 +268,8 @@ void AberrationWidget::setupUI()
         this, &AberrationWidget::onPlotSelected);
     m_controlLayout->addWidget(m_plotCombo);
 
+
+
     // “应用到所有”复选框
     m_applyToAllCheckBox = new QCheckBox("应用到所有图表", this);
     m_applyToAllCheckBox->setEnabled(false);
@@ -1160,4 +1162,9 @@ QColor AberrationWidget::getColorFromString(const QString& colorStr)
         }
     }
     return QColor(0, 0, 0); // 默认黑色
+}
+
+void AberrationWidget::slotDisplayProperties(int value)
+{
+    m_propertyBrowser->setVisible(value);
 }

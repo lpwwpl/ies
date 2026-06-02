@@ -147,7 +147,7 @@ public Q_SLOTS:
     void zoomIn();
     void zoomOut();
     void fitView();
-
+    void slotDisplayProperties(int);
 private:
     void setupUI();
     void setupInteractions();

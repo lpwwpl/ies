@@ -269,6 +269,7 @@ public Q_SLOTS:
     void updateXScaleAxes();
     void updateYScaleAxes();
     void updateAxesSettings(); 
+    void slotDisplayProperties(int);
 private:
     QwtPlot* m_plot;                            // 图表控件
     QVector<SpotData> m_spotData;               // 点列图数据

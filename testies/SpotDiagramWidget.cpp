@@ -591,6 +591,7 @@ SpotDiagramPlotter::SpotDiagramPlotter(QWidget* parent)
     connect(m_toolbar_plot, SIGNAL(signalFitView()), this, SLOT(fitView()));
     connect(m_toolbar_plot, SIGNAL(signalZoomIn()), this, SLOT(zoomIn()));
     connect(m_toolbar_plot, SIGNAL(signalZoomOut()), this, SLOT(zoomOut()));
+    connect(m_toolbar_plot, SIGNAL(signalDisplayProperties(int)), this, SLOT(slotDisplayProperties(int)));
     connect(m_simple_browser, SIGNAL(signalUpdateScaleDiv()), this, SLOT(updateLabelsForCurrentView()));
     connect(m_simple_browser, SIGNAL(signalXScaleAxes()), this, SLOT(updateXScaleAxes()));
     connect(m_simple_browser, SIGNAL(signalYScaleAxes()), this, SLOT(updateYScaleAxes()));
@@ -1608,4 +1609,8 @@ void SpotDiagramPlotter::autoScaleAxes()
     }
     m_simple_browser->applyXAxisSettings();
     m_simple_browser->applyYAxisSettings();
+}
+void SpotDiagramPlotter::slotDisplayProperties(int value)
+{
+    m_simple_browser->setVisible(value);
 }
