@@ -11,6 +11,7 @@ class QwtPlotCurve;
 class QwtPlotGrid;
 class QwtLegend;
 class QwtPlot;
+
 enum FillPointType
 {
     eSmallEllipse = 0,

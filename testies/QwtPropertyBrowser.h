@@ -79,7 +79,8 @@ public:
 signals:
     // 自定义信号，在缩放完成时发射
     void zoomed();
-
+    void zoomIn();
+    void zoomOut();
 protected:
     // 重写 wheel 事件处理函数
     void widgetWheelEvent(QWheelEvent* event) override
@@ -88,6 +89,24 @@ protected:
         QwtPlotMagnifier::widgetWheelEvent(event);
         // 缩放完成后，发射我们自己的信号
         emit zoomed();
+    }
+    virtual void rescale(double factor) override
+    {
+
+        // 3. (可选) 执行自定义逻辑后，调用基类函数完成实际缩放
+        QwtPlotMagnifier::rescale(factor);
+        if (factor < 1.0) {
+            // 缩小操作，factor 如 0.9
+            zoomOut();
+        }
+        else if (factor > 1.0) {
+            // 放大操作，factor 如 1.1
+            zoomIn();
+        }
+        else {
+            // 没有缩放
+ 
+        }
     }
 };
 

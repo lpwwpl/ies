@@ -459,6 +459,22 @@ void MultiDeformationViewer::saveAsSVG(const QString& fileName)
     if (!info)return;
     QwtPlotRenderer renderer;
     renderer.renderDocument(info->plot, fileName, QSizeF(300, 200), 85);
+
+    QFileInfo fileInfo(fileName);
+    QString baseName = fileInfo.baseName();
+    PlotInfo* cur_info = m_plotInfos[m_currentPlotIndex];
+
+
+    for (int i = 0; i < m_plotInfos.size(); ++i)
+    {
+        if (i == m_currentPlotIndex)
+            continue;
+        PlotInfo* info = m_plotInfos[i];
+
+        QString newFileName = QString("%1/%2_%3.%4").arg(fileInfo.dir().absolutePath()).arg(baseName)
+            .arg(info->plot->title().text()).arg(fileInfo.suffix());
+        renderer.renderDocument(info->plot, newFileName, QSizeF(300, 200), 85);
+    }
 }
 
 void MultiDeformationViewer::fitView()
@@ -592,6 +608,8 @@ void MultiDeformationViewer::setupUI()
 
     m_toolBar->addSeparator();
     QAction* saveSVGAction = m_toolBar->addAction(tr("保存SVG"), [this]() {
+        //QString dirPath = QFileDialog::getExistingDirectory(this, "选择文件夹", "");
+        //saveAsSVG(dirPath);
         QString fileName = QFileDialog::getSaveFileName(this, tr("保存为SVG"), QString(), tr("SVG文件 (*.svg)"));
         if (!fileName.isEmpty()) saveAsSVG(fileName);
         });
@@ -709,6 +727,10 @@ void MultiDeformationViewer::setupUI()
     scaleDraw->setTickLength(QwtScaleDiv::MinorTick, 0);
     scaleDraw->setTickLength(QwtScaleDiv::MediumTick, 0);
     scaleDraw->enableComponent(QwtScaleDraw::Backbone, false);
+
+
+
+
 
     m_mainLayout->addWidget(m_sharedColorBar, 0, 2, 2, 1);
 
@@ -1005,10 +1027,84 @@ void MultiDeformationViewer::updateAxesSettings_noparam()
         }
     }
 }
+
+void MultiDeformationViewer::onZoomOut()
+{
+    MyPlotMagnifier* magnifier = qobject_cast<MyPlotMagnifier*>(sender());
+    QwtPlot* plot = nullptr;
+    if (magnifier)
+    {
+        plot = magnifier->plot();
+    }
+    if (!plot)return;
+
+    PlotInfo* plotInfo = GetPlotInfo(plot);
+
+    zoomOut_info(plotInfo);
+
+
+    if (m_currentPlotIndex < 0 || m_currentPlotIndex >= m_plotInfos.size())return;
+    PlotInfo* info = m_plotInfos[m_currentPlotIndex];
+    if (!info)return;
+    if (info == plotInfo)
+    {
+        if (m_applyToAllCheckBox && m_applyToAllCheckBox->isChecked())
+        {
+            if (!m_propertyBrowser || m_currentPlotIndex < 0)
+                return;
+            PlotInfo* cur_info = m_plotInfos[m_currentPlotIndex];
+            for (int i = 0; i < m_plotInfos.size(); ++i)
+            {
+                if (i == m_currentPlotIndex)
+                    continue;
+                PlotInfo* info = m_plotInfos[i];
+                zoomOut_info(info);
+            }
+        }
+    }
+}
+void MultiDeformationViewer::onZoomIn()
+{
+    MyPlotMagnifier* magnifier = qobject_cast<MyPlotMagnifier*>(sender());
+    QwtPlot* plot = nullptr;
+    if (magnifier)
+    {
+        plot = magnifier->plot();
+    }
+    if (!plot)return;
+
+    PlotInfo* plotInfo = GetPlotInfo(plot);
+
+    zoomIn_info(plotInfo);
+
+    if (m_currentPlotIndex < 0 || m_currentPlotIndex >= m_plotInfos.size())return;
+    PlotInfo* info = m_plotInfos[m_currentPlotIndex];
+    if (!info)return;
+    if (info == plotInfo)
+    {
+        if (m_applyToAllCheckBox && m_applyToAllCheckBox->isChecked())
+        {
+            if (!m_propertyBrowser || m_currentPlotIndex < 0)
+                return;
+            PlotInfo* cur_info = m_plotInfos[m_currentPlotIndex];
+            for (int i = 0; i < m_plotInfos.size(); ++i)
+            {
+                if (i == m_currentPlotIndex)
+                    continue;
+                PlotInfo* info = m_plotInfos[i];
+                zoomIn_info(info);
+            }
+        }
+    }
+}
 QwtPlot* MultiDeformationViewer::createPlot(const QString& title, int fieldType,
     double xmin, double xmax,
     double ymin, double ymax, bool isYTitle) {
     QwtPlot* plot = new QwtPlot(this);
+    MyPlotMagnifier* m_magnifier = new MyPlotMagnifier(plot->canvas());
+    connect(m_magnifier, &MyPlotMagnifier::zoomIn, this, &MultiDeformationViewer::onZoomIn);
+    connect(m_magnifier, &MyPlotMagnifier::zoomOut, this, &MultiDeformationViewer::onZoomOut);
+
     plot->setTitle(title);
     plot->setAxisTitle(QwtPlot::xBottom, "X坐标(mm)");
     if (isYTitle)

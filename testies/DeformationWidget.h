@@ -165,6 +165,9 @@ public Q_SLOTS:
 
     void onColorBarToggled(bool);
     void slotDisplayProperties(int);
+
+    void onZoomIn();
+    void onZoomOut();
 public:
     void saveInitialView(PlotInfo& info);
     void setupPlotInteractions(QwtPlot* plot);
@@ -198,6 +201,8 @@ private:
     double m_circleCenterX, m_circleCenterY, m_circleRadius;
     //QGridLayout* m_layout;
     MyScaleWidget* m_sharedColorBar;
+
+
 
 
     QList<PlotInfo*> m_plotInfos;          // 所有图表的详细信息
