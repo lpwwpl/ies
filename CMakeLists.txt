@@ -13,14 +13,20 @@ if(NOT CMAKE_BUILD_TYPE)
 endif()
 
 # 查找 Qt5 和 OpenGL（Qt 建议用 find_package）
-find_package(Qt5 5.12 REQUIRED COMPONENTS Core Widgets Svg)
+find_package(Qt5 5.12.11 REQUIRED COMPONENTS Core Gui Widgets Svg)
 
 # 预编译库的路径（假设位于项目根目录下的 x64/Release）
 set(LIB_DIR "${CMAKE_CURRENT_SOURCE_DIR}/x64/Release")
-
+ 
 # 导入特定的库文件（非 VTK 部分）
 set(QWT_LIB          ${LIB_DIR}/qwt.lib)
 set(PROPERTY_LIB     ${LIB_DIR}/property.lib)
+set(QT5_LIB     ${LIB_DIR}/Qt5Core.lib
+    ${LIB_DIR}/Qt5Core.lib
+    ${LIB_DIR}/Qt5Gui.lib
+    ${LIB_DIR}/Qt5Widgets.lib
+    ${LIB_DIR}/Qt5Svg.lib
+)
 
 # 收集所有 VTK 9.1 的库（基于你提供的列表）
 set(VTK_LIBS
@@ -272,7 +278,7 @@ target_include_directories(testies PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/PropertyBrowser
     ${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/vtk
 )
-
+include_directories(${QT5_INCLUDE_DIR})
 target_compile_definitions(testies PRIVATE
     QUARTER_DLL
     COIN_DLL
@@ -309,9 +315,9 @@ target_link_options(testies PRIVATE
 
 # 链接库
 target_link_libraries(testies
-    Qt5::Core
-    Qt5::Widgets
-    Qt5::Svg
+        Qt5::Core
+        Qt5::Widgets
+        Qt5::Svg
     ${QWT_LIB}
     ${PROPERTY_LIB}
     ${QWTPLOT3D_LIB}
@@ -342,6 +348,10 @@ if(EXISTS ${QT_BIN_DIR})
         DESTINATION bin
     )
 endif()
+
+install(TARGETS testies
+    RUNTIME DESTINATION bin   # 安装到 ${CMAKE_INSTALL_PREFIX}/bin
+)
 
     # ------------------- VTK 9.1 DLL -------------------
     # 假设 VTK 的 DLL 位于某个标准路径（如 VTK 安装目录下的 bin）
@@ -397,3 +407,32 @@ endif()
         endif()
     endforeach()
 endif()
+
+set(THIRDPARTY_DIR "${CMAKE_CURRENT_SOURCE_DIR}/3rdparty")
+# 安装 PropertyBrowser 头文件
+if(EXISTS "${THIRDPARTY_DIR}/PropertyBrowser/")
+    install(DIRECTORY "${THIRDPARTY_DIR}/PropertyBrowser/"
+        DESTINATION include/PropertyBrowser
+        FILES_MATCHING PATTERN "*.h" PATTERN "*.hpp" PATTERN "*.inl"
+    )
+endif()
+
+# 安装 qwt 头文件
+if(EXISTS "${THIRDPARTY_DIR}/qwt/")
+    install(DIRECTORY "${THIRDPARTY_DIR}/qwt/"
+        DESTINATION include/qwt
+        FILES_MATCHING PATTERN "*.h" PATTERN "*.hpp" PATTERN "*.inl"
+    )
+endif()
+
+# 安装 vtk 头文件
+if(EXISTS "${THIRDPARTY_DIR}/vtk/")
+    install(DIRECTORY "${THIRDPARTY_DIR}/vtk/"
+        DESTINATION include/vtk
+        FILES_MATCHING PATTERN "*.h" PATTERN "*.hpp" PATTERN "*.inl"
+    )
+endif()
+
+install(FILES ${QWT_LIB} ${PROPERTY_LIB} ${VTK_LIBS} DESTINATION lib)
+
+
