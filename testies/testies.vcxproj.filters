@@ -104,6 +104,9 @@
     <ClCompile Include="DeformationWidget.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="ThirdAberrationPlot.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="tiny_ies.hpp">
@@ -190,6 +193,9 @@
       <Filter>Header Files</Filter>
     </QtMoc>
     <QtMoc Include="DeformationWidget.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+    <QtMoc Include="ThirdAberrationPlot.h">
       <Filter>Header Files</Filter>
     </QtMoc>
   </ItemGroup>

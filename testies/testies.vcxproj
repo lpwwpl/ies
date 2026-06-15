@@ -150,6 +150,7 @@
     <ClCompile Include="StringEditorFactory.cpp" />
     <ClCompile Include="StringEditWithButton.cpp" />
     <ClCompile Include="TableItemDelegate.cpp" />
+    <ClCompile Include="ThirdAberrationPlot.cpp" />
     <ClCompile Include="threeDdialog.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -180,6 +181,7 @@
     <QtMoc Include="SimplePropertyBrowser.h" />
     <QtMoc Include="StringEditWithButton.h" />
     <QtMoc Include="StringEditorFactory.h" />
+    <QtMoc Include="ThirdAberrationPlot.h" />
     <ClInclude Include="tiny_ies.hpp" />
   </ItemGroup>
   <ItemGroup>

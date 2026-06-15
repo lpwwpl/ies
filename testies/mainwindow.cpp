@@ -23,7 +23,7 @@
 #include <QMouseEvent>
 
 #include "DeformationWidget.h"
-
+#include "ThirdAberrationPlot.h"
 MainWindow::MainWindow(QWidget* parent)
     : QMainWindow(parent),
     ui(new Ui::MainWindow),
@@ -1087,7 +1087,18 @@ void MainWindow::on_actionExit_triggered()
 {
     close();
 }
+void MainWindow::on_actionthirdaberr_triggered()
+{
+    auto filepath = QFileDialog::getOpenFileName(
+        this, tr("Open txt"), "", tr("txt File(*.txt);;All Files(*)"));
+    if (filepath.isEmpty()) {
+        return;
+    }
 
+    ThirdAberrationPlot* viewer = new ThirdAberrationPlot();
+    viewer->loadFile(filepath);
+    viewer->show();
+}
 void MainWindow::on_actiondeformation_triggered()
 {
     auto filepath = QFileDialog::getOpenFileName(
