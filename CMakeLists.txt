@@ -204,6 +204,7 @@ set(SOURCES
     testies/StringEditWithButton.cpp
     testies/TableItemDelegate.cpp
     testies/threeDdialog.cpp
+    testies/ThirdAberrationPlot.cpp
 )
 
 # ---- 头文件（位于 testies 目录下）----
@@ -236,6 +237,7 @@ set(HEADERS
     testies/threeDdialog.h
     testies/nanoflann.hpp
     testies/tiny_ies.hpp
+    testies/ThirdAberrationPlot.h
 )
 
 # ---- UI 文件（位于 testies 目录下）----
