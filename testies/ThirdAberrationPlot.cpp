@@ -27,14 +27,14 @@ void ThirdAberrationPlot::setupPlot()
     m_toolBar_plot = new PlotBase(this);
     m_plot = m_toolBar_plot->m_plot;
     m_grid = m_toolBar_plot->m_grid;
-    //m_legend = m_toolBar_plot->m_legend;
+
     m_settings = m_toolBar_plot->m_settings;
     connect(m_toolBar_plot, SIGNAL(signalFitView()), this, SLOT(fitView()));
     connect(m_toolBar_plot, SIGNAL(signalZoomIn()), this, SLOT(zoomIn()));
     connect(m_toolBar_plot, SIGNAL(signalZoomOut()), this, SLOT(zoomOut()));
     connect(m_toolBar_plot, SIGNAL(signalDisplayProperties(int)), this, SLOT(slotDisplayProperties(int)));
     m_simple_browser = new QwtPropertyBrowser(m_settings, m_plot, m_grid, m_toolBar_plot->m_legend, this);
-    //connect(m_simple_browser, SIGNAL(signalUpdateScaleDiv()), this, SLOT(updateLabelsForCurrentView()));
+    connect(m_simple_browser, SIGNAL(signalUpdateScaleDiv()), this, SLOT(updateXY()));
     //signalXScaleAxes
     bool ret = connect(m_simple_browser, SIGNAL(signalXScaleAxes()), this, SLOT(updateXScaleAxes()));
     connect(m_simple_browser, SIGNAL(signalYScaleAxes()), this, SLOT(updateYScaleAxes()));
@@ -52,9 +52,6 @@ void ThirdAberrationPlot::setupPlot()
 
     setAutoFillBackground(true);
     setMinimumSize(900, 600);
-
-    // 插入标准图例
-    m_plot->insertLegend(new QwtLegend(), QwtPlot::RightLegend);
 
     // 添加网格
     QwtPlotGrid* grid = new QwtPlotGrid();
@@ -118,13 +115,22 @@ void ThirdAberrationPlot::setupPlot()
     mainLayout->addWidget(m_splitter);
 
     m_simple_browser->applyTitleSettings();
+
+    setupInteractions();
 }
 
 bool ThirdAberrationPlot::loadFile(const QString& fileName)
 {
     if (!parseFile(fileName)) return false;
 
+    //plot axis
     createBarChart();
+    //settings
+    saveInitialView();
+
+    //??
+    updateAxesSettings();
+
     return true;
 }
 
@@ -202,7 +208,16 @@ bool ThirdAberrationPlot::parseFile(const QString& fileName)
 
     return true;
 }
-
+void ThirdAberrationPlot::updateX()
+{
+    m_plot->setAxisScale(QwtPlot::xBottom, m_settings->xAxis.min, m_settings->xAxis.max, m_settings->xAxis.step);
+    m_plot->replot();
+}
+void ThirdAberrationPlot::updateY()
+{
+    m_plot->setAxisScale(QwtPlot::yLeft, m_settings->yAxis.min, m_settings->yAxis.max, m_settings->yAxis.step);
+    m_plot->replot();
+}
 void ThirdAberrationPlot::createBarChart()
 {
     if (m_seriesData.empty()) return;
@@ -286,6 +301,18 @@ void ThirdAberrationPlot::createBarChart()
 }
 
 
+void ThirdAberrationPlot::setupInteractions()
+{
+    m_panner = new MyPlotPanner(m_plot->canvas());
+    m_panner->setMouseButton(Qt::LeftButton);
+
+    m_magnifier = new MyPlotMagnifier(m_plot->canvas());
+    m_magnifier->setMouseButton(Qt::RightButton, Qt::ControlModifier);
+    m_magnifier->setWheelFactor(1.1);
+
+    connect(m_panner, &MyPlotPanner::panFinished, this, &ThirdAberrationPlot::updateAxesSettings);
+    connect(m_magnifier, &MyPlotMagnifier::zoomed, this, &ThirdAberrationPlot::updateAxesSettings);
+}
 
 void ThirdAberrationPlot::zoomOut()
 {

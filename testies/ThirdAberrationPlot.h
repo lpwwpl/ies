@@ -23,7 +23,7 @@ public:
 
     void autoScaleAxes();
     void saveInitialView();
-
+    void setupInteractions();
 public Q_SLOTS:
     void zoomIn();
     void zoomOut();
@@ -31,7 +31,9 @@ public Q_SLOTS:
     void updateXScaleAxes();
     void updateYScaleAxes();
     void updateAxesSettings();
-
+    void updateX();
+    void updateY();
+    void updateXY() { updateX(); updateY(); }
     void slotDisplayProperties(int);
 private:
     void setupPlot();
@@ -67,7 +69,7 @@ private:
     PlotSettings* m_settings;
     PlotBase* m_toolBar_plot;
     QwtPlotGrid* m_grid;
-    //QwtLegend* m_legend;
+
     QToolBar* m_toolBar;
     QwtPropertyBrowser* m_simple_browser;
     QSplitter* m_splitter;
