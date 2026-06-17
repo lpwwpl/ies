@@ -38,6 +38,7 @@ void ThirdAberrationPlot::setupPlot()
     //signalXScaleAxes
     bool ret = connect(m_simple_browser, SIGNAL(signalXScaleAxes()), this, SLOT(updateXScaleAxes()));
     connect(m_simple_browser, SIGNAL(signalYScaleAxes()), this, SLOT(updateYScaleAxes()));
+    //connect(m_simple_browser, SIGNAL(signalUpdateItemStyle(int)), this, SLOT(slotUpdateItemStyle(int)));
     // 设置画布背景
     m_plot->setCanvasBackground(Qt::white);
     //m_plot->canvas()->setPaintAttribute(QwtPlotCanvas::BackingStore, true);
@@ -447,4 +448,17 @@ void ThirdAberrationPlot::updateYScaleAxes()
     // 重新绘制
     m_plot->replot();
     updateAxesSettings();
+}
+
+void ThirdAberrationPlot::slotUpdateItemStyle(int index)
+{
+    if (index < 0 || index >= m_settings->m_items.size()) return;
+    QwtColumnSymbolItem& item = m_settings->m_qwtColumnSymbolItems[index];
+    if (!item.m_item) return;
+
+    QwtColumnSymbol* barChartItem = dynamic_cast<QwtColumnSymbol*>(item.m_item);
+    barChartItem->setStyle(item.m_frameStyle);
+    barChartItem->setLineWidth(item.m_lineWidth);
+    barChartItem->setPalette(item.m_palette);
+    m_plot->replot();
 }

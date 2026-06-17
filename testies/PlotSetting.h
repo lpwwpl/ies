@@ -6,12 +6,13 @@
 #include <QVector>
 #include <qwt_symbol.h>
 #include <qwt_plot.h>
+#include <qwt_column_symbol.h>
 
 class QwtPlotCurve;
 class QwtPlotGrid;
 class QwtLegend;
 class QwtPlot;
-
+//enum QwtColumnSymbol::Style;
 enum FillPointType
 {
     eSmallEllipse = 0,
@@ -46,6 +47,15 @@ struct SLineStyle {
     bool pointFilled = false;
     double pointWidth = 1;                  // 点边框宽度
 
+};
+
+struct QwtColumnSymbolItem
+{
+    double m_lineWidth;
+    QwtColumnSymbol::Style m_frameStyle;
+    QColor m_palette;
+
+    QwtColumnSymbol* m_item;
 };
 struct MTFPlotItem
 {
@@ -286,6 +296,8 @@ struct PlotSettings {
     QHash<int, MTFLine> m_lines;
 
     QHash<int, MTFPlotItem> m_items;
+
+    QHash<int, QwtColumnSymbolItem> m_qwtColumnSymbolItems;
 };
 struct PlotInfo
 {

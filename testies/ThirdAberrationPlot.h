@@ -35,6 +35,8 @@ public Q_SLOTS:
     void updateY();
     void updateXY() { updateX(); updateY(); }
     void slotDisplayProperties(int);
+    void slotUpdateItemStyle(int index);
+
 private:
     void setupPlot();
     bool parseFile(const QString& fileName);

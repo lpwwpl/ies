@@ -17,6 +17,7 @@
 #include <qwt_plot.h>
 #include <qwt_plot_curve.h>
 #include <qwt_symbol.h>
+#include <QMouseEvent>
 
 #include "PlotSetting.h"
 class QwtPlot;
@@ -60,7 +61,13 @@ protected:
 
         // 获取最终的平移偏移量并更新变量
         // 这里需要访问父类的内部状态，一种方式是通过信号传递，或者重新实现逻辑
-        emit panFinished();
+        if (event->type() == QEvent::MouseButtonRelease) {
+            QMouseEvent* mouseEvent = static_cast<QMouseEvent*>(event);
+            if (mouseEvent->button() == Qt::LeftButton) {
+                // 左键释放，可能是平移结束
+                emit panFinished();
+            }
+        }
     }
 
 signals:
@@ -74,7 +81,7 @@ class MyPlotMagnifier : public QwtPlotMagnifier
     Q_OBJECT
 public:
     // 构造函数直接透传canvas指针
-    MyPlotMagnifier(QWidget* canvas) : QwtPlotMagnifier(canvas) {}
+    MyPlotMagnifier(QWidget* canvas) : QwtPlotMagnifier(canvas) { setMouseButton(Qt::NoButton); }
 
 signals:
     // 自定义信号，在缩放完成时发射
@@ -92,7 +99,6 @@ protected:
     }
     virtual void rescale(double factor) override
     {
-
         // 3. (可选) 执行自定义逻辑后，调用基类函数完成实际缩放
         QwtPlotMagnifier::rescale(factor);
         if (factor < 1.0) {
